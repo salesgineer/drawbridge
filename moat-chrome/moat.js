@@ -218,24 +218,109 @@
     }
   }
 
-  // Read tasks from markdown file (if connected to project)
+  // Read tasks from markdown files (if connected to project)
   async function readTasksFromMarkdown() {
-    if (projectStatus !== 'connected' || !window.markdownFileHandle) {
+    if (projectStatus !== 'connected' || !window.directoryHandle) {
       return [];
     }
     
     try {
-      const file = await window.markdownFileHandle.getFile();
-      const content = await file.text();
-      return parseMarkdownTasks(content);
+      // Try to read from summary file first
+      const summaryTasks = await readTasksFromSummaryFile();
+      if (summaryTasks.length > 0) {
+        return summaryTasks;
+      }
+      
+      // Fallback to detailed file if summary doesn't exist
+      const detailedTasks = await readTasksFromDetailedFile();
+      return detailedTasks;
     } catch (error) {
-      console.warn('Moat: Could not read markdown file:', error);
+      console.warn('Moat: Could not read markdown files:', error);
       return [];
     }
   }
   
-  // Parse tasks from markdown content
-  function parseMarkdownTasks(content) {
+  // Read tasks from summary file (moat-tasks-summary.md)
+  async function readTasksFromSummaryFile() {
+    try {
+      console.log('Moat: Attempting to read summary file, directoryHandle:', !!window.directoryHandle);
+      const summaryFileHandle = await window.directoryHandle.getFileHandle('moat-tasks-summary.md');
+      console.log('Moat: Got summary file handle:', summaryFileHandle);
+      const file = await summaryFileHandle.getFile();
+      const content = await file.text();
+      console.log('Moat: Summary file content length:', content.length);
+      console.log('Moat: Summary file preview:', content.substring(0, 200));
+      return parseSummaryTasks(content);
+    } catch (error) {
+      console.log('Moat: Summary file error:', error.message);
+      console.log('Moat: Summary file not found, trying detailed file');
+      return [];
+    }
+  }
+  
+  // Read tasks from detailed file (moat-tasks.md or moat-tasks-detail.md)
+  async function readTasksFromDetailedFile() {
+    try {
+      // Try moat-tasks.md first
+      let fileHandle;
+      try {
+        fileHandle = await window.directoryHandle.getFileHandle('moat-tasks.md');
+      } catch {
+        // Try moat-tasks-detail.md
+        fileHandle = await window.directoryHandle.getFileHandle('moat-tasks-detail.md');
+      }
+      
+      const file = await fileHandle.getFile();
+      const content = await file.text();
+      return parseDetailedTasks(content);
+    } catch (error) {
+      console.warn('Moat: No markdown task files found');
+      return [];
+    }
+  }
+  
+  // Parse tasks from summary format (moat-tasks-summary.md)
+  function parseSummaryTasks(content) {
+    const tasks = [];
+    console.log('Moat: Parsing summary tasks from content:', content.substring(0, 500));
+    
+    // Match summary format: 1. ⚡ **Glass Buttons** - "update these to glass buttons" *(5 min)* - ✅ completed *(Just now)*
+    const summaryPattern = /(\d+)\.\s*([🔥⚡💡📋])\s*\*\*(.+?)\*\*\s*-\s*"(.+?)"\s*\*\((.+?)\)\*\s*-\s*(📋|📤|⏳|✅|❌)\s*(\w+)/gi;
+    
+    let match;
+    while ((match = summaryPattern.exec(content)) !== null) {
+      const [, taskNumber, priorityEmoji, title, description, timeEstimate, statusEmoji, statusText] = match;
+      
+      console.log('Moat: Found summary task:', { taskNumber, title, description, statusEmoji, statusText });
+      
+      // Convert priority emoji to text
+      const priority = priorityEmoji === '🔥' ? 'High' : 
+                     priorityEmoji === '⚡' ? 'Medium' : 
+                     priorityEmoji === '💡' ? 'Low' : 'Medium';
+      
+      // Convert status emoji to text
+      const status = getStatusFromEmoji(statusEmoji);
+      
+      tasks.push({
+        id: `summary-task-${taskNumber}`,
+        number: parseInt(taskNumber),
+        title: title.trim(),
+        content: description.trim(),
+        status: status,
+        priority: priority,
+        type: 'Styling', // Default type for summary format
+        estimatedTime: timeEstimate.trim(),
+        priorityEmoji: priorityEmoji,
+        format: 'summary'
+      });
+    }
+    
+    console.log('Moat: Parsed summary tasks:', tasks);
+    return tasks;
+  }
+  
+  // Parse tasks from detailed markdown content  
+  function parseDetailedTasks(content) {
     const tasks = [];
     
     // Match both legacy and enhanced task formats
@@ -364,6 +449,10 @@
     
     const queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
     const queueContainer = moat.querySelector('.float-moat-queue');
+    
+    // Debug logging
+    console.log('Moat: renderCurrentQueue called, queue length:', queue.length);
+    console.log('Moat: Current queue data:', queue);
     
     if (queue.length === 0) {
       queueContainer.innerHTML = '<div class="float-moat-empty">No annotations yet. Press \'f\' to start.</div>';
