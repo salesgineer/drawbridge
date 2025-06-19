@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate Moat Icons</title>
+</head>
+<body>
+  <h1>Generate Moat Icons</h1>
+  <p>Right-click each icon below and save as PNG:</p>
+  
+  <div>
+    <h3>16x16 - Save as moat-16.png</h3>
+    <canvas id="canvas16" width="16" height="16"></canvas>
+  </div>
+  
+  <div>
+    <h3>48x48 - Save as moat-48.png</h3>
+    <canvas id="canvas48" width="48" height="48"></canvas>
+  </div>
+  
+  <div>
+    <h3>128x128 - Save as moat-128.png</h3>
+    <canvas id="canvas128" width="128" height="128"></canvas>
+  </div>
+
+  <script>
+    // Icon drawing function
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const scale = size / 128;
+      
+      // Background
+      ctx.fillStyle = '#3B82F6';
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, 24 * scale);
+      ctx.fill();
+      
+      // Compass
+      ctx.save();
+      ctx.translate(size/2, size/2);
+      ctx.scale(scale, scale);
+      
+      // Outer circle
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // North pointer (bright)
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.moveTo(0, -24);
+      ctx.lineTo(4, -8);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(-4, -8);
+      ctx.closePath();
+      ctx.fill();
+      
+      // South pointer (dimmed)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.beginPath();
+      ctx.moveTo(0, 24);
+      ctx.lineTo(4, 8);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(-4, 8);
+      ctx.closePath();
+      ctx.fill();
+      
+      // East pointer (dimmed)
+      ctx.beginPath();
+      ctx.moveTo(24, 0);
+      ctx.lineTo(8, -4);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(8, 4);
+      ctx.closePath();
+      ctx.fill();
+      
+      // West pointer (dimmed)
+      ctx.beginPath();
+      ctx.moveTo(-24, 0);
+      ctx.lineTo(-8, -4);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(-8, 4);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Center dot
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.restore();
+    }
+    
+    // Draw all sizes
+    drawIcon(document.getElementById('canvas16'), 16);
+    drawIcon(document.getElementById('canvas48'), 48);
+    drawIcon(document.getElementById('canvas128'), 128);
+  </script>
+</body>
+</html> 

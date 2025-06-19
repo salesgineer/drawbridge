@@ -1,0 +1,24 @@
+{
+  "name": "moat",
+  "version": "1.0.0",
+  "description": "Moat - Visual UI feedback with markdown task logging",
+  "main": "moat-watcher.js",
+  "scripts": {
+    "watch": "node moat-watcher.js",
+    "demo": "cd demo-page && python3 -m http.server 8080"
+  },
+  "keywords": [
+    "chrome-extension",
+    "ui-feedback",
+    "developer-tools",
+    "markdown",
+    "cursor",
+    "task-logging"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+} 

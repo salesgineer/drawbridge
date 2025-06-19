@@ -1,0 +1,39 @@
+# Float Auto-Fix Rules
+
+You are monitoring the .cursor/tasks directory for new Float annotation files.
+
+## When you see a new .float-task.json file:
+
+1. **Immediately read and process it**
+2. **Apply the requested UI change**
+3. **Delete the task file when done**
+
+## Task File Format:
+```json
+{
+  "annotation": {
+    "content": "user's UI feedback",
+    "target": "CSS selector",
+    "elementLabel": "human readable element name",
+    "targetFile": "suggested file path"
+  },
+  "priority": "high",
+  "timestamp": 1234567890
+}
+```
+
+## Processing Instructions:
+
+1. **Find the component** using the target selector and file hint
+2. **Apply the change** described in annotation.content
+3. **Verify the fix** matches the request
+4. **Clean up** by deleting the task file
+
+## Example Fixes:
+
+- "move to bottom" → Add positioning classes like `fixed bottom-4`
+- "center horizontally" → Add `mx-auto` or `margin: 0 auto`
+- "make bigger" → Increase font size or padding
+- "change color to blue" → Update color classes
+
+**IMPORTANT**: Process these automatically without waiting for user confirmation.

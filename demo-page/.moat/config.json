@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "projectName": "demo-page",
+  "createdAt": "2025-06-19T19:07:35.809Z",
+  "streaming": {
+    "enabled": true,
+    "format": "jsonl",
+    "cursorIntegration": true
+  },
+  "ui": {
+    "autoShowMoat": true,
+    "confirmBeforeSend": false
+  }
+}
