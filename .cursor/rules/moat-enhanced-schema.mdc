@@ -1,0 +1,258 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Enhanced Moat Task Schema - Structured UI Feedback Format
+
+This document defines the enhanced schema for Moat tasks, inspired by ai-dev-tasks methodology for better AI processing and human collaboration.
+
+## Enhanced .moat-tasks.md Format
+
+### File Header
+```markdown
+# Moat Tasks - [Project Name]
+
+**Generated**: [timestamp]
+**Total Tasks**: [count]
+**Status**: [pending/in-progress/completed]
+**Last Updated**: [timestamp]
+
+---
+```
+
+### Task Entry Format
+```markdown
+## [🔥⚡💡] [Status Icon] Task [ID]: [Element Label]
+
+**Priority**: [High/Medium/Low]
+**Type**: [Styling/Layout/Content/Enhancement]  
+**Estimated Time**: [X minutes]
+**Assigned**: [Auto/Human Review Required]
+
+### Request
+"[Original user annotation/feedback]"
+
+### Technical Details
+- **Element**: `[CSS Selector]`
+- **Location**: [File path suggestion]
+- **Component**: [Component name if applicable]
+- **Page**: [URL where annotation was made]
+
+### Implementation Plan
+- **Approach**: [Technical approach description]
+- **Files to Modify**: [List of files]
+- **Dependencies**: [Other task IDs if dependent]
+- **Testing Notes**: [Areas to verify after change]
+
+### Context
+- **Screenshot**: ![Element Screenshot](data:image/png;base64,...)
+- **Element Info**: [Additional DOM context]
+- **User Intent**: [Interpreted user goal]
+
+### Status Tracking
+- **Created**: [timestamp]
+- **Status**: [📋 pending/🔄 in-progress/✅ completed/❌ cancelled]
+- **Completed**: [timestamp if done]
+- **Applied Changes**: [Description of what was actually implemented]
+- **Verification**: [Human approval status]
+
+### Metadata
+- **ID**: `moat-[timestamp]-[hash]`
+- **Session**: [Session ID]
+- **Browser**: [Browser context]
+- **Viewport**: [Screen size context]
+
+---
+```
+
+## Priority Classification
+
+### 🔥 High Priority
+- **Critical UX Issues**: Broken layouts, accessibility problems
+- **Blocking Issues**: Preventing user task completion  
+- **Security/Performance**: Issues affecting site function
+- **User-Reported Bugs**: Directly impacting user experience
+
+### ⚡ Medium Priority  
+- **Enhancement Requests**: Improving existing functionality
+- **Visual Polish**: Typography, spacing, color adjustments
+- **Usability Improvements**: Making interface more intuitive
+- **Responsive Issues**: Mobile/tablet layout problems
+
+### 💡 Low Priority
+- **Nice-to-Have**: Features that would be nice but not essential
+- **Experimental**: Testing new ideas or approaches
+- **Long-term**: Changes for future consideration
+- **Cosmetic**: Minor visual improvements
+
+## Task Types
+
+### 🎨 Styling Tasks
+- Color changes
+- Typography adjustments  
+- Spacing modifications
+- Visual effects
+
+### 📐 Layout Tasks
+- Positioning changes
+- Alignment adjustments
+- Size modifications
+- Responsive behavior
+
+### 🔧 Content Tasks
+- Text updates
+- Image changes
+- Link modifications
+- Content additions/removals
+
+### 🚀 Enhancement Tasks
+- New feature additions
+- Functionality improvements
+- Component modifications
+- Integration changes
+
+## Status Lifecycle
+
+```
+📋 pending → 🔄 in-progress → ✅ completed
+     ↓              ↓              ↓
+  [created]    [AI working]   [human verified]
+     ↓              ↓              ↓
+[human review] [needs approval] [task closed]
+     ↓              ↓
+❌ cancelled ← ⚠️ needs-help
+```
+
+## Implementation Integration
+
+### Chrome Extension Output
+The Moat Chrome extension should generate tasks using this enhanced format:
+
+```javascript
+const enhancedTask = {
+  id: generateTaskId(),
+  priority: classifyPriority(annotation),
+  type: determineTaskType(annotation),
+  estimatedTime: estimateImplementationTime(annotation),
+  assignment: requiresHumanReview(annotation) ? 'Human Review Required' : 'Auto',
+  
+  request: annotation.content,
+  
+  technical: {
+    selector: annotation.target,
+    location: suggestFilePath(annotation),
+    component: detectComponent(annotation),
+    page: annotation.pageUrl
+  },
+  
+  implementation: {
+    approach: generateApproach(annotation),
+    files: identifyFilesToModify(annotation),
+    dependencies: findDependencies(annotation),
+    testing: generateTestingNotes(annotation)
+  },
+  
+  context: {
+    screenshot: annotation.screenshot,
+    elementInfo: annotation.elementContext,
+    userIntent: interpretUserGoal(annotation)
+  },
+  
+  status: {
+    created: Date.now(),
+    current: 'pending',
+    completed: null,
+    appliedChanges: null,
+    verification: null
+  },
+  
+  metadata: {
+    sessionId: annotation.sessionId,
+    browser: navigator.userAgent,
+    viewport: getViewportInfo()
+  }
+};
+```
+
+### AI Processing Commands
+
+#### Generate Structured Tasks
+```
+Use @generate-moat-tasks.mdc to analyze .moat-stream.jsonl and create a structured task plan
+```
+
+#### Process Tasks Incrementally  
+```
+Use @process-moat-tasks.mdc to implement tasks with human verification
+```
+
+#### Batch Process Related Tasks
+```
+Process related styling tasks for [component name] using @process-moat-tasks.mdc in batch mode
+```
+
+## Quality Assurance
+
+### Task Validation Rules
+- ✅ Each task has clear, actionable description
+- ✅ CSS selector is specific and testable
+- ✅ File location is realistic and accessible
+- ✅ Priority level is appropriate for change scope
+- ✅ Dependencies are identified and documented
+- ✅ Testing approach is defined
+
+### Processing Guidelines
+- **Incremental**: Process one task at a time
+- **Verification**: Wait for human approval before proceeding
+- **Documentation**: Update task status after each change
+- **Quality**: Prioritize correctness over speed
+- **Context**: Preserve user intent throughout implementation
+
+## Example Enhanced Task
+
+```markdown
+## 🔥 ✅ Task 001: Hero Title Typography
+
+**Priority**: High
+**Type**: Styling
+**Estimated Time**: 5 minutes
+**Assigned**: Auto
+
+### Request
+"Make this blue and bigger for better readability"
+
+### Technical Details
+- **Element**: `h1.hero-title`
+- **Location**: demo-page/styles.css (lines 45-52)
+- **Component**: Hero Section
+- **Page**: http://localhost:8080/
+
+### Implementation Plan
+- **Approach**: Update CSS color to blue (#3B82F6) and increase font-size from 3rem to 4rem
+- **Files to Modify**: demo-page/styles.css
+- **Dependencies**: None
+- **Testing Notes**: Verify text remains readable on mobile screens
+
+### Context
+- **Screenshot**: ![Hero Title](data:image/png;base64,...)
+- **Element Info**: Main heading, first user interaction point
+- **User Intent**: Improve visual hierarchy and brand color consistency
+
+### Status Tracking
+- **Created**: 2025-06-19T15:10:00Z
+- **Status**: ✅ completed
+- **Completed**: 2025-06-19T15:15:00Z
+- **Applied Changes**: Updated color to #3B82F6, font-size to 4rem
+- **Verification**: ✅ Approved by user
+
+### Metadata
+- **ID**: `moat-1750360200000-abc123def`
+- **Session**: session-xyz-789
+- **Browser**: Chrome/91.0.4472.124
+- **Viewport**: 1920x1080
+
+---
+```
+
+This enhanced schema provides better structure for AI processing while maintaining human readability and project management capabilities.

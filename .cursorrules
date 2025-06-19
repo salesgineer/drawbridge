@@ -1,123 +1,141 @@
-# Float Automated Workflow Rules
+# Moat Automated Workflow Rules - Enhanced with ai-dev-tasks Methodology
 
-You are an AI assistant that automatically processes Float UI annotations in real-time.
+You are an AI assistant that processes Moat UI annotations using structured, incremental workflows inspired by ai-dev-tasks.
 
-## Primary Directive
-When asked to "process float annotations" or when viewing `.float/.float-stream.jsonl`, automatically:
-1. Read the latest unprocessed annotations
-2. Apply the requested fixes immediately
-3. Show the changes made
-4. Update the annotation status in your response
+## Primary Directives
 
-## Workflow Automation
+### When asked to "process moat annotations" or "process moat tasks":
+1. **Use @process-moat-tasks.mdc** for incremental processing with human verification
+2. **Use @generate-moat-tasks.mdc** first if working with raw .moat-stream.jsonl
+3. **Wait for human approval** between tasks (following ai-dev-tasks pattern)
 
-### When Processing Annotations
-1. **Read** the last line(s) of `.float/.float-stream.jsonl`
-2. **Parse** the `formatting.cursorPrompt` for the issue
-3. **Locate** the component using the `annotation.target` selector
-4. **Apply** the fix based on the annotation content
-5. **Confirm** the changes with a brief summary
+### When viewing `.moat/.moat-stream.jsonl` or raw annotations:
+1. **Use @generate-moat-tasks.mdc** to create structured task plan
+2. **Group related changes** by component/area
+3. **Prioritize tasks** (🔥 High / ⚡ Medium / 💡 Low)
+4. **Then use @process-moat-tasks.mdc** for implementation
 
-### Annotation Structure
-```json
-{
-  "annotation": {
-    "content": "user's feedback",
-    "target": "CSS selector",
-    "elementLabel": "human-readable name",
-    "elementContext": { /* element details */ }
-  },
-  "formatting": {
-    "cursorPrompt": "pre-formatted AI prompt",
-    "targetFile": "suggested file path"
-  }
-}
+## Enhanced Workflow Commands
+
+### Primary Commands (ai-dev-tasks inspired):
+- **`@generate-moat-tasks.mdc`** - Transform annotations into structured task plan
+- **`@process-moat-tasks.mdc`** - Implement tasks with human verification checkpoints
+- **`@moat-enhanced-schema.mdc`** - Reference for task format documentation
+
+### Legacy Commands (for simple auto-fixes):
+- **`@moat-auto-fix.mdc`** - Quick automatic processing without verification
+- **`@moat-rules.mdc`** - Original processing rules
+
+## Processing Strategy
+
+### For New Annotation Sessions:
+```
+1. User creates annotations in Chrome extension
+2. Use @generate-moat-tasks.mdc to create implementation plan
+3. Review plan with user
+4. Use @process-moat-tasks.mdc for incremental implementation
+5. Get human approval for each task before proceeding
 ```
 
-## Processing Rules
+### For Existing Task Lists:
+```
+1. Use @process-moat-tasks.mdc directly on .moat/moat-tasks.md
+2. Process one task at a time
+3. Wait for "yes" or feedback before proceeding
+4. Update task status after each completion
+```
 
-### Layout/Position Changes
-- "move to bottom" → Add `position: fixed; bottom: [value];` or Tailwind `fixed bottom-[value]`
-- "center horizontally" → Add `margin: 0 auto;` or Tailwind `mx-auto`
-- "align right" → Add `margin-left: auto;` or Tailwind `ml-auto`
-- "16px spacing" → Use `1rem` or Tailwind `4` (16px = 1rem = space-4)
+## Task Format Integration
 
-### Style Changes
-- Color requests → Update background/text color classes
-- Size changes → Adjust width/height/padding
-- Typography → Update font size/weight/family
+### Current Simple Format (legacy):
+```markdown
+## 📋 Element Name
+**Task:** Description
+- **Element:** CSS selector
+- **Status:** pending
+```
 
-### Component Updates
-- Text changes → Update the component content directly
-- Add elements → Insert new JSX/HTML
-- Remove elements → Comment out or delete with explanation
+### Enhanced Format (preferred):
+```markdown
+## 🔥 📋 Task 001: Element Name
+**Priority**: High
+**Type**: Styling
+**Estimated Time**: 5 minutes
+
+### Request
+"Original user feedback"
+
+### Technical Details  
+- **Element**: CSS selector
+- **Location**: file path
+- **Dependencies**: Task IDs
+
+### Status Tracking
+- **Status**: 📋 pending
+- **Created**: timestamp
+```
 
 ## Automation Commands
 
-### Command: "watch float"
-Continuously monitor `.float/.float-stream.jsonl` and process new annotations automatically.
+### Command: "generate moat tasks"
+Use @generate-moat-tasks.mdc to analyze annotations and create structured plan
 
-### Command: "process all float annotations"
-Read and apply ALL unprocessed annotations in sequence.
+### Command: "process moat tasks" 
+Use @process-moat-tasks.mdc to implement tasks with human verification
 
-### Command: "process latest float"
-Apply only the most recent annotation.
+### Command: "process latest moat"
+Use @process-moat-tasks.mdc starting with the most recent task
+
+### Command: "watch moat" (legacy)
+Continuously monitor and auto-process (without verification)
 
 ## Implementation Pattern
 
-When processing an annotation, follow this pattern:
+When processing tasks, follow this enhanced pattern:
 
-1. **Identify the Component**
-   - Use the file path hint from `formatting.targetFile`
-   - Search for components matching the selector
-   - Consider React component structure
-
-2. **Apply the Change**
-   ```tsx
-   // Before
-   <Link href="/profile">Profile</Link>
-   
-   // After (for "move to bottom, 16px above viewport")
-   <Link href="/profile" className="fixed bottom-4 left-0">Profile</Link>
-   ```
-
-3. **Verify the Fix**
-   - Ensure the change matches the request
-   - Preserve existing functionality
-   - Add comments if helpful
-
-## Example Processing
-
-For annotation: "Move this to the bottom, 16px above viewport"
-- Target: `a[href='/profile']`
-- Apply: Add positioning classes `fixed bottom-4`
-- Confirm: "✓ Moved Profile link to bottom with 16px spacing"
+1. **Announce Task**: Clear description of what will be changed
+2. **Implement Change**: Apply the specific modification  
+3. **Show Result**: Describe what was actually done
+4. **Wait for Approval**: Get human "yes" before proceeding
+5. **Update Status**: Mark task as completed
+6. **Move to Next**: Continue to next pending task
 
 ## Best Practices
 
-1. **Preserve Functionality**: Never break existing features
-2. **Use Semantic Classes**: Prefer Tailwind utilities when available
-3. **Add Comments**: Mark Float-applied changes with `// Float: [description]`
-4. **Incremental Changes**: Apply one annotation at a time
-5. **Confirm Success**: Always summarize what was changed
+1. **Human Verification**: Always wait for approval between tasks
+2. **Incremental Changes**: One task at a time, never batch without permission
+3. **Clear Communication**: Explain what was changed and why
+4. **Status Updates**: Keep moat-tasks.md current with progress
+5. **Quality Focus**: Prioritize correctness over speed
+6. **Context Preservation**: Maintain user intent throughout implementation
 
-## Auto-Response Format
+## Legacy Compatibility
 
-When processing annotations, respond with:
+### For Immediate Processing (no verification):
+Still supported for simple changes:
 ```
-🔄 Processing Float Annotation
-📍 Element: [elementLabel]
-🎯 Change: [what was requested]
-✅ Applied: [what you did]
-📁 File: [file modified]
+Process latest annotation immediately using legacy @moat-auto-fix.mdc
 ```
 
-## Continuous Mode
+### For Complex Changes:
+Always prefer the new verified approach:
+```
+Use @generate-moat-tasks.mdc then @process-moat-tasks.mdc for complex changes
+```
 
-When in "watch float" mode:
-- Check for new annotations every time you respond
-- Process them automatically
-- Keep a running log of changes
-- Alert when no new annotations are found
+## Example Usage
 
-Remember: The goal is to create a seamless feedback loop where UI annotations are instantly transformed into code changes without manual intervention. 
+### New Workflow:
+```
+User: "I have several annotations to process"
+AI: Use @generate-moat-tasks.mdc to analyze and create plan
+AI: Use @process-moat-tasks.mdc to implement with verification
+```
+
+### Legacy Workflow (still available):
+```
+User: "Process latest annotation quickly"  
+AI: Use @moat-auto-fix.mdc for immediate processing
+```
+
+Remember: The goal is structured, verified UI feedback implementation that maintains quality while enabling efficient human-AI collaboration. 
