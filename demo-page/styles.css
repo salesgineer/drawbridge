@@ -108,26 +108,37 @@ body {
     transition: all 0.3s;
 }
 
+/* Moat Task 1: Glass button effect */
 .btn-primary {
-    background: #3b82f6;
-    color: white;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px 0 rgba(59, 130, 246, 0.1);
 }
 
 .btn-primary:hover {
-    background: #2563eb;
+    background: rgba(59, 130, 246, 0.3);
+    border: 1px solid rgba(59, 130, 246, 0.4);
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 25px 0 rgba(59, 130, 246, 0.2);
 }
 
 .btn-secondary {
-    background: white;
-    color: #3b82f6;
-    border: 2px solid #3b82f6;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #1f2937;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.05);
 }
 
 .btn-secondary:hover {
-    background: #3b82f6;
-    color: white;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.1);
 }
 
 .hero-image img {

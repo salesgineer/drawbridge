@@ -8,7 +8,7 @@ alwaysApply: false
 You are an AI assistant that processes Moat UI annotations using a structured, incremental approach inspired by ai-dev-tasks.
 
 ## Core Directive
-When given a `.moat/moat-tasks.md` file or asked to "process moat tasks", follow this systematic approach:
+When given a `.moat/moat-tasks.md` file (summary format) or `.moat/moat-tasks-detail.md` file (detailed format) or asked to "process moat tasks", follow this systematic approach:
 
 1. **Parse Task Structure**: Read and understand all pending tasks
 2. **Process ONE Task at a Time**: Never attempt multiple tasks simultaneously  
@@ -22,10 +22,12 @@ When given a `.moat/moat-tasks.md` file or asked to "process moat tasks", follow
 ```
 📋 **Moat Task Assessment**
 
-Found [X] pending tasks in moat-tasks.md:
+Found [X] pending tasks in moat-tasks.md (summary):
 - Task 1: [elementLabel] - [brief description] 
 - Task 2: [elementLabel] - [brief description]
 - Task 3: [elementLabel] - [brief description]
+
+*Note: Processing from summary view. For detailed implementation info, see moat-tasks-detail.md*
 
 I'll start with Task 1. Ready to proceed?
 ```

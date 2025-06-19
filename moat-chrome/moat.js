@@ -30,7 +30,11 @@
         <span class="float-project-label">Not connected to project</span>
         <button class="float-project-connect">Connect</button>
       </div>
-      <div class="float-moat-queue">
+      <div class="float-moat-tabs">
+        <button class="float-moat-tab active" data-tab="current">Current Session</button>
+        <button class="float-moat-tab" data-tab="all">All Tasks</button>
+      </div>
+      <div class="float-moat-queue" data-view="current">
         <div class="float-moat-empty">
           <p>No annotations yet</p>
           <p class="float-moat-hint">Press 'f' to enter comment mode</p>
@@ -45,6 +49,12 @@
     moat.querySelector('.float-moat-close').addEventListener('click', hideMoat);
     moat.querySelector('.float-moat-export').addEventListener('click', exportAnnotations);
     moat.querySelector('.float-project-connect').addEventListener('click', handleProjectButton);
+    
+    // Tab switching
+    moat.querySelectorAll('.float-moat-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+    
     console.log('Moat: Event listeners attached');
   }
 
@@ -187,6 +197,109 @@
     }
   }
 
+  // Switch tabs
+  function switchTab(tabName) {
+    if (!moat) return;
+    
+    // Update active tab
+    moat.querySelectorAll('.float-moat-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.tab === tabName);
+    });
+    
+    // Update queue view
+    const queueContainer = moat.querySelector('.float-moat-queue');
+    queueContainer.dataset.view = tabName;
+    
+    // Render appropriate content
+    if (tabName === 'current') {
+      renderCurrentQueue();
+    } else {
+      renderAllTasks();
+    }
+  }
+
+  // Read tasks from markdown file (if connected to project)
+  async function readTasksFromMarkdown() {
+    if (projectStatus !== 'connected' || !window.markdownFileHandle) {
+      return [];
+    }
+    
+    try {
+      const file = await window.markdownFileHandle.getFile();
+      const content = await file.text();
+      return parseMarkdownTasks(content);
+    } catch (error) {
+      console.warn('Moat: Could not read markdown file:', error);
+      return [];
+    }
+  }
+  
+  // Parse tasks from markdown content
+  function parseMarkdownTasks(content) {
+    const tasks = [];
+    
+    // Match both legacy and enhanced task formats
+    const legacyPattern = /## (📋|📤|⏳|✅|❌)\s*(.+?)\n\n\*\*Task:\*\*\s*(.+?)\n/g;
+    const enhancedPattern = /## ([🔥⚡💡]?)\s*(📋|📤|⏳|✅|❌)\s*Task\s+(\d+):\s*(.+?)\n\n\*\*Priority\*\*:\s*(.+?)\n\*\*Type\*\*:\s*(.+?)\n\*\*Estimated Time\*\*:\s*(.+?)\n/g;
+    
+    let match;
+    
+    // Parse enhanced format tasks
+    while ((match = enhancedPattern.exec(content)) !== null) {
+      const [, priorityEmoji, statusEmoji, taskNumber, title, priority, type, estimatedTime] = match;
+      
+      // Extract request from the content following the match
+      const requestMatch = content.slice(match.index + match[0].length).match(/### Request\n"(.+?)"/);
+      const request = requestMatch ? requestMatch[1] : 'No description';
+      
+      tasks.push({
+        id: `task-${taskNumber}`,
+        number: parseInt(taskNumber),
+        title: title.trim(),
+        content: request,
+        status: getStatusFromEmoji(statusEmoji),
+        priority: priority,
+        type: type,
+        estimatedTime: estimatedTime,
+        priorityEmoji: priorityEmoji,
+        format: 'enhanced'
+      });
+    }
+    
+    // Parse legacy format tasks (if no enhanced tasks found)
+    if (tasks.length === 0) {
+      while ((match = legacyPattern.exec(content)) !== null) {
+        const [, statusEmoji, title, task] = match;
+        
+        tasks.push({
+          id: `legacy-${Date.now()}-${Math.random()}`,
+          title: title.trim(),
+          content: task.trim(),
+          status: getStatusFromEmoji(statusEmoji),
+          priority: 'Medium',
+          type: 'Styling',
+          estimatedTime: '5 min',
+          priorityEmoji: '⚡',
+          format: 'legacy'
+        });
+      }
+    }
+    
+    return tasks;
+  }
+  
+  // Convert emoji to status text
+  function getStatusFromEmoji(emoji) {
+    switch (emoji) {
+      case '📋': return 'pending';
+      case '📤': return 'sent';
+      case '⏳': return 'in progress';
+      case '✅': return 'completed';
+      case '❌': return 'cancelled';
+      default: return 'pending';
+    }
+  }
+
   // Show Moat
   function showMoat() {
     console.log('Moat: showMoat called, moat exists:', !!moat);
@@ -233,8 +346,20 @@
     }
   }
 
-  // Render queue
+  // Render queue (decides which view to show)
   function renderQueue() {
+    if (!moat) return;
+    
+    const currentView = moat.querySelector('.float-moat-queue').dataset.view || 'current';
+    if (currentView === 'current') {
+      renderCurrentQueue();
+    } else {
+      renderAllTasks();
+    }
+  }
+  
+  // Render current session queue
+  function renderCurrentQueue() {
     if (!moat) return;
     
     const queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
@@ -268,6 +393,146 @@
       `;
     }).join('');
     
+    // Add event listeners for current queue
+    addCurrentQueueListeners(queue);
+  }
+  
+  // Render all tasks (current + markdown)
+  async function renderAllTasks() {
+    if (!moat) return;
+    
+    const queueContainer = moat.querySelector('.float-moat-queue');
+    queueContainer.innerHTML = '<div class="float-moat-loading">Loading all tasks...</div>';
+    
+    // Get current session annotations
+    const currentQueue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+    
+    // Get tasks from markdown file
+    const markdownTasks = await readTasksFromMarkdown();
+    
+    // Combine and organize all tasks
+    const allTasks = [...markdownTasks, ...currentQueue.map(convertAnnotationToTask)];
+    
+    if (allTasks.length === 0) {
+      queueContainer.innerHTML = `
+        <div class="float-moat-empty">
+          <p>No tasks found</p>
+          ${projectStatus !== 'connected' ? '<p class="float-moat-hint">Connect to a project to see markdown tasks</p>' : ''}
+        </div>
+      `;
+      return;
+    }
+    
+    // Sort tasks: completed last, then by priority, then by creation time
+    allTasks.sort((a, b) => {
+      // Completed tasks go to bottom
+      if (a.status === 'completed' && b.status !== 'completed') return 1;
+      if (b.status === 'completed' && a.status !== 'completed') return -1;
+      
+      // Priority order: High > Medium > Low
+      const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+      const aPriority = priorityOrder[a.priority] || 2;
+      const bPriority = priorityOrder[b.priority] || 2;
+      
+      if (aPriority !== bPriority) return bPriority - aPriority;
+      
+      // By creation time (newest first)
+      return (b.timestamp || 0) - (a.timestamp || 0);
+    });
+    
+    // Group tasks by status
+    const pending = allTasks.filter(t => ['pending', 'in queue'].includes(t.status));
+    const inProgress = allTasks.filter(t => ['sent', 'in progress'].includes(t.status));
+    const completed = allTasks.filter(t => ['completed', 'resolved'].includes(t.status));
+    
+    queueContainer.innerHTML = `
+      ${pending.length > 0 ? `
+        <div class="float-moat-section">
+          <h4 class="float-moat-section-title">📋 Pending (${pending.length})</h4>
+          ${pending.map(task => renderTaskItem(task)).join('')}
+        </div>
+      ` : ''}
+      
+      ${inProgress.length > 0 ? `
+        <div class="float-moat-section">
+          <h4 class="float-moat-section-title">⏳ In Progress (${inProgress.length})</h4>
+          ${inProgress.map(task => renderTaskItem(task)).join('')}
+        </div>
+      ` : ''}
+      
+      ${completed.length > 0 ? `
+        <div class="float-moat-section">
+          <h4 class="float-moat-section-title">✅ Completed (${completed.length})</h4>
+          ${completed.map(task => renderTaskItem(task)).join('')}
+        </div>
+      ` : ''}
+    `;
+    
+    // Add event listeners for all tasks
+    addAllTasksListeners();
+  }
+  
+  // Render individual task item
+  function renderTaskItem(task) {
+    const statusIcon = getStatusIcon(task.status);
+    const priorityIcon = task.priorityEmoji || getDefaultPriorityIcon(task.priority);
+    const isCompleted = ['completed', 'resolved'].includes(task.status);
+    
+    return `
+      <div class="float-moat-item ${isCompleted ? 'float-moat-completed' : ''}" 
+           data-id="${task.id}"
+           data-type="${task.format || 'current'}">
+        <div class="float-moat-item-header">
+          <span class="float-moat-status">${statusIcon}</span>
+          <span class="float-moat-priority" title="${task.priority} Priority">${priorityIcon}</span>
+          <span class="float-moat-target" title="${task.title}">${task.title}</span>
+          ${task.format === 'enhanced' || task.format === 'legacy' ? 
+            `<span class="float-moat-badge">${task.estimatedTime}</span>` : 
+            `<button class="float-moat-remove" data-id="${task.id}">✕</button>`
+          }
+        </div>
+        <div class="float-moat-content">${task.content}</div>
+        <div class="float-moat-meta">
+          ${task.type ? `<span class="float-moat-type">${task.type}</span>` : ''}
+          ${task.timestamp ? `<span class="float-moat-time">${new Date(task.timestamp).toLocaleTimeString()}</span>` : ''}
+          ${task.format ? `<span class="float-moat-source">${task.format}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+  
+  // Convert annotation to task format
+  function convertAnnotationToTask(annotation) {
+    return {
+      id: annotation.id,
+      title: annotation.elementLabel || annotation.target || 'Unknown element',
+      content: annotation.content,
+      status: annotation.status,
+      priority: 'Medium', // Default for current annotations
+      type: 'Styling', // Default type
+      estimatedTime: '5 min',
+      priorityEmoji: '⚡',
+      timestamp: annotation.timestamp,
+      format: 'current'
+    };
+  }
+  
+  // Get default priority icon
+  function getDefaultPriorityIcon(priority) {
+    switch (priority) {
+      case 'High': return '🔥';
+      case 'Medium': return '⚡';
+      case 'Low': return '💡';
+      default: return '⚡';
+    }
+  }
+  
+  // Add event listeners for current queue
+  function addCurrentQueueListeners(queue) {
+    if (!moat) return;
+    
+    const queueContainer = moat.querySelector('.float-moat-queue');
+    
     // Add event listeners
     queueContainer.querySelectorAll('.float-moat-item').forEach(item => {
       // Click to highlight element
@@ -289,6 +554,42 @@
     });
     
     // Remove buttons
+    queueContainer.querySelectorAll('.float-moat-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeAnnotation(btn.dataset.id);
+      });
+    });
+  }
+  
+  // Add event listeners for all tasks view
+  function addAllTasksListeners() {
+    if (!moat) return;
+    
+    const queueContainer = moat.querySelector('.float-moat-queue');
+    
+    // Add event listeners
+    queueContainer.querySelectorAll('.float-moat-item').forEach(item => {
+      // Click to highlight element (only for current session items)
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.float-moat-remove')) return;
+        
+        const dataType = item.dataset.type;
+        if (dataType === 'current') {
+          const id = item.dataset.id;
+          const queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+          const annotation = queue.find(a => a.id === id);
+          if (annotation) {
+            highlightAnnotatedElement(annotation);
+          }
+        } else {
+          // For markdown tasks, show a notification that they can't be highlighted
+          showNotification('Markdown tasks cannot be highlighted directly');
+        }
+      });
+    });
+    
+    // Remove buttons (only for current session items)
     queueContainer.querySelectorAll('.float-moat-remove').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();

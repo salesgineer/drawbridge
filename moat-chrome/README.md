@@ -161,6 +161,16 @@ Use @moat-auto-fix.mdc for immediate implementation
 
 ## 🔧 Features
 
+### 📋 Enhanced Task Management *(NEW)*
+- **Dual-Tab Interface**: Switch between "Current Session" and "All Tasks" views
+- **Task Status Grouping**: Organized by Pending, In Progress, and Completed
+- **Progress Visualization**: See completion status at a glance
+- **Priority Icons**: 🔥 High, ⚡ Medium, 💡 Low priority indicators
+- **Time Estimates**: Shows estimated implementation time for each task
+- **Task Types**: Automatically categorizes as Styling, Layout, Content, Enhancement
+- **Source Tracking**: Shows whether tasks are from current session or markdown files
+
+### 🎯 Smart Annotation
 - **Universal Element Selection**: Annotate ANY element - links, buttons, containers, backgrounds
 - **Smart Element Labels**: 
   - Links: "Link: Profile"
@@ -169,10 +179,13 @@ Use @moat-auto-fix.mdc for immediate implementation
 - **Comment Protection**: Can't accidentally lose work - clicking another element shakes the comment box
 - **Visual Confirmation**: Brief pulse effect when selecting elements
 - **Enhanced Context**: Captures element metadata for better AI understanding
+
+### 📁 Project Integration
 - **Drag & Drop**: Reorder annotations by priority
 - **Export**: Download annotations as `.moat.json`
 - **Screenshot Capture**: Automatically captures element screenshots
 - **🆕 Cursor Streaming**: Real-time sync to your project directory
+- **🆕 Markdown Task Reading**: Displays tasks from connected project files
 
 ## 🎯 Element Selection
 
