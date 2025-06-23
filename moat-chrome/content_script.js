@@ -5,11 +5,418 @@
   let commentBox = null;
   let highlightedElement = null;
   let projectRoot = null;
-  let fileHandle = null;
   let markdownFileHandle = null; // Handle for moat-tasks.md
 
   // Generate unique session ID
   const sessionId = `moat-session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  // Import utility modules (added for Task 2.1)
+  let taskStore = null;
+  let markdownGenerator = null;
+
+  // Initialize utility modules
+  let migrator = null; // Task 4.6: Migration system
+
+  function initializeUtilities() {
+    console.log('🔧 Moat: Initializing TaskStore and MarkdownGenerator utilities...');
+    console.log('🔧 Moat: window.MoatTaskStore available:', !!window.MoatTaskStore);
+    console.log('🔧 Moat: window.MoatMarkdownGenerator available:', !!window.MoatMarkdownGenerator);
+    console.log('🔧 Moat: window.directoryHandle available:', !!window.directoryHandle);
+    
+    // Initialize TaskStore
+    if (window.MoatTaskStore) {
+      try {
+        taskStore = new window.MoatTaskStore.TaskStore();
+        
+        // Initialize TaskStore with directory handle if available
+        if (window.directoryHandle) {
+          taskStore.initialize(window.directoryHandle);
+          console.log('✅ Moat: TaskStore initialized with directory handle');
+        } else {
+          console.log('⚠️ Moat: TaskStore created but not initialized (no directory handle)');
+        }
+        
+        console.log('🔧 Moat: TaskStore instance:', taskStore);
+      } catch (error) {
+        console.error('❌ Moat: Error creating TaskStore instance:', error);
+        taskStore = null;
+      }
+    } else {
+      console.error('❌ Moat: TaskStore not available - ensure utils/taskStore.js is loaded');
+      console.log('🔧 Moat: Available window properties:', Object.keys(window).filter(k => k.includes('Moat')));
+    }
+
+    // Initialize MarkdownGenerator (functions are available via global)
+    if (window.MoatMarkdownGenerator) {
+      try {
+        markdownGenerator = window.MoatMarkdownGenerator;
+        console.log('✅ Moat: MarkdownGenerator initialized successfully');
+        console.log('🔧 Moat: MarkdownGenerator functions:', Object.keys(markdownGenerator));
+      } catch (error) {
+        console.error('❌ Moat: Error initializing MarkdownGenerator:', error);
+        markdownGenerator = null;
+      }
+    } else {
+      console.error('❌ Moat: MarkdownGenerator not available - ensure utils/markdownGenerator.js is loaded');
+    }
+  }
+
+  // Retry initialization with delays
+  async function initializeUtilitiesWithRetry(maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      console.log(`🔧 Moat: Initialization attempt ${attempt}/${maxRetries}`);
+      
+      initializeUtilities();
+      
+      // Check if both utilities are now available
+      if (taskStore && markdownGenerator) {
+        console.log('✅ Moat: All utilities initialized successfully');
+        return true;
+      }
+      
+      if (attempt < maxRetries) {
+        console.log(`🔧 Moat: Utilities not ready, waiting 500ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    
+    console.error('❌ Moat: Failed to initialize utilities after', maxRetries, 'attempts');
+    return false;
+
+    // Task 4.6: Initialize migration system (only if directory handle is available)
+    if (window.LegacyFileMigrator && taskStore && markdownGenerator && window.directoryHandle) {
+      migrator = new window.LegacyFileMigrator(window.directoryHandle, taskStore, markdownGenerator);
+      console.log('Moat: LegacyFileMigrator initialized');
+      
+      // Auto-trigger migration check on startup
+      setTimeout(checkAndMigrateLegacyFiles, 1000);
+    } else if (!window.directoryHandle) {
+      console.log('Moat: Directory handle not available yet, migration system will be initialized after project connection');
+    } else {
+      console.warn('Moat: LegacyFileMigrator not available or dependencies missing');
+    }
+  }
+
+  // Task 4.6: Migration trigger on extension startup
+  async function checkAndMigrateLegacyFiles() {
+    console.log('🔍 Moat: Checking for legacy files to migrate...');
+    
+    if (!migrator) {
+      console.warn('🔍 Moat: Migration system not available');
+      return;
+    }
+
+    try {
+      const legacyFiles = await migrator.detectLegacyFiles();
+      
+      if (legacyFiles.hasLegacyFiles) {
+        console.log('🔍 Moat: Legacy files detected, starting migration...');
+        showNotification('🔄 Migrating legacy files to new format...', 'info');
+        
+        const result = await migrator.performMigration();
+        
+        if (result.success) {
+          console.log('✅ Moat: Migration completed successfully');
+          showNotification(`✅ Migration complete! Converted ${result.tasksConverted} tasks, archived ${result.filesArchived} files`);
+          
+          // Refresh the sidebar to show migrated tasks
+          window.dispatchEvent(new CustomEvent('moat:tasks-updated', {
+            detail: { source: 'migration', taskCount: result.tasksConverted }
+          }));
+          
+        } else {
+          console.error('❌ Moat: Migration failed:', result.errors);
+          showNotification(`❌ Migration failed: ${result.errors[0] || 'Unknown error'}`, 'error');
+        }
+        
+        // Store migration report for debugging
+        window.moatMigrationReport = migrator.getMigrationReport();
+        
+      } else {
+        console.log('🔍 Moat: No legacy files found, migration not needed');
+      }
+      
+    } catch (error) {
+      console.error('🔍 Moat: Migration check failed:', error);
+      showNotification(`❌ Migration check failed: ${error.message}`, 'error');
+    }
+  }
+
+  // Task 4.7: Manual migration trigger function
+  async function triggerManualMigration() {
+    console.log('🚀 Moat: Manual migration triggered');
+    
+    if (!migrator) {
+      showNotification('❌ Migration system not available', 'error');
+      return { success: false, error: 'Migration system not available' };
+    }
+
+    try {
+      showNotification('🔄 Starting manual migration...', 'info');
+      const result = await migrator.performMigration();
+      
+      if (result.success) {
+        showNotification(`✅ Manual migration complete! ${result.tasksConverted} tasks converted`);
+      } else {
+        showNotification(`❌ Manual migration failed: ${result.errors[0]}`, 'error');
+      }
+      
+      return result;
+      
+    } catch (error) {
+      console.error('🚀 Moat: Manual migration failed:', error);
+      showNotification(`❌ Manual migration error: ${error.message}`, 'error');
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Task 4.8: Manual rollback function
+  async function triggerMigrationRollback() {
+    console.log('🔙 Moat: Migration rollback triggered');
+    
+    if (!migrator) {
+      showNotification('❌ Migration system not available', 'error');
+      return { success: false, error: 'Migration system not available' };
+    }
+
+    try {
+      showNotification('🔄 Rolling back migration...', 'info');
+      const result = await migrator.rollbackMigration();
+      
+      if (result.success) {
+        showNotification(`✅ Rollback complete! Restored ${result.restoredCount} files`);
+        
+        // Refresh sidebar to show restored state
+        window.dispatchEvent(new CustomEvent('moat:tasks-updated', {
+          detail: { source: 'rollback' }
+        }));
+        
+      } else {
+        showNotification(`❌ Rollback failed: ${result.error}`, 'error');
+      }
+      
+      return result;
+      
+    } catch (error) {
+      console.error('🔙 Moat: Rollback failed:', error);
+      showNotification(`❌ Rollback error: ${error.message}`, 'error');
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Convert annotation format to TaskStore format (Task 2.1)
+  function convertAnnotationToTask(annotation) {
+    // Generate a clean title from element label and comment
+    const title = annotation.elementLabel || 'UI Element Task';
+    
+    // Convert bounding rect format
+    const boundingRect = {
+      x: annotation.boundingRect.x,
+      y: annotation.boundingRect.y,
+      w: annotation.boundingRect.width,
+      h: annotation.boundingRect.height
+    };
+
+    // Generate screenshot path
+    const screenshotPath = annotation.screenshot ? `./screenshots/${annotation.id}.png` : '';
+
+    return {
+      title: title,
+      comment: annotation.content,
+      selector: annotation.target,
+      boundingRect: boundingRect,
+      screenshotPath: screenshotPath
+    };
+  }
+
+  // Check if utilities are available and project is connected (Task 2.1)
+  function canUseNewTaskSystem() {
+    const hasTaskStore = !!taskStore;
+    const hasMarkdownGenerator = !!markdownGenerator;
+    const hasDirectoryHandle = !!window.directoryHandle;
+    const taskStoreInitialized = hasTaskStore && taskStore.isInitialized && taskStore.isInitialized();
+    const canUse = hasTaskStore && hasMarkdownGenerator && hasDirectoryHandle && taskStoreInitialized;
+    
+    console.log('🔧 Moat: canUseNewTaskSystem check:');
+    console.log('  - taskStore:', hasTaskStore, taskStore ? '(instance available)' : '(null/undefined)');
+    console.log('  - taskStore.isInitialized():', taskStoreInitialized, taskStore?.isInitialized ? '(properly initialized)' : '(not initialized)');
+    console.log('  - markdownGenerator:', hasMarkdownGenerator, markdownGenerator ? '(functions available)' : '(null/undefined)');
+    console.log('  - directoryHandle:', hasDirectoryHandle, window.directoryHandle ? '(handle available)' : '(null/undefined)');
+    console.log('  - Result:', canUse ? '✅ CAN use new system' : '❌ CANNOT use new system');
+    
+    return canUse;
+  }
+
+  // Save screenshot to file (Task 2.6)
+  async function saveScreenshotToFile(annotation) {
+    if (!annotation.screenshot || !window.directoryHandle) {
+      return '';
+    }
+
+    try {
+      // Create screenshots directory if it doesn't exist
+      const screenshotsDir = await window.directoryHandle.getDirectoryHandle('screenshots', { create: true });
+      
+      // Convert base64 to blob
+      const base64Data = annotation.screenshot.replace(/^data:image\/png;base64,/, '');
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: 'image/png' });
+
+      // Save file with annotation ID as name
+      const fileName = `${annotation.id}.png`;
+      const fileHandle = await screenshotsDir.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+
+      console.log(`Moat: Screenshot saved as ${fileName}`);
+      return `./screenshots/${fileName}`;
+    } catch (error) {
+      console.error('Moat: Failed to save screenshot:', error);
+      return '';
+    }
+  }
+
+  // New annotation save pipeline using TaskStore and MarkdownGenerator (Tasks 2.2-2.8)
+  async function saveAnnotationWithNewSystem(annotation) {
+    const startTime = performance.now(); // Task 2.7: Performance monitoring
+    
+    console.log('🚀 Moat: Starting saveAnnotationWithNewSystem pipeline');
+    console.log('🚀 Moat: Annotation data:', {
+      id: annotation.id,
+      elementLabel: annotation.elementLabel,
+      content: annotation.content,
+      target: annotation.target
+    });
+    
+    try {
+      // Step 1: Verify prerequisites
+      console.log('🔧 Moat: Verifying prerequisites...');
+      if (!window.directoryHandle) {
+        throw new Error('Directory handle not available');
+      }
+      
+      // Try to reinitialize utilities if they're missing
+      if (!taskStore || !markdownGenerator) {
+        console.log('🔧 Moat: Missing utilities, attempting re-initialization...');
+        await initializeUtilitiesWithRetry();
+      }
+      
+      // If utilities still aren't available, use direct file writing
+      if (!taskStore || !markdownGenerator) {
+        console.log('🔧 Moat: Utilities not available, switching to direct file writing mode');
+        return await saveAnnotationWithDirectFileWriting(annotation);
+      }
+      console.log('✅ Moat: Prerequisites verified');
+
+      // Step 2: Save screenshot to file system
+      console.log('🔧 Moat: Processing screenshot...');
+      const screenshotPath = await saveScreenshotToFile(annotation);
+      console.log('🔧 Moat: Screenshot result:', screenshotPath || 'No screenshot');
+      
+      // Step 3: Convert annotation to TaskStore format
+      console.log('🔧 Moat: Converting annotation to task format...');
+      const taskData = convertAnnotationToTask(annotation);
+      if (screenshotPath) {
+        taskData.screenshotPath = screenshotPath;
+      }
+      console.log('🔧 Moat: Task data prepared:', taskData);
+
+      // Step 4: Add task to TaskStore
+      console.log('🔧 Moat: Adding task to TaskStore...');
+      const task = await taskStore.addTaskAndSave(taskData);
+      console.log('✅ Moat: Task added to TaskStore with ID:', task.id);
+      console.log('🔧 Moat: TaskStore now has', taskStore.getAllTasks().length, 'tasks');
+
+      // Step 5: Generate and save markdown
+      console.log('🔧 Moat: Generating markdown from TaskStore data...');
+      const allTasks = taskStore.getAllTasksChronological();
+      console.log('🔧 Moat: All tasks for markdown generation:', allTasks.length, 'tasks');
+      
+      await markdownGenerator.rebuildMarkdownFile(allTasks);
+      console.log('✅ Moat: Markdown file regenerated from TaskStore');
+
+      // Step 5.5: Verify files were actually written
+      console.log('🔧 Moat: Verifying files were written to disk...');
+      const verification = await verifyFilesWritten();
+      if (verification.success) {
+        console.log('✅ Moat: File verification successful');
+      } else {
+        console.error('❌ Moat: File verification failed:', verification.error);
+      }
+
+      // Step 6: Performance check
+      const duration = performance.now() - startTime;
+      console.log(`⏱️ Moat: Save operation completed in ${duration.toFixed(1)}ms`);
+      if (duration > 500) {
+        console.warn(`⚠️ Moat: Save operation took ${duration.toFixed(1)}ms (exceeds 500ms requirement)`);
+      }
+
+      // Step 7: Dispatch event
+      console.log('🔧 Moat: Dispatching moat:tasks-updated event...');
+      window.dispatchEvent(new CustomEvent('moat:tasks-updated', { 
+        detail: { task, allTasks, duration } 
+      }));
+
+      // Step 8: Update status and notify
+      updateAnnotationStatus(annotation.id, 'saved');
+      
+      showNotification(`✅ Task saved: "${task.comment.substring(0, 30)}${task.comment.length > 30 ? '...' : ''}"`);
+      console.log('🎉 Moat: New system save pipeline completed successfully');
+      return true;
+
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      console.error('❌ Moat: New task system save failed at step:', error.message);
+      console.error('❌ Moat: Full error:', error);
+      console.error('❌ Moat: Error stack:', error.stack);
+      console.log(`⏱️ Moat: Failed save operation took ${duration.toFixed(1)}ms`);
+      
+      // Additional debugging info
+      console.log('🔧 Moat: Debug info at failure:');
+      console.log('  - taskStore:', !!taskStore, taskStore);
+      console.log('  - markdownGenerator:', !!markdownGenerator, markdownGenerator);
+      console.log('  - directoryHandle:', !!window.directoryHandle, window.directoryHandle);
+      
+      showNotification(`❌ Failed to save task: ${error.message}`, 'error');
+      updateAnnotationStatus(annotation.id, 'failed');
+      return false;
+    }
+  }
+
+  // Legacy annotation save pipeline (fallback)
+  async function saveAnnotationWithLegacySystem(annotation) {
+    console.log('Moat: Using legacy file system for annotation:', annotation.elementLabel);
+
+    // Dispatch legacy event
+    window.dispatchEvent(new CustomEvent('moat:annotation-added', { detail: annotation }));
+
+    // Try legacy markdown logging
+    let markdownSuccess = false;
+    if (markdownFileHandle) {
+      try {
+        markdownSuccess = await logToMarkdown(annotation);
+        if (markdownSuccess) {
+          updateAnnotationStatus(annotation.id, 'logged');
+        }
+      } catch (error) {
+        console.error('Moat: Legacy markdown logging failed:', error);
+      }
+    }
+
+    if (!markdownSuccess) {
+      updateAnnotationStatus(annotation.id, 'queued');
+      showNotification('📝 Annotation saved locally. Connect to project to enable file logging.', 'warning');
+    } else {
+      showNotification(`📝 Annotation saved: "${annotation.content.substring(0, 30)}${annotation.content.length > 30 ? '...' : ''}"`);
+    }
+
+    return markdownSuccess;
+  }
 
   // Initialize when page loads
   function initializeQueue() {
@@ -17,6 +424,9 @@
       document.addEventListener('DOMContentLoaded', initializeQueue);
       return;
     }
+    
+    // Initialize utility modules (Task 2.1)
+    initializeUtilitiesWithRetry();
     
     // Initialize queue if not exists
     if (!localStorage.getItem('moat.queue')) {
@@ -32,37 +442,29 @@
 
   // Initialize project connection
   async function initializeProject() {
-    // Check if we have a saved project for this origin
-    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-    if (savedProject) {
-      const projectData = JSON.parse(savedProject);
-      projectRoot = projectData.path;
-      
-      // Notify Moat of connection status
-      window.dispatchEvent(new CustomEvent('moat:project-connected', { 
-        detail: { path: projectRoot, status: 'connected' } 
-      }));
-    } else {
-      // Notify Moat that no project is connected
-      window.dispatchEvent(new CustomEvent('moat:project-connected', { 
-        detail: { status: 'not-connected' } 
-      }));
-    }
+    // Since we clear connections on reload, always start as not-connected
+    console.log('🔧 Moat: Project connection cleared - user must reconnect');
+    
+    // Notify Moat that no project is connected
+    window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+      detail: { status: 'not-connected' } 
+    }));
   }
 
   // Set up project connection
   async function setupProject() {
-    console.log('Moat: Starting project setup...');
+    console.log('🔧 Moat: Starting project setup...');
+    console.log('🔧 Moat: File System Access API available:', !!window.showDirectoryPicker);
     
     try {
       // Check if File System Access API is available
       if (!('showDirectoryPicker' in window)) {
-        console.error('Moat: File System Access API not supported');
+        console.error('❌ Moat: File System Access API not supported');
         showNotification('Your browser doesn\'t support file system access. Use Chrome 86+ or Edge 86+', 'error');
         return false;
       }
       
-      console.log('Moat: File System Access API available, showing directory picker...');
+      console.log('🔧 Moat: File System Access API available, showing directory picker...');
       
       // Use File System Access API to let user choose project directory
       const dirHandle = await window.showDirectoryPicker({
@@ -78,7 +480,38 @@
       
       // Store .moat directory handle for moat.js to access
       window.directoryHandle = moatDir;
-      console.log('Moat: Stored directory handle for moat.js:', moatDir);
+      console.log('🔧 Moat: Stored directory handle for moat.js:', moatDir);
+      console.log('🔧 Moat: Directory handle type:', typeof window.directoryHandle);
+      console.log('🔧 Moat: Directory handle name:', window.directoryHandle?.name);
+      
+      // Re-initialize utilities now that we have the directory handle
+      console.log('🔧 Moat: Re-initializing utilities with directory handle...');
+      await initializeUtilitiesWithRetry();
+      
+      // Verify new task system is now available
+      const canUseNew = canUseNewTaskSystem();
+      console.log('🔧 Moat: Can use new task system after setup:', canUseNew);
+      
+      // Load existing tasks from file if available
+      if (taskStore) {
+        try {
+          console.log('🔧 Moat: Attempting to load existing tasks from file...');
+          await taskStore.loadTasksFromFile();
+          const loadedTasks = taskStore.getAllTasks();
+          console.log('✅ Moat: Loaded', loadedTasks.length, 'existing tasks from file');
+          
+          // Clear localStorage queue since we're using the new system now
+          const existingQueue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+          if (existingQueue.length > 0) {
+            console.log('🔧 Moat: Clearing', existingQueue.length, 'localStorage queue items (switching to new system)');
+            localStorage.removeItem('moat.queue');
+          }
+        } catch (error) {
+          console.log('🔧 Moat: No existing tasks file, starting fresh:', error.message);
+        }
+      } else {
+        console.error('❌ Moat: TaskStore not available after re-initialization');
+      }
       
       // Create config file
       const configFile = await moatDir.getFileHandle('config.json', { create: true });
@@ -99,8 +532,7 @@
       }, null, 2));
       await configWritable.close();
       
-      // Store file handle for stream file
-      fileHandle = await moatDir.getFileHandle('.moat-stream.jsonl', { create: true });
+
       
               // Store file handle for markdown tasks file
         console.log('Moat: Creating markdown file handle...');
@@ -131,39 +563,7 @@ Generated by Moat Chrome Extension
           console.warn('Moat: Could not initialize markdown file', e);
         }
         
-        // Also create/initialize summary file
-        try {
-          console.log('Moat: Creating summary file...');
-          const summaryFileHandle = await moatDir.getFileHandle('moat-tasks-summary.md', { create: true });
-          const summaryFile = await summaryFileHandle.getFile();
-          const summaryContent = await summaryFile.text();
-          
-          if (!summaryContent.trim()) {
-            console.log('Moat: Initializing summary file...');
-            const summaryWritable = await summaryFileHandle.createWritable();
-            await summaryWritable.write(`# Moat Tasks - Local Development
 
-**Total**: 0 | **Pending**: 0 | **Completed**: 0
-
-## Tasks
-
-*No tasks yet - create annotations to populate this list*
-
-## Quick Stats
-- 🔥 **High Priority**: 0 tasks
-- ⚡ **Medium Priority**: 0 tasks  
-- 💡 **Low Priority**: 0 tasks
-
----
-*Last updated: ${new Date().toLocaleString()}*
-*Use @process-moat-tasks.mdc for implementation*
-`);
-            await summaryWritable.close();
-            console.log('Moat: Summary file initialized');
-          }
-        } catch (e) {
-          console.warn('Moat: Could not initialize summary file', e);
-        }
       
       // Save project connection
       localStorage.setItem(`moat.project.${window.location.origin}`, JSON.stringify({
@@ -177,8 +577,8 @@ Generated by Moat Chrome Extension
         const gitignoreFile = await gitignoreHandle.getFile();
         let gitignoreContent = await gitignoreFile.text();
         
-        if (!gitignoreContent.includes('.moat-stream.jsonl')) {
-          gitignoreContent += '\n# Moat annotations stream\n.moat-stream.jsonl\nmoat-tasks.md\n';
+        if (!gitignoreContent.includes('.moat/')) {
+          gitignoreContent += '\n# Moat task system\n.moat/\n';
           const gitignoreWritable = await gitignoreHandle.createWritable();
           await gitignoreWritable.write(gitignoreContent);
           await gitignoreWritable.close();
@@ -193,9 +593,6 @@ Generated by Moat Chrome Extension
       }));
       
       showNotification('✅ Moat connected to project!');
-      
-      // Re-save fileHandle reference for streaming
-      await getStreamFileHandle(dirHandle);
       
       return true;
     } catch (error) {
@@ -218,75 +615,9 @@ Generated by Moat Chrome Extension
     }
   }
 
-  // Get file handle for streaming
-  async function getStreamFileHandle(dirHandle) {
-    try {
-      if (!dirHandle && localStorage.getItem(`moat.project.${window.location.origin}`)) {
-        // Try to reconnect to saved project
-        const projectData = JSON.parse(localStorage.getItem(`moat.project.${window.location.origin}`));
-        // Note: We can't persist directory handles across sessions due to security
-        // User will need to re-grant access
-        return null;
-      }
-      
-      const moatDir = await dirHandle.getDirectoryHandle('.moat', { create: true });
-      fileHandle = await moatDir.getFileHandle('.moat-stream.jsonl', { create: true });
-      
-      // Also get markdown file handle
-      markdownFileHandle = await moatDir.getFileHandle('moat-tasks.md', { create: true });
-      
-      return fileHandle;
-    } catch (error) {
-      console.error('Moat: Could not get file handles', error);
-      return null;
-    }
-  }
 
-  // Stream annotation to file
-  async function streamAnnotation(annotation) {
-    if (!fileHandle) {
-      console.warn('Moat: No file handle available for streaming');
-      return false;
-    }
-    
-    try {
-      // Read existing content
-      const file = await fileHandle.getFile();
-      const existingContent = await file.text();
-      
-      // Append new annotation as JSONL
-      const annotationLine = JSON.stringify({
-        timestamp: Date.now(),
-        annotation: annotation,
-        formatting: {
-          cursorPrompt: `Fix this UI issue:\nElement: ${annotation.elementLabel}\nIssue: ${annotation.content}\nSelector: ${annotation.target}\nURL: ${annotation.pageUrl}`,
-          targetFile: suggestTargetFile(annotation)
-        }
-      }) + '\n';
-      
-      // Write back with new line
-      const writable = await fileHandle.createWritable();
-      await writable.write(existingContent + annotationLine);
-      await writable.close();
-      
-      // Update annotation status
-      updateAnnotationStatus(annotation.id, 'sent');
-      
-      return true;
-    } catch (error) {
-      console.error('Moat: Failed to stream annotation', error);
-      
-      // If we lost permission, notify user
-      if (error.name === 'NotAllowedError' || error.name === 'SecurityError') {
-        fileHandle = null;
-        localStorage.removeItem(`moat.project.${window.location.origin}`);
-        window.dispatchEvent(new CustomEvent('moat:project-disconnected'));
-        showNotification('Lost connection to project. Please reconnect.', 'error');
-      }
-      
-      return false;
-    }
-  }
+
+
 
   // Suggest target file based on annotation
   function suggestTargetFile(annotation) {
@@ -364,6 +695,176 @@ Generated by Moat Chrome Extension
       }
     } catch (error) {
       console.error('Moat: Failed to update markdown task status', error);
+    }
+  }
+
+  // Direct file writing fallback (when utilities aren't available)
+  async function saveAnnotationWithDirectFileWriting(annotation) {
+    const startTime = performance.now();
+    
+    console.log('🚀 Moat: Using direct file writing fallback');
+    console.log('🚀 Moat: Annotation data:', {
+      id: annotation.id,
+      elementLabel: annotation.elementLabel,
+      content: annotation.content,
+      target: annotation.target
+    });
+    
+    try {
+      // Step 1: Read existing tasks from JSON file
+      console.log('🔧 Moat: Reading existing tasks from JSON file...');
+      let existingTasks = [];
+      
+      try {
+        const jsonHandle = await window.directoryHandle.getFileHandle('moat-tasks-detail.json');
+        const jsonFile = await jsonHandle.getFile();
+        const jsonContent = await jsonFile.text();
+        if (jsonContent.trim()) {
+          existingTasks = JSON.parse(jsonContent);
+        }
+        console.log('🔧 Moat: Found', existingTasks.length, 'existing tasks');
+      } catch (error) {
+        console.log('🔧 Moat: No existing JSON file, starting with empty array');
+      }
+      
+      // Step 2: Create new task object
+      console.log('🔧 Moat: Creating new task object...');
+      const newTask = {
+        id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: annotation.elementLabel || 'UI Element Task',
+        comment: annotation.content,
+        selector: annotation.target,
+        boundingRect: {
+          x: annotation.boundingRect?.x || 0,
+          y: annotation.boundingRect?.y || 0,
+          w: annotation.boundingRect?.width || 0,
+          h: annotation.boundingRect?.height || 0
+        },
+        screenshotPath: annotation.screenshot ? `./screenshots/${annotation.id}.png` : '',
+        status: 'pending',
+        timestamp: Date.now()
+      };
+      console.log('🔧 Moat: New task created:', newTask);
+      
+      // Step 3: Add to tasks array
+      existingTasks.push(newTask);
+      console.log('🔧 Moat: Total tasks now:', existingTasks.length);
+      
+      // Step 4: Write JSON file
+      console.log('🔧 Moat: Writing JSON file...');
+      const jsonHandle = await window.directoryHandle.getFileHandle('moat-tasks-detail.json', { create: true });
+      const jsonWritable = await jsonHandle.createWritable();
+      await jsonWritable.write(JSON.stringify(existingTasks, null, 2));
+      await jsonWritable.close();
+      console.log('✅ Moat: JSON file written successfully');
+      
+      // Step 5: Generate and write markdown
+      console.log('🔧 Moat: Generating markdown...');
+      const sortedTasks = existingTasks.sort((a, b) => a.timestamp - b.timestamp);
+      
+      let markdown = '# Moat Tasks\n\n';
+      
+      // Add summary
+      const pending = sortedTasks.filter(t => t.status === 'pending').length;
+      const inProgress = sortedTasks.filter(t => t.status === 'in-progress').length;
+      const completed = sortedTasks.filter(t => t.status === 'completed').length;
+      
+      markdown += `**Total**: ${sortedTasks.length} | `;
+      markdown += `**Pending**: ${pending} | `;
+      markdown += `**In Progress**: ${inProgress} | `;
+      markdown += `**Completed**: ${completed}\n\n`;
+      
+      // Add tasks
+      if (sortedTasks.length === 0) {
+        markdown += '## Tasks\n\n_No tasks yet. Create an annotation to get started._\n';
+      } else {
+        markdown += '## Tasks\n\n';
+        sortedTasks.forEach((task, index) => {
+          const checkbox = task.status === 'completed' ? '[x]' : '[ ]';
+          const taskNumber = index + 1;
+          const title = task.title || 'Untitled Task';
+          const comment = task.comment.length > 60 ? task.comment.substring(0, 57) + '...' : task.comment;
+          
+          markdown += `${taskNumber}. ${checkbox} ${title}`;
+          if (comment) {
+            markdown += ` – "${comment}"`;
+          }
+          markdown += '\n';
+        });
+      }
+      
+      markdown += '\n---\n\n';
+      markdown += `_Generated: ${new Date().toLocaleString()}_\n`;
+      markdown += `_Source: moat-tasks-detail.json_\n`;
+      
+      // Step 6: Write markdown file
+      console.log('🔧 Moat: Writing markdown file...');
+      const mdHandle = await window.directoryHandle.getFileHandle('moat-tasks.md', { create: true });
+      const mdWritable = await mdHandle.createWritable();
+      await mdWritable.write(markdown);
+      await mdWritable.close();
+      console.log('✅ Moat: Markdown file written successfully');
+      
+      // Step 7: Performance check
+      const duration = performance.now() - startTime;
+      console.log(`⏱️ Moat: Direct file writing completed in ${duration.toFixed(1)}ms`);
+      
+      // Step 8: Dispatch event and notify
+      window.dispatchEvent(new CustomEvent('moat:tasks-updated', { 
+        detail: { task: newTask, allTasks: existingTasks, duration } 
+      }));
+      
+      updateAnnotationStatus(annotation.id, 'saved');
+      showNotification(`✅ Task saved: "${newTask.comment.substring(0, 30)}${newTask.comment.length > 30 ? '...' : ''}"`);
+      console.log('🎉 Moat: Direct file writing completed successfully');
+      
+      return true;
+      
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      console.error('❌ Moat: Direct file writing failed:', error);
+      console.log(`⏱️ Moat: Failed operation took ${duration.toFixed(1)}ms`);
+      
+      showNotification(`❌ Failed to save task: ${error.message}`, 'error');
+      updateAnnotationStatus(annotation.id, 'failed');
+      return false;
+    }
+  }
+
+  // Verify files are actually written (debugging function)
+  async function verifyFilesWritten() {
+    if (!window.directoryHandle) {
+      console.log('🔧 Moat: Cannot verify files - no directory handle');
+      return { success: false, error: 'No directory handle' };
+    }
+
+    try {
+      // Check moat-tasks-detail.json
+      const jsonHandle = await window.directoryHandle.getFileHandle('moat-tasks-detail.json');
+      const jsonFile = await jsonHandle.getFile();
+      const jsonContent = await jsonFile.text();
+      const jsonSize = jsonFile.size;
+      
+      // Check moat-tasks.md
+      const mdHandle = await window.directoryHandle.getFileHandle('moat-tasks.md');
+      const mdFile = await mdHandle.getFile();
+      const mdContent = await mdFile.text();
+      const mdSize = mdFile.size;
+      
+      console.log('🔧 Moat: File verification results:');
+      console.log('  - moat-tasks-detail.json:', jsonSize, 'bytes');
+      console.log('  - moat-tasks-detail.json content preview:', jsonContent.substring(0, 200));
+      console.log('  - moat-tasks.md:', mdSize, 'bytes');
+      console.log('  - moat-tasks.md content preview:', mdContent.substring(0, 200));
+      
+      return {
+        success: true,
+        json: { size: jsonSize, content: jsonContent },
+        markdown: { size: mdSize, content: mdContent }
+      };
+    } catch (error) {
+      console.error('🔧 Moat: File verification failed:', error);
+      return { success: false, error: error.message };
     }
   }
 
@@ -523,20 +1024,62 @@ Generated by Moat Chrome Extension
   }
   
   function parseExistingTasks(markdownContent) {
-    // Simple parser to extract existing task information
-    const taskPattern = /## [🔥⚡💡]?\s*[📋🔄✅❌]?\s*Task\s+(\d+):\s*(.+)/g;
     const tasks = [];
+    
+    if (!markdownContent || !markdownContent.trim()) {
+      return tasks;
+    }
+    
+    // Try to parse checkbox summary format first (e.g., "1. [ ] Title - "description"")
+    const summaryPattern = /^(\d+)\.\s*\[([x ])\]\s*(.+?)\s*-\s*"(.+?)"$/gm;
     let match;
     
-    while ((match = taskPattern.exec(markdownContent)) !== null) {
+    while ((match = summaryPattern.exec(markdownContent)) !== null) {
+      const [, number, checkbox, title, description] = match;
+      const status = checkbox === 'x' ? 'completed' : 'pending';
       tasks.push({
-        id: `task-${match[1]}`,
-        number: parseInt(match[1]),
-        title: match[2].trim(),
-        status: 'pending' // Simplified status detection
+        id: `summary-task-${number}`,
+        number: parseInt(number),
+        title: title.trim(),
+        description: description.trim(),
+        status: status,
+        format: 'summary'
       });
     }
     
+    // If no checkbox format found, try legacy format (backward compatibility)
+    if (tasks.length === 0) {
+      const legacyPattern = /^(\d+)\.\s*(.+?)\s*-\s*"(.+?)"\s*-\s*(\w+)$/gm;
+      
+      while ((match = legacyPattern.exec(markdownContent)) !== null) {
+        const [, number, title, description, status] = match;
+        tasks.push({
+          id: `legacy-task-${number}`,
+          number: parseInt(number),
+          title: title.trim(),
+          description: description.trim(),
+          status: status.trim() === 'completed' || status.trim() === 'done' ? 'completed' : 'pending',
+          format: 'legacy'
+        });
+      }
+    }
+
+    // If still no format found, try detailed format
+    if (tasks.length === 0) {
+      const detailedPattern = /## [🔥⚡💡]?\s*[📋🔄✅❌]?\s*Task\s+(\d+):\s*(.+)/g;
+      
+      while ((match = detailedPattern.exec(markdownContent)) !== null) {
+        tasks.push({
+          id: `task-${match[1]}`,
+          number: parseInt(match[1]),
+          title: match[2].trim(),
+          status: 'pending', // Simplified status detection
+          format: 'detailed'
+        });
+      }
+    }
+    
+    console.log('Moat: Parsed', tasks.length, 'existing tasks from markdown');
     return tasks;
   }
   
@@ -562,166 +1105,102 @@ Generated by Moat Chrome Extension
     return 'Apply visual/functional change as requested';
   }
 
-  // Log annotation to both summary and detailed markdown files
-  async function logToMarkdown(annotation) {
-    console.log('Moat: logToMarkdown called for:', annotation.elementLabel);
+  // REMOVED: logToMarkdown - replaced by TaskStore + MarkdownGenerator (Task 2.5)
+  
+  // REMOVED: Format conversion functions - replaced by TaskStore + MarkdownGenerator (Task 2.5)
+  // REMOVED: logToSummaryMarkdown - replaced by TaskStore + MarkdownGenerator (Task 2.5)
+  
+  // REMOVED: logToDetailedMarkdown - replaced by TaskStore + MarkdownGenerator (Task 2.5)
+
+  // Test annotation capture flow end-to-end with new system (Task 2.8)
+  async function testAnnotationCaptureFlow() {
+    console.log('🧪 Moat: Starting end-to-end annotation flow test...');
     
-    if (!markdownFileHandle) {
-      console.warn('Moat: No markdown file handle available');
+    if (!canUseNewTaskSystem()) {
+      console.warn('🧪 Moat: Cannot test new system - utilities not available');
       return false;
     }
     
-    // Log to both files
-    const summarySuccess = await logToSummaryMarkdown(annotation);
-    const detailSuccess = await logToDetailedMarkdown(annotation);
-    
-    return summarySuccess && detailSuccess;
-  }
-  
-  // Log to human-readable summary file (moat-tasks.md)
-  async function logToSummaryMarkdown(annotation) {
-    console.log('Moat: Creating summary markdown entry...');
+    const testStartTime = performance.now();
     
     try {
-      // Read existing summary content
-      const file = await markdownFileHandle.getFile();
-      const existingContent = await file.text();
+      // Create a test annotation
+      const testAnnotation = {
+        id: generateTaskId(),
+        content: "Test annotation for end-to-end flow validation",
+        target: "body",
+        elementLabel: "Test Element",
+        elementContext: { tagName: "BODY", textContent: "Test" },
+        boundingRect: { top: 0, left: 0, width: 100, height: 100 },
+        pageUrl: window.location.href,
+        timestamp: Date.now(),
+        sessionId: Date.now().toString(),
+        screenshot: null // Skip screenshot for test
+      };
       
-      // Parse existing tasks
-      const existingTasks = parseExistingTasks(existingContent);
-      const taskNumber = existingTasks.length + 1;
-      const priority = classifyPriority(annotation);
-      const estimatedTime = estimateImplementationTime(annotation);
+      console.log('🧪 Moat: Created test annotation:', testAnnotation.id);
       
-      // Create simple summary entry
-      const summaryEntry = `${taskNumber}. ${priority.emoji} **${annotation.elementLabel}** - "${annotation.content}" *(${estimatedTime})* - 📋 pending\n`;
+      // Test the complete save pipeline
+      const saveSuccess = await saveAnnotationWithNewSystem(testAnnotation);
       
-      // Update file
-      if (!existingContent.trim()) {
-        // Create new summary file
-        const newContent = `# Moat Tasks - Local Development
-
-**Total**: 1 | **Pending**: 1 | **Completed**: 0
-
-## Tasks
-
-${summaryEntry}
----
-*Last updated: ${new Date().toLocaleString()}*
-`;
-        const writable = await markdownFileHandle.createWritable();
-        await writable.write(newContent);
-        await writable.close();
-      } else {
-        // Update existing summary
-        let updatedContent = existingContent;
-        
-        // Update counters
-        const totalMatch = updatedContent.match(/\*\*Total\*\*: (\d+)/);
-        const pendingMatch = updatedContent.match(/\*\*Pending\*\*: (\d+)/);
-        
-        if (totalMatch) {
-          const newTotal = parseInt(totalMatch[1]) + 1;
-          const newPending = parseInt(pendingMatch[1]) + 1;
-          updatedContent = updatedContent.replace(/\*\*Total\*\*: \d+/, `**Total**: ${newTotal}`);
-          updatedContent = updatedContent.replace(/\*\*Pending\*\*: \d+/, `**Pending**: ${newPending}`);
-        }
-        
-        // Add new task entry
-        const tasksEnd = updatedContent.indexOf('\n---');
-        updatedContent = updatedContent.slice(0, tasksEnd) + '\n' + summaryEntry + updatedContent.slice(tasksEnd);
-        
-        // Update timestamp
-        updatedContent = updatedContent.replace(/\*Last updated:.*\*/, `*Last updated: ${new Date().toLocaleString()}*`);
-        
-        const writable = await markdownFileHandle.createWritable();
-        await writable.write(updatedContent);
-        await writable.close();
+      if (!saveSuccess) {
+        console.error('🧪 Moat: Test failed - save pipeline returned false');
+        return false;
       }
       
-      console.log('Moat: Summary markdown updated successfully');
+      // Verify task was added to TaskStore
+      const allTasks = taskStore.getAllTasks();
+      const testTask = allTasks.find(task => task.id === testAnnotation.id);
+      
+      if (!testTask) {
+        console.error('🧪 Moat: Test failed - task not found in TaskStore');
+        return false;
+      }
+      
+      // Verify task format
+      const requiredFields = ['id', 'comment', 'elementLabel', 'target', 'createdAt', 'status'];
+      const missingFields = requiredFields.filter(field => !testTask[field]);
+      
+      if (missingFields.length > 0) {
+        console.error('🧪 Moat: Test failed - missing required fields:', missingFields);
+        return false;
+      }
+      
+      // Test performance requirement (< 500ms)
+      const testDuration = performance.now() - testStartTime;
+      if (testDuration > 500) {
+        console.warn(`🧪 Moat: Performance test warning - operation took ${testDuration.toFixed(1)}ms (> 500ms)`);
+      } else {
+        console.log(`🧪 Moat: Performance test passed - operation took ${testDuration.toFixed(1)}ms`);
+      }
+      
+      // Clean up test task
+      await taskStore.removeTask(testTask.id);
+      await markdownGenerator.rebuildMarkdownFile(taskStore.getAllTasksChronological());
+      
+      console.log('🧪 Moat: End-to-end test completed successfully');
       return true;
+      
     } catch (error) {
-      console.error('Moat: Failed to update summary markdown', error);
+      console.error('🧪 Moat: End-to-end test failed with error:', error);
       return false;
     }
   }
-  
-  // Log to detailed AI-processable file (moat-tasks-detail.md) 
-  async function logToDetailedMarkdown(annotation) {
-    console.log('Moat: Creating detailed markdown entry...');
-    
-    try {
-      // For detailed file, we'll need a separate handle - for now use the same one
-      // TODO: Create separate file handle for moat-tasks-detail.md
-      console.log('Moat: Reading existing detailed content...');
-      
-      // Enhanced task analysis
-      const priority = classifyPriority(annotation);
-      const taskType = determineTaskType(annotation);
-      const estimatedTime = estimateImplementationTime(annotation);
-      const approach = generateApproach(annotation);
-      const filesToModify = identifyFilesToModify(annotation);
-      const taskId = generateTaskId();
-      
-      // Parse existing tasks for dependency detection
-      const existingTasks = parseExistingTasks(''); // Empty for now since we don't have detailed content
-      const dependencies = detectDependencies(annotation, existingTasks);
-      
-      // Format annotation as enhanced markdown entry  
-      const date = new Date(annotation.timestamp).toLocaleString();
-      const isoDate = new Date(annotation.timestamp).toISOString();
-      
-      const detailedEntry = `
-## ${priority.emoji} 📋 Task ${String(existingTasks.length + 1).padStart(3, '0')}: ${annotation.elementLabel}
 
-**Priority**: ${priority.level}
-**Type**: ${taskType}
-**Estimated Time**: ${estimatedTime}
-**Assigned**: Auto
-
-### Request
-"${annotation.content}"
-
-### Technical Details
-- **Element**: \`${annotation.target}\`
-- **Location**: ${filesToModify[0]} ${filesToModify.length > 1 ? `(+${filesToModify.length - 1} more)` : ''}
-- **Component**: ${annotation.elementLabel.split(':')[0]}
-- **Page**: ${annotation.pageUrl}
-
-### Implementation Plan
-- **Approach**: ${approach}
-- **Files to Modify**: ${filesToModify.join(', ')}
-- **Dependencies**: ${dependencies.length > 0 ? dependencies.join(', ') : 'None'}
-- **Testing Notes**: Verify change works across different screen sizes
-
-### Context
-- **Screenshot**: ${annotation.screenshot ? '![Element Screenshot](data:image/png;base64,...)' : 'Not captured'}
-- **Element Info**: ${JSON.stringify(annotation.elementContext, null, 2)}
-- **User Intent**: ${interpretUserIntent(annotation)}
-
-### Status Tracking
-- **Created**: ${isoDate}
-- **Status**: 📋 pending
-- **Completed**: Not yet
-- **Applied Changes**: Pending implementation
-- **Verification**: Awaiting processing
-
-### Metadata
-- **ID**: \`${taskId}\`
-- **Session**: ${annotation.sessionId}
-- **Browser**: Chrome Extension
-- **Viewport**: ${window.innerWidth}x${window.innerHeight}
-
----
-
-`;
-      
-      console.log('Moat: Detailed entry created successfully');
-      return true;
-    } catch (error) {
-      console.error('Moat: Failed to create detailed markdown', error);
-      return false;
+  // Run end-to-end test when system is ready (Task 2.8)
+  function runEndToEndTestWhenReady() {
+    if (canUseNewTaskSystem()) {
+      console.log('🧪 Moat: New task system ready, running end-to-end test...');
+      testAnnotationCaptureFlow().then(success => {
+        if (success) {
+          console.log('✅ Moat: End-to-end test passed - new system is working correctly');
+        } else {
+          console.error('❌ Moat: End-to-end test failed - check system configuration');
+        }
+      });
+    } else {
+      console.log('🧪 Moat: New task system not ready, will retry in 1 second...');
+      setTimeout(runEndToEndTestWhenReady, 1000);
     }
   }
 
@@ -736,43 +1215,40 @@ ${summaryEntry}
     }
   }
 
-  // Add annotation to queue
-  function addToQueue(annotation) {
-    const queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
-    queue.push(annotation);
-    localStorage.setItem('moat.queue', JSON.stringify(queue));
+  // Add annotation to queue (refactored for Tasks 2.2-2.8)
+  async function addToQueue(annotation) {
+    console.log('📝 Moat: ===== STARTING ANNOTATION PROCESSING =====');
+    console.log('📝 Moat: Processing annotation:', annotation.elementLabel);
+    console.log('📝 Moat: Annotation ID:', annotation.id);
     
-    // Dispatch event for Moat to update
-    window.dispatchEvent(new CustomEvent('moat:annotation-added', { detail: annotation }));
+    // Choose save system based on availability (Task 2.8: End-to-end flow)
+    const canUseNew = canUseNewTaskSystem();
+    console.log('📝 Moat: System selection result:', canUseNew ? 'NEW SYSTEM' : 'LEGACY SYSTEM');
     
-    // Log to markdown file
-    console.log('Moat: Checking markdown logging...', { 
-      hasMarkdownHandle: !!markdownFileHandle,
-      hasFileHandle: !!fileHandle,
-      annotationId: annotation.id 
-    });
-    
-    if (markdownFileHandle) {
-      console.log('Moat: Logging to markdown...', annotation.elementLabel);
-      logToMarkdown(annotation).then(success => {
-        console.log('Moat: Markdown logging result:', success);
-      }).catch(error => {
-        console.error('Moat: Markdown logging failed:', error);
-      });
+    if (canUseNew) {
+      console.log('📝 Moat: ✅ New task system available, using TaskStore + MarkdownGenerator');
+      const success = await saveAnnotationWithNewSystem(annotation);
+      console.log('📝 Moat: New system save result:', success ? 'SUCCESS' : 'FAILED');
+      
+      if (!success) {
+        console.log('📝 Moat: ⚠️ New system failed, falling back to legacy');
+        // Fallback to legacy system
+        const queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+        queue.push(annotation);
+        localStorage.setItem('moat.queue', JSON.stringify(queue));
+        await saveAnnotationWithLegacySystem(annotation);
+      }
     } else {
-      console.warn('Moat: No markdown file handle - connect to project first with Cmd+Shift+P');
-      showNotification('📝 Connect to project (Cmd+Shift+P) to enable markdown task logging', 'warning');
+      console.log('📝 Moat: ❌ New task system not available, falling back to legacy system');
+      // Add to localStorage for backward compatibility when using legacy system
+      const queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+      queue.push(annotation);
+      localStorage.setItem('moat.queue', JSON.stringify(queue));
+      
+      await saveAnnotationWithLegacySystem(annotation);
     }
     
-    // Try file streaming
-    if (fileHandle) {
-      // Use file streaming if AG-UI not available
-      streamAnnotation(annotation);
-    } else {
-      // Neither AG-UI nor file streaming available
-      updateAnnotationStatus(annotation.id, 'queued');
-      showNotification('Annotation saved to queue. Connect to a project to process.', 'warning');
-    }
+    console.log('📝 Moat: ===== ANNOTATION PROCESSING COMPLETE =====');
   }
 
   // Get user-friendly element label
@@ -1255,8 +1731,8 @@ ${summaryEntry}
     }
   });
 
-  // Initialize Moat on page load
-  initializeQueue();
+  // Initialize Moat extension on page load
+  initializeExtension();
   
   // Add Moat badge to indicate active status
   const badge = document.createElement('div');
@@ -1271,6 +1747,95 @@ ${summaryEntry}
 
   console.log('Moat Chrome Extension loaded (AG-UI disabled)');
 
+  // Task 4.10: Export debugging functions for manual testing
+  window.moatDebug = {
+    exportAnnotations,
+    getQueue: () => JSON.parse(localStorage.getItem('moat.queue') || '[]'),
+    clearQueue: () => localStorage.removeItem('moat.queue'),
+    testAnnotationCaptureFlow,
+    runEndToEndTest: runEndToEndTestWhenReady,
+    // Migration debugging functions
+    triggerMigration: triggerManualMigration,
+    rollbackMigration: triggerMigrationRollback,
+    checkLegacyFiles: async () => {
+      if (migrator) {
+        return await migrator.detectLegacyFiles();
+      }
+      return { error: 'Migration system not available' };
+    },
+    getMigrationReport: () => {
+      if (migrator) {
+        return migrator.getMigrationReport();
+      }
+      return window.moatMigrationReport || { error: 'No migration report available' };
+    },
+    // Task system debugging
+    getTaskStore: () => taskStore,
+    getMarkdownGenerator: () => markdownGenerator,
+    getMigrator: () => migrator,
+    testMigrationWithRealData: async () => {
+      console.log('🧪 Testing migration with demo-page data...');
+      if (!migrator) {
+        console.error('Migration system not available');
+        return { success: false, error: 'Migration system not available' };
+      }
+      
+      try {
+        const result = await migrator.performMigration();
+        console.log('🧪 Migration test result:', result);
+        return result;
+      } catch (error) {
+        console.error('🧪 Migration test failed:', error);
+        return { success: false, error: error.message };
+      }
+    },
+    // NEW: Debug functions for current issue
+    checkSystemStatus: () => {
+      console.log('🔧 === MOAT SYSTEM STATUS ===');
+      console.log('TaskStore available:', !!taskStore);
+      console.log('MarkdownGenerator available:', !!markdownGenerator);
+      console.log('DirectoryHandle available:', !!window.directoryHandle);
+      console.log('Can use new system:', canUseNewTaskSystem());
+      console.log('MoatTaskStore on window:', !!window.MoatTaskStore);
+      console.log('MoatMarkdownGenerator on window:', !!window.MoatMarkdownGenerator);
+      return {
+        taskStore: !!taskStore,
+        markdownGenerator: !!markdownGenerator,
+        directoryHandle: !!window.directoryHandle,
+        canUseNewSystem: canUseNewTaskSystem(),
+        windowTaskStore: !!window.MoatTaskStore,
+        windowMarkdownGenerator: !!window.MoatMarkdownGenerator
+      };
+    },
+    verifyFiles: verifyFilesWritten,
+    testTaskSave: async (testComment = 'Debug test task') => {
+      console.log('🧪 Testing task save with comment:', testComment);
+      const annotation = {
+        id: `debug-${Date.now()}`,
+        elementLabel: 'Debug Test Element',
+        content: testComment,
+        target: 'body',
+        boundingRect: { x: 0, y: 0, width: 100, height: 100 },
+        pageUrl: window.location.href,
+        timestamp: Date.now()
+      };
+      
+      try {
+        await addToQueue(annotation);
+        console.log('🧪 Test task save completed');
+        return { success: true, annotation };
+      } catch (error) {
+        console.error('🧪 Test task save failed:', error);
+        return { success: false, error: error.message };
+      }
+    },
+    reinitialize: () => {
+      console.log('🔧 Reinitializing utilities...');
+      initializeUtilities();
+      return window.moatDebug.checkSystemStatus();
+    }
+  };
+
   // Listen for messages from popup
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'toggleMoat') {
@@ -1281,7 +1846,7 @@ ${summaryEntry}
       sendResponse({ 
         count: queue.length,
         protocol: 'file',
-        projectConnected: !!fileHandle
+        projectConnected: !!markdownFileHandle
       });
     } else if (request.action === 'exportAnnotations') {
       exportAnnotations();
@@ -1297,10 +1862,54 @@ ${summaryEntry}
     setupProject();
   });
   
-  // Listen for stream requests from Moat
-  window.addEventListener('moat:stream-annotation', (e) => {
-    if (e.detail && e.detail.annotation) {
-      streamAnnotation(e.detail.annotation);
+
+
+
+
+  // Initialize extension
+  async function initializeExtension() {
+    try {
+      console.log('🚀 Initializing Moat Chrome Extension...');
+      
+      // Clear any existing directory handle on extension reload
+      console.log('🔧 Moat: Clearing existing connections on extension reload...');
+      window.directoryHandle = null;
+      
+      // Clear any stored project connections to force fresh connection
+      const projectKey = `moat.project.${window.location.origin}`;
+      if (localStorage.getItem(projectKey)) {
+        console.log('🔧 Moat: Clearing stored project connection');
+        localStorage.removeItem(projectKey);
+      }
+      
+      // Initialize utilities first
+      const utilitiesReady = await initializeUtilities();
+      if (utilitiesReady) {
+        console.log('✅ New task system ready');
+      } else {
+        console.log('⚠️ Falling back to legacy system');
+      }
+      
+      // Initialize UI
+      initializeUI();
+      
+      // Test annotation capture flow after 2 seconds
+      setTimeout(testAnnotationCaptureFlow, 2000);
+      
+      console.log('✅ Moat extension initialized');
+      console.log('🔧 Moat: To connect to project, press Cmd+Shift+P or run setupProject()');
+      
+    } catch (error) {
+      console.error('❌ Extension initialization failed:', error);
     }
-  });
+  }
+
+  // Initialize UI components
+  function initializeUI() {
+    // Initialize queue
+    initializeQueue();
+    
+    // Run end-to-end test to verify new system functionality (Task 2.8)
+    setTimeout(runEndToEndTestWhenReady, 2000); // Wait 2 seconds for full initialization
+  }
 })(); 

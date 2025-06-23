@@ -208,36 +208,69 @@ body.float-comment-mode * {
   background: #E5E7EB;
 }
 
-/* Moat Tabs */
-.float-moat-tabs {
+/* Header Actions */
+.float-moat-header-actions {
   display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.float-moat-tab {
-  flex: 1;
-  padding: 12px 16px;
+/* Task 3.2: Enhanced refresh button styling with rotate icon */
+.float-moat-refresh-btn {
+  background: #3b82f6;
+  color: white;
   border: none;
-  background: transparent;
-  color: #6b7280;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
   transition: all 0.2s;
-  border-bottom: 2px solid transparent;
   font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.float-moat-tab:hover {
-  color: #374151;
-  background: #f3f4f6;
+.float-moat-refresh-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
 }
 
-.float-moat-tab.active {
-  color: #3b82f6;
-  background: white;
-  border-bottom-color: #3b82f6;
+.float-moat-refresh-btn:active {
+  transform: translateY(0);
+}
+
+/* Task 3.6: Loading state styling */
+.float-moat-refresh-btn.float-refreshing {
+  background: #6366f1;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.float-moat-refresh-btn.float-refreshing .float-refresh-icon {
+  animation: float-refresh-spin 1s linear infinite;
+}
+
+.float-moat-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes float-refresh-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.float-refresh-icon {
+  font-size: 14px;
+  transition: transform 0.2s;
+}
+
+.float-refresh-text {
+  font-size: 13px;
 }
 
 .float-moat-queue {
@@ -246,21 +279,7 @@ body.float-comment-mode * {
   padding: 16px;
 }
 
-/* Task Sections */
-.float-moat-section {
-  margin-bottom: 20px;
-}
 
-.float-moat-section-title {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1f2937;
-  padding: 8px 12px;
-  background: #f9fafb;
-  border-radius: 6px;
-  border-left: 3px solid #3b82f6;
-}
 
 .float-moat-loading {
   text-align: center;
@@ -300,23 +319,30 @@ body.float-comment-mode * {
 .float-moat-item-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 8px;
-}
-
-.float-moat-status {
-  font-size: 12px;
 }
 
 .float-moat-target {
   flex: 1;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #1F2937;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  cursor: help;
+}
+
+.float-moat-status-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  text-transform: lowercase;
 }
 
 .float-moat-remove {
@@ -324,10 +350,11 @@ body.float-comment-mode * {
   border: none;
   color: #9CA3AF;
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 4px 6px;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.2s;
+  margin-left: 8px;
 }
 
 .float-moat-remove:hover {
@@ -342,21 +369,53 @@ body.float-comment-mode * {
   line-height: 1.4;
 }
 
-/* Enhanced Task Item Styles */
-.float-moat-priority {
-  font-size: 14px;
-  margin-right: 4px;
+/* Task 3.6: New task metadata styling */
+.float-moat-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #F3F4F6;
 }
 
-.float-moat-badge {
-  background: #3b82f6;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
+.float-moat-time {
   font-weight: 500;
+}
+
+.float-moat-selector {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background: #F3F4F6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Task 3.6: Enhanced status indicators */
+.float-moat-item.float-status-pending {
+  border-left: 4px solid #F59E0B;
+}
+
+.float-moat-item.float-status-in-progress {
+  border-left: 4px solid #3B82F6;
+}
+
+.float-moat-item.float-status-completed {
+  border-left: 4px solid #10B981;
+  opacity: 0.7;
+}
+
+.float-moat-item.float-status-failed {
+  border-left: 4px solid #EF4444;
+}
+
+
 
 .float-moat-completed {
   opacity: 0.7;
@@ -373,42 +432,7 @@ body.float-comment-mode * {
   color: #6b7280;
 }
 
-.float-moat-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #9CA3AF;
-}
 
-.float-moat-type {
-  background: #f3f4f6;
-  color: #6b7280;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.float-moat-source {
-  background: #dbeafe;
-  color: #3b82f6;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.float-moat-time {
-  color: #9ca3af;
-  font-size: 11px;
-}
-
-.float-moat-status-text {
-  text-transform: capitalize;
-  font-weight: 500;
-}
 
 /* Scrollbar styling for Moat */
 .float-moat-queue::-webkit-scrollbar {
@@ -779,3 +803,19 @@ body.float-comment-mode * {
   align-items: center;
   gap: 10px;
 } 
+
+/* Pulse animation for successful markdown updates */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

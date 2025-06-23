@@ -1,0 +1,76 @@
+[
+  {
+    "id": "e4bebac3-2984-4f6d-916a-4ea3b8193b69",
+    "title": "Test Element",
+    "comment": "Test annotation for end-to-end flow validation",
+    "selector": "body",
+    "boundingRect": {
+      "w": 100,
+      "h": 100
+    },
+    "screenshotPath": "",
+    "status": "pending",
+    "timestamp": 1750643681182,
+    "lastModified": 1750643681182
+  },
+  {
+    "id": "633ad0e0-f671-4523-90dc-dd88d7717f0f",
+    "title": "h1: Welcome to Float Demo",
+    "comment": "Make this red",
+    "selector": "div.container > div.hero-content:nth-child(1) > h1.hero-title.float-highlight",
+    "boundingRect": {
+      "x": 277,
+      "y": 162,
+      "w": 556,
+      "h": 192
+    },
+    "screenshotPath": "./screenshots/moat-1750642932069-zqfi7tqvd.png",
+    "status": "pending",
+    "timestamp": 1750642932163
+  },
+  {
+    "id": "c6f5a273-b6e5-4140-b87f-ed932c9162e7",
+    "title": "Colored Container",
+    "comment": "We need a real logo here.",
+    "selector": "div.container > div.nav-brand > div.logo.float-highlight",
+    "boundingRect": {
+      "x": 277,
+      "y": 16,
+      "w": 77,
+      "h": 40
+    },
+    "screenshotPath": "./screenshots/moat-1750643169541-moe2gi5eu.png",
+    "status": "pending",
+    "timestamp": 1750643169623
+  },
+  {
+    "id": "209b8e70-ee10-4796-baa8-72cf1f07d7ad",
+    "title": "Button: Get Started",
+    "comment": "Text should say let's get going partner!",
+    "selector": "div.container > div.hero-content:nth-child(1) > div.hero-buttons > button:nth-of-type(1)",
+    "boundingRect": {
+      "x": 277,
+      "y": 464,
+      "w": 152,
+      "h": 44
+    },
+    "screenshotPath": "./screenshots/moat-1750643182352-qpctgz2b7.png",
+    "status": "pending",
+    "timestamp": 1750643182441
+  },
+  {
+    "id": "51160ae2-355e-4d87-bada-ae2ef58137a1",
+    "title": "h1: Welcome to Float Demo",
+    "comment": "Make this green dog",
+    "selector": "div.container > div.hero-content:nth-child(1) > h1.hero-title.float-highlight",
+    "boundingRect": {
+      "x": 277,
+      "y": 162,
+      "w": 556,
+      "h": 192
+    },
+    "screenshotPath": "./screenshots/moat-1750643468688-secg5u4g8.png",
+    "status": "pending",
+    "timestamp": 1750643468781
+  }
+]

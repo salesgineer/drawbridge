@@ -237,3 +237,34 @@ Annotations are exported in MCP-compatible JSON:
 - **Comment box shaking?** Finish or cancel your current annotation before selecting another element
 - **Project not connecting?** Make sure to allow file system access when prompted
 - **Lost connection?** Click the settings icon (⚙️) and reconnect 
+
+## 📂 New Two-File Task Storage System (v0.2)
+
+Moat now stores all annotation tasks in **two files** inside your project's `.moat/` directory:
+
+| File | Purpose | Human Readable? |
+|------|---------|-----------------|
+| `moat-tasks.md` | Friendly markdown checklist for designers & devs. Toggle checkboxes to update status. | ✅ |
+| `moat-tasks-detail.json` | Machine-readable metadata for AI processing (UUID, bounding rect, screenshots, etc.). | 🚫 |
+
+### Why Two Files?
+1. **Single Source of Truth** – Eliminates the previous three-file drift problem.
+2. **Friction-Free Collaboration** – Designers can scan the markdown; AI & scripts use JSON.
+3. **Git-Friendly** – Markdown diff is clear; JSON diff is structured.
+
+### Automatic Migration
+Updating? Moat detects legacy files (`.moat-stream.jsonl`, `moat-tasks-summary.md`, legacy detailed markdown) and **automatically migrates** them on extension start:
+
+1. **Detect** old files
+2. **Convert** to new schema
+3. **Archive** originals with `.backup-YYYY-MM-DDTHH-MM-SS` suffix
+4. **Validate** data integrity
+
+No action required! Check the console for `✅ Migration completed successfully!`.
+
+### Working With the New Files
+- **Checkboxes** in `moat-tasks.md` update `status` in `moat-tasks-detail.json` on save.
+- **Refresh Button** (`🔄 Refresh`) in the sidebar regenerates markdown from JSON ensuring perfect sync.
+- **Large Projects** – Tested with **1 000+ tasks** in <250 ms markdown generation time.
+
+--- 
