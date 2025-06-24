@@ -43,5 +43,20 @@
     "screenshotPath": "./screenshots/moat-1750677677401-45oueo6y1.png",
     "status": "completed",
     "timestamp": 1750677677484
+  },
+  {
+    "id": "5b81564c-f897-488c-b8a7-f772015fb318",
+    "title": "Colored Container",
+    "comment": "I want to get rid of this element",
+    "selector": "div.float-badge.float-highlight:nth-child(7)",
+    "boundingRect": {
+      "x": 20,
+      "y": 705,
+      "w": 71,
+      "h": 38
+    },
+    "screenshotPath": "./screenshots/moat-1750766464027-9abxeibpo.png",
+    "status": "completed",
+    "timestamp": 1750766464126
   }
 ]

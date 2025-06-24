@@ -71,34 +71,10 @@ document.body.addEventListener('click', (e) => {
     console.log(`Clicked: ${tagName}${className ? '.' + className : ''} - "${text}"`);
 });
 
-// Display Float hint on page load
+// Display Float hint on page load (console only)
 window.addEventListener('load', () => {
-    console.log('%c🎯 Float Demo Page Ready!', 'font-size: 16px; font-weight: bold; color: #3b82f6;');
-    console.log('%cPress "f" to enter Float comment mode and click any element to annotate it.', 'font-size: 14px; color: #666;');
-    
-    // Show a temporary hint
-    const hint = document.createElement('div');
-    hint.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #3b82f6;
-        color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 1000;
-        animation: slideIn 0.3s ease;
-    `;
-    hint.innerHTML = '💡 Press "f" to start annotating with Float';
-    document.body.appendChild(hint);
-    
-    // Remove hint after 5 seconds
-    setTimeout(() => {
-        hint.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => hint.remove(), 300);
-    }, 5000);
+    console.log('%c🎯 Moat Demo Page Ready!', 'font-size: 16px; font-weight: bold; color: #3b82f6;');
+    console.log('%cPress "f" to enter Moat comment mode and click any element to annotate it.', 'font-size: 14px; color: #666;');
 });
 
 // Add CSS for ripple effect
@@ -125,26 +101,6 @@ style.textContent = `
         }
     }
     
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
+
 `;
 document.head.appendChild(style); 

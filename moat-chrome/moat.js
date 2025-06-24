@@ -5,6 +5,7 @@
   let draggedItem = null;
   let projectStatus = 'not-connected';
   let projectPath = null;
+  let moatPosition = 'bottom'; // 'right' or 'bottom' - default to bottom
 
   // Create Moat sidebar
   function createMoat() {
@@ -14,30 +15,58 @@
     moat.className = 'float-moat';
     console.log('Moat: Element created with class:', moat.className);
     moat.innerHTML = `
-      <div class="float-moat-header">
-        <h3>Moat Annotations</h3>
+      <div class="float-moat-top-bar">
+        <div class="float-moat-header">
+          <h3>Moat Annotations</h3>
+        </div>
+        <div class="float-moat-project-status">
+          <span class="float-project-indicator"></span>
+          <span class="float-project-label">Not connected to project</span>
+          <button class="float-project-connect">Connect</button>
+        </div>
+        <div class="float-moat-header-actions">
+          <button class="float-moat-refresh-btn" id="float-refresh-btn" title="Refresh Tasks (Cmd+R)">
+            <span class="float-refresh-icon">🔄</span>
+            <span class="float-refresh-text">Refresh</span>
+          </button>
+        </div>
         <div class="float-moat-actions">
           <span class="float-moat-protocol-status" title="Connection Protocol">
             <span class="float-protocol-indicator"></span>
             <span class="float-protocol-label">File</span>
           </span>
+          <button class="float-moat-position-toggle" title="Toggle position (Right/Bottom)">📍</button>
           <button class="float-moat-export" title="Export annotations">📥</button>
           <button class="float-moat-close">×</button>
         </div>
       </div>
-      <div class="float-moat-project-status">
-        <span class="float-project-indicator"></span>
-        <span class="float-project-label">Not connected to project</span>
-        <button class="float-project-connect">Connect</button>
-      </div>
-      <div class="float-moat-header-actions">
-        <button class="float-moat-refresh-btn" id="float-refresh-btn" title="Refresh Tasks (Cmd+R)">
-          <span class="float-refresh-icon">🔄</span>
-          <span class="float-refresh-text">Refresh</span>
-        </button>
-      </div>
       <div class="float-moat-queue">
-        <div class="float-moat-empty">
+        <div class="float-moat-connect-project" id="moat-connect-content">
+          <div class="float-moat-connect-header">
+            <h3>🚀 Connect Moat to Your Project</h3>
+            <p>Moat will create a <code>.moat</code> directory in your project with markdown task logging and Cursor integration.</p>
+          </div>
+          <div class="float-moat-connect-features">
+            <div class="float-moat-feature">
+              <span class="float-feature-check">✅</span>
+              <span>Markdown task list (.moat/moat-tasks.md)</span>
+            </div>
+            <div class="float-moat-feature">
+              <span class="float-feature-check">✅</span>
+              <span>Cursor integration (.moat/.moat-stream.jsonl)</span>
+            </div>
+            <div class="float-moat-feature">
+              <span class="float-feature-check">✅</span>
+              <span>Git-ignored by default</span>
+            </div>
+          </div>
+          <p class="float-moat-connect-note">You'll select your project folder in the next step.</p>
+          <div class="float-moat-connect-actions">
+            <button class="float-connect-cancel">Cancel</button>
+            <button class="float-connect-confirm">Connect Project</button>
+          </div>
+        </div>
+        <div class="float-moat-empty" id="moat-empty-state" style="display: none;">
           <p>No annotations yet</p>
           <p class="float-moat-hint">Press 'f' to enter comment mode</p>
         </div>
@@ -52,6 +81,17 @@
     moat.querySelector('.float-moat-export').addEventListener('click', exportAnnotations);
     moat.querySelector('.float-project-connect').addEventListener('click', handleProjectButton);
     moat.querySelector('#float-refresh-btn').addEventListener('click', refreshTasks);
+    moat.querySelector('.float-moat-position-toggle').addEventListener('click', toggleMoatPosition);
+    
+    // Connect project inline buttons
+    moat.querySelector('.float-connect-cancel').addEventListener('click', handleConnectCancel);
+    moat.querySelector('.float-connect-confirm').addEventListener('click', handleConnectConfirm);
+    
+    // Initialize position from saved preference
+    initializePosition();
+    
+    // Initialize content visibility based on current project status
+    initializeContentVisibility();
     
     console.log('Moat: Event listeners attached');
   }
@@ -61,15 +101,8 @@
     console.log('Moat: Connect button clicked, projectStatus:', projectStatus);
     
     if (projectStatus === 'not-connected') {
-      console.log('Moat: Showing setup confirmation...');
-      // First time setup - show confirmation dialog
-      const confirmed = await showSetupConfirmation();
-      console.log('Moat: Setup confirmation result:', confirmed);
-      
-      if (confirmed) {
-        console.log('Moat: Dispatching moat:setup-project event...');
-        window.dispatchEvent(new CustomEvent('moat:setup-project'));
-      }
+      // Show connect project content inline (already visible by default)
+      showConnectProjectContent();
     } else if (projectStatus === 'connected') {
       console.log('Moat: Already connected, showing project menu...');
       // Already connected - show options
@@ -177,10 +210,8 @@
     // Update UI status
     updateProjectStatus('not-connected', null);
     
-    // Refresh the current view to remove cached tasks
-    if (isVisible) {
-      renderQueue();
-    }
+    // Show connect project content when disconnected
+    showConnectProjectContent();
     
     showNotification('Project disconnected');
     console.log('Moat: Project disconnected, all handles cleared');
@@ -194,6 +225,106 @@
     }
     showNotification('Current session cleared');
     console.log('Moat: Current session annotations cleared');
+  }
+
+  // Toggle Moat position between right and bottom
+  function toggleMoatPosition() {
+    const newPosition = moatPosition === 'right' ? 'bottom' : 'right';
+    setMoatPosition(newPosition);
+    
+    // Save preference
+    localStorage.setItem('moat.position', newPosition);
+    
+    // Update button tooltip
+    const toggleBtn = moat.querySelector('.float-moat-position-toggle');
+    toggleBtn.title = `Toggle position (${newPosition === 'right' ? 'Right/Bottom' : 'Bottom/Right'})`;
+    
+    showNotification(`Moat moved to ${newPosition}`);
+    console.log('Moat: Position toggled to', newPosition);
+  }
+
+  // Set Moat position
+  function setMoatPosition(position) {
+    moatPosition = position;
+    
+    if (!moat) return;
+    
+    // Remove existing position classes
+    moat.classList.remove('float-moat-right', 'float-moat-bottom');
+    
+    // Add new position class
+    if (position === 'bottom') {
+      moat.classList.add('float-moat-bottom');
+    } else {
+      moat.classList.add('float-moat-right');
+    }
+    
+    // Update button icon
+    const toggleBtn = moat.querySelector('.float-moat-position-toggle');
+    if (toggleBtn) {
+      toggleBtn.textContent = position === 'right' ? '📍' : '📌';
+    }
+  }
+
+  // Initialize position from storage
+  function initializePosition() {
+    const savedPosition = localStorage.getItem('moat.position') || 'bottom';
+    setMoatPosition(savedPosition);
+  }
+
+  // Initialize content visibility after Moat creation
+  function initializeContentVisibility() {
+    console.log('Moat: Initializing content visibility, projectStatus:', projectStatus);
+    
+    // Show appropriate content based on current project status
+    if (projectStatus === 'connected') {
+      showEmptyState();
+    } else {
+      showConnectProjectContent();
+    }
+  }
+
+  // Handle connect project cancel
+  function handleConnectCancel() {
+    showEmptyState();
+  }
+
+  // Handle connect project confirm
+  function handleConnectConfirm() {
+    // Trigger the project setup flow
+    window.dispatchEvent(new CustomEvent('moat:setup-project'));
+  }
+
+  // Show empty state (no tasks)
+  function showEmptyState() {
+    console.log('Moat: Showing empty state');
+    const connectContent = document.getElementById('moat-connect-content');
+    const emptyState = document.getElementById('moat-empty-state');
+    
+    if (connectContent) {
+      connectContent.style.display = 'none';
+      console.log('Moat: Connect content hidden');
+    }
+    if (emptyState) {
+      emptyState.style.display = 'block';
+      console.log('Moat: Empty state shown');
+    }
+  }
+
+  // Show connect project content
+  function showConnectProjectContent() {
+    console.log('Moat: Showing connect project content');
+    const connectContent = document.getElementById('moat-connect-content');
+    const emptyState = document.getElementById('moat-empty-state');
+    
+    if (connectContent) {
+      connectContent.style.display = 'block';
+      console.log('Moat: Connect content shown');
+    }
+    if (emptyState) {
+      emptyState.style.display = 'none';
+      console.log('Moat: Empty state hidden');
+    }
   }
 
   // Update project status UI
