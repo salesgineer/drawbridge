@@ -313,16 +313,16 @@
       return;
     }
     
-    // Sort tasks: pending first, then by creation time (newest first)
+    // Sort tasks: pending first, then chronologically (oldest first, newest last - matches file order)
     const sortedTasks = tasks.slice().sort((a, b) => {
       // Completed tasks go to bottom
       if (a.status === 'completed' && b.status !== 'completed') return 1;
       if (b.status === 'completed' && a.status !== 'completed') return -1;
       
-      // Sort by creation time (newest first)
+      // Sort chronologically (oldest first, newest last - matches JSON/markdown file order)
       const aTime = new Date(a.createdAt || a.timestamp || 0).getTime();
       const bTime = new Date(b.createdAt || b.timestamp || 0).getTime();
-      return bTime - aTime;
+      return aTime - bTime;
     });
     
     // Render task items
@@ -495,11 +495,11 @@
       return;
     }
     
-    // Sort current tasks
+    // Sort current tasks chronologically (oldest first, newest last - matches file order)
     currentTasks.sort((a, b) => {
       if (a.status === 'completed' && b.status !== 'completed') return 1;
       if (b.status === 'completed' && a.status !== 'completed') return -1;
-      return (b.timestamp || 0) - (a.timestamp || 0);
+      return (a.timestamp || 0) - (b.timestamp || 0);
     });
     
     queueContainer.innerHTML = currentTasks.map(task => renderSimpleTaskItem(task)).join('');
@@ -764,14 +764,14 @@
       return;
     }
     
-    // Sort tasks: completed last, then by creation time
+    // Sort tasks: completed last, then chronologically (oldest first, newest last - matches file order)
     allTasks.sort((a, b) => {
       // Completed tasks go to bottom
       if (a.status === 'completed' && b.status !== 'completed') return 1;
       if (b.status === 'completed' && a.status !== 'completed') return -1;
       
-      // By creation time (newest first)
-      return (b.timestamp || 0) - (a.timestamp || 0);
+      // Chronologically (oldest first, newest last - matches JSON/markdown file order)
+      return (a.timestamp || 0) - (b.timestamp || 0);
     });
     
     // Render simple task list
@@ -865,6 +865,7 @@
     queueContainer.querySelectorAll('.float-moat-remove').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
+        console.log('🗑️ Moat: Remove button clicked for task ID:', btn.dataset.id);
         await removeAnnotation(btn.dataset.id);
       });
     });
@@ -911,12 +912,57 @@
     setTimeout(() => notification.remove(), 3000);
   }
 
-  // Remove annotation
+  // Remove annotation - supports both new TaskStore system and legacy localStorage
   async function removeAnnotation(id) {
-    let queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
-    queue = queue.filter(a => a.id !== id);
-    localStorage.setItem('moat.queue', JSON.stringify(queue));
-    await renderQueue();
+    console.log('🗑️ Moat: Removing annotation/task with ID:', id);
+    
+    try {
+      // Check if we should use the new TaskStore system
+      if (canUseNewTaskSystem()) {
+        console.log('🗑️ Moat: Using new TaskStore system for removal');
+        
+        // Remove from TaskStore and save to file
+        const removed = await window.taskStore.removeTaskAndSave(id);
+        
+        if (removed) {
+          console.log('✅ Moat: Task removed from TaskStore and file saved');
+          
+          // Regenerate markdown from updated TaskStore
+          const allTasks = window.taskStore.getAllTasksChronological();
+          await window.markdownGenerator.rebuildMarkdownFile(allTasks);
+          console.log('✅ Moat: Markdown file regenerated after removal');
+          
+          showNotification('✅ Task removed successfully');
+        } else {
+          console.warn('⚠️ Moat: Task not found in TaskStore:', id);
+          showNotification('⚠️ Task not found for removal');
+        }
+        
+      } else {
+        console.log('🗑️ Moat: Using legacy localStorage system for removal');
+        
+        // Legacy system: remove from localStorage
+        let queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+        const originalLength = queue.length;
+        queue = queue.filter(a => a.id !== id);
+        
+        if (queue.length < originalLength) {
+          localStorage.setItem('moat.queue', JSON.stringify(queue));
+          console.log('✅ Moat: Task removed from localStorage');
+          showNotification('✅ Task removed successfully');
+        } else {
+          console.warn('⚠️ Moat: Task not found in localStorage:', id);
+          showNotification('⚠️ Task not found for removal');
+        }
+      }
+      
+      // Refresh the sidebar to show updated task list
+      await refreshTasks();
+      
+    } catch (error) {
+      console.error('❌ Moat: Error removing task:', error);
+      showNotification(`❌ Failed to remove task: ${error.message}`);
+    }
   }
 
   // Export annotations

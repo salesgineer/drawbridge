@@ -159,6 +159,9 @@ Moat auto-creates `config.json`:
 
 ### ai-dev-tasks Workflow Commands *(NEW)*
 ```bash
+# Primary command - Process moat annotations/tasks
+"run moat" - Auto-detects and processes annotations with smart workflow
+
 # Generate structured tasks from raw annotations
 Use @generate-moat-tasks.mdc to analyze .moat/.moat-stream.jsonl
 

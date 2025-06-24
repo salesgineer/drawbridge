@@ -59,6 +59,13 @@
     } else {
       console.error('❌ Moat: MarkdownGenerator not available - ensure utils/markdownGenerator.js is loaded');
     }
+
+    // CRITICAL: Expose initialized instances to global window for sidebar access
+    console.log('🔧 Moat: Exposing initialized instances to global window...');
+    window.taskStore = taskStore;
+    window.markdownGenerator = markdownGenerator;
+    console.log('🔧 Moat: Global exposure complete - window.taskStore:', !!window.taskStore);
+    console.log('🔧 Moat: Global exposure complete - window.markdownGenerator:', !!window.markdownGenerator);
   }
 
   // Retry initialization with delays
@@ -71,6 +78,12 @@
       // Check if both utilities are now available
       if (taskStore && markdownGenerator) {
         console.log('✅ Moat: All utilities initialized successfully');
+        
+        // CRITICAL: Expose to global window after successful initialization
+        window.taskStore = taskStore;
+        window.markdownGenerator = markdownGenerator;
+        console.log('🔧 Moat: Instances exposed to global window during retry');
+        
         return true;
       }
       
@@ -442,13 +455,130 @@
 
   // Initialize project connection
   async function initializeProject() {
-    // Since we clear connections on reload, always start as not-connected
-    console.log('🔧 Moat: Project connection cleared - user must reconnect');
+    // Check for saved project connection
+    const projectKey = `moat.project.${window.location.origin}`;
+    const savedConnection = localStorage.getItem(projectKey);
+    
+    if (savedConnection) {
+      try {
+        const connectionData = JSON.parse(savedConnection);
+        console.log('🔧 Moat: Found saved project connection:', connectionData.path);
+        
+        // Attempt to restore the project connection
+        const restored = await restoreProjectConnection(connectionData);
+        if (restored) {
+          console.log('✅ Moat: Project connection restored successfully');
+          return;
+        }
+      } catch (error) {
+        console.log('⚠️ Moat: Failed to restore saved connection:', error.message);
+        localStorage.removeItem(projectKey);
+      }
+    }
+    
+    console.log('🔧 Moat: No saved connection found - user must connect');
     
     // Notify Moat that no project is connected
     window.dispatchEvent(new CustomEvent('moat:project-connected', { 
       detail: { status: 'not-connected' } 
     }));
+  }
+
+  // Restore project connection from saved data
+  async function restoreProjectConnection(connectionData) {
+    try {
+      console.log('🔧 Moat: Attempting to restore project connection for:', connectionData.path);
+      
+      // First try to use any stored directory handle from browser
+      if (connectionData.directoryHandle) {
+        try {
+          console.log('🔧 Moat: Attempting to use stored directory handle...');
+          const moatDir = await connectionData.directoryHandle.getDirectoryHandle('.moat', { create: true });
+          
+          // Test if we can still access it
+          await moatDir.getFileHandle('config.json', { create: false });
+          
+          window.directoryHandle = moatDir;
+          projectRoot = connectionData.path;
+          
+          console.log('✅ Moat: Successfully restored using stored handle');
+          await completeConnectionRestore();
+          return true;
+          
+        } catch (e) {
+          console.log('⚠️ Moat: Stored handle no longer valid, requesting new permission');
+        }
+      }
+      
+      // If stored handle doesn't work, request new permission with notification
+      console.log('🔧 Moat: Requesting directory access for', connectionData.path);
+      showNotification(`🔗 Reconnecting to project: ${connectionData.path}...`);
+      
+      const dirHandle = await window.showDirectoryPicker({
+        mode: 'readwrite',
+        startIn: 'documents'
+      });
+      
+      // Verify this is the same directory
+      if (dirHandle.name !== connectionData.path) {
+        console.log('⚠️ Moat: Selected directory does not match saved path');
+        showNotification('⚠️ Directory mismatch - please select the correct project folder');
+        return false;
+      }
+      
+      // Create .moat directory
+      const moatDir = await dirHandle.getDirectoryHandle('.moat', { create: true });
+      
+      // Store directory handle (both in memory and persistent storage)
+      window.directoryHandle = moatDir;
+      projectRoot = dirHandle.name;
+      
+      // Update stored connection with new handle
+      const updatedConnection = {
+        ...connectionData,
+        directoryHandle: dirHandle,
+        lastConnected: Date.now()
+      };
+      localStorage.setItem(`moat.project.${window.location.origin}`, JSON.stringify(updatedConnection));
+      
+      await completeConnectionRestore();
+      return true;
+      
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('🔧 Moat: User cancelled restoration');
+        showNotification('📁 Project connection cancelled - click Connect to retry');
+      } else {
+        console.log('⚠️ Moat: Failed to restore connection:', error.message);
+        showNotification('❌ Failed to restore project connection');
+      }
+      return false;
+    }
+  }
+
+  // Complete the connection restoration process
+  async function completeConnectionRestore() {
+    // Re-initialize utilities
+    await initializeUtilitiesWithRetry();
+    window.taskStore = taskStore;
+    window.markdownGenerator = markdownGenerator;
+    
+    // Load existing tasks
+    if (taskStore) {
+      await taskStore.loadTasksFromFile();
+      const loadedTasks = taskStore.getAllTasks();
+      console.log('✅ Moat: Loaded', loadedTasks.length, 'existing tasks from restored connection');
+    }
+    
+    // Create markdown file handle
+    markdownFileHandle = await window.directoryHandle.getFileHandle('moat-tasks.md', { create: true });
+    
+    // Notify success
+    window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+      detail: { path: projectRoot, status: 'connected' } 
+    }));
+    
+    showNotification('✅ Project connection restored!');
   }
 
   // Set up project connection
@@ -487,6 +617,11 @@
       // Re-initialize utilities now that we have the directory handle
       console.log('🔧 Moat: Re-initializing utilities with directory handle...');
       await initializeUtilitiesWithRetry();
+      
+      // CRITICAL: Re-expose instances after project setup
+      window.taskStore = taskStore;
+      window.markdownGenerator = markdownGenerator;
+      console.log('🔧 Moat: Instances re-exposed after project setup');
       
       // Verify new task system is now available
       const canUseNew = canUseNewTaskSystem();
@@ -565,10 +700,12 @@ Generated by Moat Chrome Extension
         
 
       
-      // Save project connection
+      // Save project connection with directory handle for persistence
       localStorage.setItem(`moat.project.${window.location.origin}`, JSON.stringify({
         path: dirHandle.name,
-        connectedAt: Date.now()
+        directoryHandle: dirHandle,
+        connectedAt: Date.now(),
+        lastConnected: Date.now()
       }));
       
       // Update .gitignore if it exists
@@ -1871,16 +2008,8 @@ Generated by Moat Chrome Extension
     try {
       console.log('🚀 Initializing Moat Chrome Extension...');
       
-      // Clear any existing directory handle on extension reload
-      console.log('🔧 Moat: Clearing existing connections on extension reload...');
-      window.directoryHandle = null;
-      
-      // Clear any stored project connections to force fresh connection
-      const projectKey = `moat.project.${window.location.origin}`;
-      if (localStorage.getItem(projectKey)) {
-        console.log('🔧 Moat: Clearing stored project connection');
-        localStorage.removeItem(projectKey);
-      }
+      // Initialize project connection (will attempt to restore if available)
+      console.log('🔧 Moat: Initializing project connection...');
       
       // Initialize utilities first
       const utilitiesReady = await initializeUtilities();
@@ -1889,6 +2018,9 @@ Generated by Moat Chrome Extension
       } else {
         console.log('⚠️ Falling back to legacy system');
       }
+      
+      // Try to restore project connection
+      await initializeProject();
       
       // Initialize UI
       initializeUI();
