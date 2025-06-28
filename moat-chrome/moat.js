@@ -79,7 +79,16 @@
     // Event listeners
     moat.querySelector('.float-moat-close').addEventListener('click', hideMoat);
     moat.querySelector('.float-moat-export').addEventListener('click', exportAnnotations);
-    moat.querySelector('.float-project-connect').addEventListener('click', handleProjectButton);
+    
+    // Connect button with error checking
+    const connectBtn = moat.querySelector('.float-project-connect');
+    if (connectBtn) {
+      connectBtn.addEventListener('click', handleProjectButton);
+      console.log('Moat: Connect button event listener attached successfully');
+    } else {
+      console.error('Moat: Connect button not found!');
+    }
+    
     moat.querySelector('#float-refresh-btn').addEventListener('click', refreshTasks);
     moat.querySelector('.float-moat-position-toggle').addEventListener('click', toggleMoatPosition);
     
@@ -98,14 +107,30 @@
 
   // Handle project button click
   async function handleProjectButton() {
-    console.log('Moat: Connect button clicked, projectStatus:', projectStatus);
+    console.log('🔧 Moat: Connect button clicked! projectStatus:', projectStatus);
     
     if (projectStatus === 'not-connected') {
-      // Show connect project content inline (already visible by default)
-      showConnectProjectContent();
+      // Use the original event system which handles everything properly
+      console.log('🔧 Moat: Dispatching moat:setup-project event...');
+      window.dispatchEvent(new CustomEvent('moat:setup-project'));
+      
+      // Listen for successful connection to update UI
+      window.addEventListener('moat:project-connected', function handleConnection(e) {
+        console.log('🔧 Moat: Received project-connected event:', e.detail);
+        updateProjectStatus('connected', e.detail.path);
+        
+        // Load existing tasks after successful connection
+        setTimeout(async () => {
+          console.log('🔄 Moat: Loading tasks after connection...');
+          await refreshTasks();
+        }, 1000);
+        
+        // Remove this listener since we only need it once
+        window.removeEventListener('moat:project-connected', handleConnection);
+      });
+      
     } else if (projectStatus === 'connected') {
       console.log('Moat: Already connected, showing project menu...');
-      // Already connected - show options
       showProjectMenu();
     }
   }
@@ -1243,9 +1268,11 @@
   });
 
   window.addEventListener('moat:project-disconnected', async () => {
-    console.log('Moat: Received project-disconnected event');
+    console.log('🔧 Moat: Received project-disconnected event');
+    console.trace('🔧 Moat: project-disconnected event stack trace');
     // Clear file handles
     if (window.directoryHandle) {
+      console.log('🔧 Moat: Clearing directoryHandle due to disconnection event');
       window.directoryHandle = null;
     }
     updateProjectStatus('not-connected', null);
