@@ -376,6 +376,80 @@
     }
   }
 
+  // Verify initial connection on page load
+  async function verifyInitialConnection() {
+    console.log('🔧 Moat: Verifying initial connection...');
+    
+    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
+    if (!savedProject) {
+      console.log('🔧 Moat: No saved project found');
+      updateProjectStatus('not-connected', null);
+      return;
+    }
+    
+    try {
+      const projectData = JSON.parse(savedProject);
+      console.log('🔧 Moat: Found saved project:', projectData.path);
+      
+      // Verify that we actually have a working connection
+      const isActuallyConnected = await verifyConnectionWorking();
+      
+      if (isActuallyConnected) {
+        console.log('✅ Moat: Connection verified, updating status to connected');
+        updateProjectStatus('connected', projectData.path);
+        
+        // Load tasks after verified connection
+        setTimeout(async () => {
+          console.log('🔄 Moat: Loading tasks after verified connection...');
+          await refreshTasks();
+        }, 500);
+      } else {
+        console.log('❌ Moat: Connection verification failed, clearing saved data');
+        localStorage.removeItem(`moat.project.${window.location.origin}`);
+        updateProjectStatus('not-connected', null);
+        showNotification('Connection expired - please reconnect to project');
+      }
+      
+    } catch (error) {
+      console.error('🔧 Moat: Error parsing saved project data:', error);
+      localStorage.removeItem(`moat.project.${window.location.origin}`);
+      updateProjectStatus('not-connected', null);
+    }
+  }
+
+  // Verify that the connection actually works
+  async function verifyConnectionWorking() {
+    try {
+      // Check if we have a directory handle
+      if (!window.directoryHandle) {
+        console.log('🔧 Moat: No directoryHandle available');
+        return false;
+      }
+      
+      // Test if we can actually access the directory
+      const testAccess = await window.directoryHandle.getDirectoryHandle('.moat', { create: false });
+      if (!testAccess) {
+        console.log('🔧 Moat: Cannot access .moat directory');
+        return false;
+      }
+      
+      // Test if we can read a file
+      try {
+        const testFile = await testAccess.getFileHandle('moat-tasks-detail.json', { create: false });
+        const file = await testFile.getFile();
+        console.log('🔧 Moat: Successfully verified file access');
+        return true;
+      } catch (fileError) {
+        console.log('🔧 Moat: Cannot access task files, but directory exists');
+        return true; // Directory exists, files will be created as needed
+      }
+      
+    } catch (error) {
+      console.log('🔧 Moat: Connection verification failed:', error);
+      return false;
+    }
+  }
+
   // Comprehensive refresh function for Tasks 3.1-3.10
   async function refreshTasks() {
     console.log('🔄 Moat: Manual refresh triggered');
@@ -1267,6 +1341,25 @@
     }
   });
 
+  // Listen for project connection failure events
+  window.addEventListener('moat:project-connection-failed', async (e) => {
+    console.log('🔧 Moat: Received project connection failure event:', e.detail);
+    
+    // Clear any stored connection data
+    localStorage.removeItem(`moat.project.${window.location.origin}`);
+    
+    // Update UI to not connected
+    updateProjectStatus('not-connected', null);
+    
+    // Show error notification
+    showNotification(e.detail.reason || 'Failed to restore project connection');
+    
+    // Clear any cached tasks
+    if (isVisible) {
+      await renderQueue();
+    }
+  });
+
   window.addEventListener('moat:project-disconnected', async () => {
     console.log('🔧 Moat: Received project-disconnected event');
     console.trace('🔧 Moat: project-disconnected event stack trace');
@@ -1496,22 +1589,14 @@
     document.addEventListener('DOMContentLoaded', () => {
       console.log('Moat: DOMContentLoaded fired, creating sidebar...');
       createMoat();
-      // Check initial project connection status
-      const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-      if (savedProject) {
-        const projectData = JSON.parse(savedProject);
-        updateProjectStatus('connected', projectData.path);
-      }
+      // Wait for content script to attempt connection restoration
+      setTimeout(verifyInitialConnection, 1000);
     });
   } else {
     console.log('Moat: Document already loaded, creating sidebar immediately...');
     createMoat();
-    // Check initial project connection status
-    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-    if (savedProject) {
-      const projectData = JSON.parse(savedProject);
-      updateProjectStatus('connected', projectData.path);
-    }
+    // Wait for content script to attempt connection restoration
+    setTimeout(verifyInitialConnection, 1000);
   }
 
 })(); 

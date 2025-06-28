@@ -469,10 +469,31 @@
         if (restored) {
           console.log('✅ Moat: Project connection restored successfully');
           return;
+        } else {
+          console.log('❌ Moat: Failed to restore project connection');
+          // Clear the invalid saved connection
+          localStorage.removeItem(projectKey);
+          
+          // Dispatch failure event
+          window.dispatchEvent(new CustomEvent('moat:project-connection-failed', { 
+            detail: { 
+              path: connectionData.path,
+              reason: 'Failed to persist project connection'
+            } 
+          }));
+          return;
         }
       } catch (error) {
         console.log('⚠️ Moat: Failed to restore saved connection:', error.message);
         localStorage.removeItem(projectKey);
+        
+        // Dispatch failure event
+        window.dispatchEvent(new CustomEvent('moat:project-connection-failed', { 
+          detail: { 
+            reason: 'Failed to restore project connection: ' + error.message
+          } 
+        }));
+        return;
       }
     }
     
