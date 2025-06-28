@@ -6,6 +6,11 @@
   let projectStatus = 'not-connected';
   let projectPath = null;
   let moatPosition = 'bottom'; // 'right' or 'bottom' - default to bottom
+  
+  // Floating animation system
+  let lastKnownTaskIds = new Set();
+  let animationQueue = [];
+  let isAnimating = false;
 
   // Create Moat sidebar
   function createMoat() {
@@ -232,6 +237,9 @@
       window.directoryHandle = null;
     }
     
+    // Reset animation system when disconnecting
+    resetFloatingAnimation();
+    
     // Update UI status
     updateProjectStatus('not-connected', null);
     
@@ -274,6 +282,9 @@
     
     if (!moat) return;
     
+    // Reset animations when changing position
+    resetFloatingAnimation();
+    
     // Remove existing position classes
     moat.classList.remove('float-moat-right', 'float-moat-bottom');
     
@@ -288,6 +299,11 @@
     const toggleBtn = moat.querySelector('.float-moat-position-toggle');
     if (toggleBtn) {
       toggleBtn.textContent = position === 'right' ? '📍' : '📌';
+    }
+    
+    // Re-initialize tracking for new position
+    if (isVisible) {
+      initializeTaskTracking();
     }
   }
 
@@ -450,14 +466,44 @@
     }
   }
 
+  // AUTO-REFRESH SYSTEM: Automatically sync status every 3 seconds
+  let autoRefreshInterval = null;
+  
+  function startAutoRefresh() {
+    if (autoRefreshInterval) return; // Already running
+    
+    console.log('🔄 Moat: Starting auto-refresh every 3 seconds');
+    autoRefreshInterval = setInterval(async () => {
+      if (projectStatus === 'connected' && isVisible) {
+        try {
+          await refreshTasks(true); // Silent refresh
+        } catch (error) {
+          console.warn('🔄 Moat: Auto-refresh failed:', error);
+        }
+      }
+    }, 3000);
+  }
+  
+  function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+      clearInterval(autoRefreshInterval);
+      autoRefreshInterval = null;
+      console.log('🔄 Moat: Auto-refresh stopped');
+    }
+  }
+
   // Comprehensive refresh function for Tasks 3.1-3.10
-  async function refreshTasks() {
-    console.log('🔄 Moat: Manual refresh triggered');
+  async function refreshTasks(silent = false) {
+    if (!silent) {
+      console.log('🔄 Moat: Manual refresh triggered');
+    }
     const startTime = performance.now();
     
-    // Task 3.6: Visual loading state
-    setRefreshLoadingState(true);
-    showNotification('🔄 Refreshing tasks...');
+    // Task 3.6: Visual loading state (only for manual refresh)
+    if (!silent) {
+      setRefreshLoadingState(true);
+      showNotification('🔄 Refreshing tasks...');
+    }
     
     try {
       // Task 3.3: Check if new TaskStore system is available
@@ -471,13 +517,17 @@
       
       // Task 3.9: Performance optimization (<100ms requirement)
       const duration = performance.now() - startTime;
-      console.log(`🔄 Moat: Refresh completed in ${duration.toFixed(1)}ms`);
+      if (!silent) {
+        console.log(`🔄 Moat: Refresh completed in ${duration.toFixed(1)}ms`);
+      }
       
       if (duration > 100) {
         console.warn(`🔄 Moat: Refresh took ${duration.toFixed(1)}ms (exceeds 100ms target)`);
       }
       
-      showNotification('✅ Tasks refreshed successfully');
+      if (!silent) {
+        showNotification('✅ Tasks refreshed successfully');
+      }
       
     } catch (error) {
       // Task 3.7: Error handling with user feedback
@@ -932,6 +982,13 @@
     console.log('Moat: Adding float-moat-visible class...');
     moat.classList.add('float-moat-visible');
     isVisible = true;
+    
+    // Initialize animation tracking when first shown
+    initializeTaskTracking();
+    
+    // Start auto-refresh when sidebar is shown
+    startAutoRefresh();
+    
     console.log('Moat: Sidebar should now be visible, isVisible:', isVisible);
     console.log('Moat: Project status:', projectStatus, 'Can use new system:', canUseNewTaskSystem());
     await refreshTasks(); // Use refreshTasks for comprehensive loading
@@ -943,6 +1000,12 @@
     if (moat) {
       moat.classList.remove('float-moat-visible');
       isVisible = false;
+      
+      // Stop auto-refresh when sidebar is hidden
+      stopAutoRefresh();
+      
+      // Reset animations when hiding
+      resetFloatingAnimation();
     }
   }
 
@@ -970,39 +1033,50 @@
   
   // Render all tasks (current + markdown)
   async function renderAllTasks() {
-    if (!moat) return;
-    
     const queueContainer = moat.querySelector('.float-moat-queue');
-    queueContainer.innerHTML = '<div class="float-moat-loading">Loading tasks...</div>';
+    if (!queueContainer) return;
     
-    // Get current session annotations
-    const currentQueue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+    let allTasks = [];
     
-    // Get tasks from markdown file
-    const markdownTasks = await readTasksFromMarkdown();
-    
-    // Combine and organize all tasks
-    const allTasks = [...markdownTasks, ...currentQueue.map(convertAnnotationToTask)];
+    // Get all tasks from various sources
+    try {
+      // Try new system first
+      if (canUseNewTaskSystem() && window.taskStore) {
+        console.log('📋 Moat: Using TaskStore for rendering all tasks');
+        allTasks = window.taskStore.getAllTasksChronological();
+      } else {
+        console.log('📋 Moat: Using legacy localStorage for rendering');
+        const queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+        allTasks = queue.map(convertAnnotationToTask);
+      }
+    } catch (error) {
+      console.error('📋 Moat: Error loading tasks:', error);
+      allTasks = [];
+    }
     
     if (allTasks.length === 0) {
-      queueContainer.innerHTML = `
-        <div class="float-moat-empty">
-          <p>No tasks found</p>
-          ${projectStatus !== 'connected' ? '<p class="float-moat-hint">Connect to a project to see tasks</p>' : ''}
-        </div>
-      `;
+      showEmptyState();
       return;
     }
     
-    // Sort tasks: completed last, then chronologically (oldest first, newest last - matches file order)
+    // Hide empty state
+    const emptyState = document.getElementById('moat-empty-state');
+    const connectContent = document.getElementById('moat-connect-content');
+    if (emptyState) emptyState.style.display = 'none';
+    if (connectContent) connectContent.style.display = 'none';
+    
+    // Sort tasks (completed last, then chronological)
     allTasks.sort((a, b) => {
-      // Completed tasks go to bottom
+      // Completed tasks go to the end
       if (a.status === 'completed' && b.status !== 'completed') return 1;
       if (b.status === 'completed' && a.status !== 'completed') return -1;
       
       // Chronologically (oldest first, newest last - matches JSON/markdown file order)
       return (a.timestamp || 0) - (b.timestamp || 0);
     });
+    
+    // Detect new tasks for animation (before rendering)
+    detectAndAnimateNewTasks(allTasks);
     
     // Render simple task list
     queueContainer.innerHTML = allTasks.map(task => renderSimpleTaskItem(task)).join('');
@@ -1085,7 +1159,7 @@
             highlightAnnotatedElement(annotation);
           }
         } else {
-          // For markdown tasks, show a notification that they can't be highlighted
+          // For markdown tasks, show a notification that they can't be highlighted directly
           showNotification('Markdown tasks cannot be highlighted directly');
         }
       });
@@ -1437,6 +1511,24 @@
     // Task 3.10: Cross-tab sync testing
     testCrossTabSync: testCrossTabSync,
     refreshTasks: refreshTasks,
+    // Floating animation system debugging
+    resetFloatingAnimation: resetFloatingAnimation,
+    initializeTaskTracking: initializeTaskTracking,
+    testFloatingAnimation: async (count = 1) => {
+      console.log(`🌊 Testing floating animation with ${count} mock tasks...`);
+      for (let i = 0; i < count; i++) {
+        const mockTaskId = `test-float-${Date.now()}-${i}`;
+        lastKnownTaskIds.add(mockTaskId);
+        animationQueue.push({
+          taskId: mockTaskId,
+          delay: i * 200,
+          timestamp: Date.now()
+        });
+      }
+      if (!isAnimating) {
+        await startFloatingAnimation();
+      }
+    },
     // Task 3.9: Performance testing
     testRefreshPerformance: async () => {
       const iterations = 5;
@@ -1597,6 +1689,127 @@
     createMoat();
     // Wait for content script to attempt connection restoration
     setTimeout(verifyInitialConnection, 1000);
+  }
+
+  // Detect new tasks and trigger floating animation
+  function detectAndAnimateNewTasks(currentTasks) {
+    if (!moat || moatPosition !== 'bottom') return; // Only animate in bottom position
+    
+    const currentTaskIds = new Set(currentTasks.map(task => task.id));
+    const newTaskIds = [...currentTaskIds].filter(id => !lastKnownTaskIds.has(id));
+    
+    if (newTaskIds.length > 0) {
+      console.log(`🌊 Moat: Detected ${newTaskIds.length} new tasks for floating animation:`, newTaskIds);
+      
+      // Add to animation queue
+      newTaskIds.forEach((taskId, index) => {
+        animationQueue.push({
+          taskId,
+          delay: index * 200, // Stagger by 200ms
+          timestamp: Date.now()
+        });
+      });
+      
+      // Start animation sequence if not already running
+      if (!isAnimating) {
+        startFloatingAnimation();
+      }
+    }
+    
+    // Update our tracking set
+    lastKnownTaskIds = currentTaskIds;
+  }
+
+  // Start the floating animation sequence
+  async function startFloatingAnimation() {
+    if (animationQueue.length === 0 || isAnimating) return;
+    
+    isAnimating = true;
+    console.log(`🌊 Moat: Starting floating animation sequence for ${animationQueue.length} items`);
+    
+    // Process animation queue
+    while (animationQueue.length > 0) {
+      const { taskId, delay } = animationQueue.shift();
+      
+      // Wait for stagger delay
+      if (delay > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+      
+      await animateTaskFloating(taskId);
+    }
+    
+    isAnimating = false;
+    console.log('🌊 Moat: Floating animation sequence completed');
+  }
+
+  // Animate a single task floating across the moat
+  async function animateTaskFloating(taskId) {
+    const taskElement = moat.querySelector(`[data-id="${taskId}"]`);
+    if (!taskElement) {
+      console.warn(`🌊 Moat: Task element not found for ID: ${taskId}`);
+      return;
+    }
+    
+    console.log(`🌊 Moat: Animating task: ${taskId}`);
+    
+    // Phase 1: Float across the moat (2.5s)
+    taskElement.classList.add('float-floating');
+    
+    // Wait for floating animation to complete
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    // Phase 2: Gentle settle (0.8s)
+    taskElement.classList.remove('float-floating');
+    taskElement.classList.add('float-settling');
+    
+    // Wait for settle animation
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Phase 3: Highlight as new (3s)
+    taskElement.classList.remove('float-settling');
+    taskElement.classList.add('float-new-highlight');
+    
+    // Remove highlight after 3 seconds
+    setTimeout(() => {
+      taskElement.classList.remove('float-new-highlight');
+    }, 3000);
+    
+    console.log(`🌊 Moat: Animation completed for task: ${taskId}`);
+  }
+
+  // Initialize task tracking when Moat is first shown
+  function initializeTaskTracking() {
+    // Get current tasks to establish baseline
+    try {
+      if (canUseNewTaskSystem() && window.taskStore) {
+        const allTasks = window.taskStore.getAllTasksChronological();
+        lastKnownTaskIds = new Set(allTasks.map(task => task.id));
+      } else {
+        const queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+        lastKnownTaskIds = new Set(queue.map(task => task.id));
+      }
+      console.log(`🌊 Moat: Initialized task tracking with ${lastKnownTaskIds.size} existing tasks`);
+    } catch (error) {
+      console.warn('🌊 Moat: Error initializing task tracking:', error);
+      lastKnownTaskIds = new Set();
+    }
+  }
+
+  // Reset animation system
+  function resetFloatingAnimation() {
+    animationQueue = [];
+    isAnimating = false;
+    lastKnownTaskIds = new Set();
+    
+    // Remove any animation classes from existing items
+    if (moat) {
+      moat.querySelectorAll('.float-moat-item').forEach(item => {
+        item.classList.remove('float-floating', 'float-settling', 'float-new-highlight');
+      });
+    }
+    
+    console.log('🌊 Moat: Animation system reset');
   }
 
 })(); 

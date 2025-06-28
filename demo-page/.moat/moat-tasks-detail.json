@@ -1,36 +1,146 @@
 [
   {
-    "id": "320999e0-2962-430a-8ae3-09dd7e8f6b3c",
+    "id": "38fb7219-ef17-425b-8e66-e7c492fe09dc",
+    "title": "Test Element",
+    "comment": "Test annotation for end-to-end flow validation",
+    "selector": "body",
+    "boundingRect": {
+      "w": 100,
+      "h": 100
+    },
+    "screenshotPath": "",
+    "status": "completed",
+    "timestamp": 1751134977113,
+    "lastModified": 1751135200000
+  },
+  {
+    "id": "d59fc955-0d87-4c8f-8dde-511e6b2d05d7",
+    "title": "Button: Learn More",
+    "comment": "make this \"vibe more\"",
+    "selector": "div.container > div.hero-content:nth-child(1) > div.hero-buttons > button:nth-of-type(2)",
+    "boundingRect": {
+      "x": 445,
+      "y": 462,
+      "w": 152,
+      "h": 44
+    },
+    "screenshotPath": "./screenshots/moat-1751122996115-dkt80734y.png",
+    "status": "completed",
+    "timestamp": 1751122996199,
+    "lastModified": 1751135200000
+  },
+  {
+    "id": "e815f3ba-87be-43d6-b58b-6e93236a9a28",
+    "title": "h1: Welcome to Moat Demo",
+    "comment": "Make this text cursive",
+    "selector": "div.container > div.hero-content:nth-child(1) > h1.hero-title.float-highlight",
+    "boundingRect": {
+      "x": 277,
+      "y": 116,
+      "w": 556,
+      "h": 192
+    },
+    "screenshotPath": "./screenshots/moat-1751135121512-z206rfc5y.png",
+    "status": "completed",
+    "timestamp": 1751135121610,
+    "lastModified": 1751135200000
+  },
+  {
+    "id": "e7698aea-dd31-4705-b445-1f0d8c069d9c",
+    "title": "h2: Features",
+    "comment": "\"Awesomeness\"",
+    "selector": "#features > div.container > h2.section-title.float-highlight",
+    "boundingRect": {
+      "x": 277,
+      "y": 634,
+      "w": 1160,
+      "h": 64
+    },
+    "screenshotPath": "./screenshots/moat-1751135207464-jyl1p7l7r.png",
+    "status": "completed",
+    "timestamp": 1751135207551,
+    "lastModified": 1751135300000
+  },
+  {
+    "id": "2569255d-4dc5-4ade-902b-82a10001df70",
+    "title": "Test Element",
+    "comment": "Test annotation for end-to-end flow validation",
+    "selector": "body",
+    "boundingRect": {
+      "w": 100,
+      "h": 100
+    },
+    "screenshotPath": "",
+    "status": "completed",
+    "timestamp": 1751136041559,
+    "lastModified": 1751136400000
+  },
+  {
+    "id": "b2be3ec2-c534-4f56-a4ee-c9b661c30e0c",
     "title": "Background Container",
-    "comment": "make this background blue",
+    "comment": "make this an animated and pixelated background",
     "selector": "section.hero.float-highlight:nth-child(2)",
     "boundingRect": {
       "x": 0,
-      "y": 63,
+      "y": 71,
       "w": 1713,
       "h": 528
     },
-    "screenshotPath": "./screenshots/moat-1751121133596-apn3h0gyw.png",
-    "status": "pending",
-    "timestamp": 1751121133734
+    "screenshotPath": "./screenshots/moat-1751136082448-1okwn7yb2.png",
+    "status": "completed",
+    "timestamp": 1751136082583,
+    "lastModified": 1751136400000
   },
   {
-    "id": "1f9b57c6-1d34-46ca-9b4a-ebbfcde8cf65",
-    "title": "Colored Container",
-    "comment": "get rid of the button around this element. just text here",
-    "selector": "div.container > div.nav-brand > div.logo.float-highlight",
+    "id": "6582a3f6-85e8-43d9-8978-74d9611d52eb",
+    "title": "Button: Get Started",
+    "comment": "make this match the button next to it",
+    "selector": "div.container > div.hero-content:nth-child(1) > div.hero-buttons > button:nth-of-type(1)",
     "boundingRect": {
       "x": 277,
-      "y": 16,
-      "w": 71,
-      "h": 40
+      "y": 463,
+      "w": 152,
+      "h": 46
     },
-    "screenshotPath": "./screenshots/moat-1751121154175-e6oz9c0oy.png",
-    "status": "pending",
-    "timestamp": 1751121154259
+    "screenshotPath": "./screenshots/moat-1751136101352-7mnuvuian.png",
+    "status": "completed",
+    "timestamp": 1751136101428,
+    "lastModified": 1751136400000
   },
   {
-    "id": "22165ecb-f869-42c3-bfb0-3d04ab4137a8",
+    "id": "ae0f834b-acaa-4f05-8e2b-fdab04190395",
+    "title": "h1: Welcome to Moat Demo",
+    "comment": "change this font to Space Grotesk",
+    "selector": "div.container > div.hero-content:nth-child(1) > h1.hero-title.float-highlight",
+    "boundingRect": {
+      "x": 277,
+      "y": 161,
+      "w": 556,
+      "h": 192
+    },
+    "screenshotPath": "./screenshots/moat-1751136111529-suskjq5nf.png",
+    "status": "completed",
+    "timestamp": 1751136111617,
+    "lastModified": 1751136400000
+  },
+  {
+    "id": "b85a90e7-66cd-455d-a248-d76504de4ceb",
+    "title": "Background Container",
+    "comment": "Grab an image from the internet and replace it here",
+    "selector": "div.container > div.hero-image:nth-child(2) > div.float-highlight",
+    "boundingRect": {
+      "x": 881,
+      "y": 136,
+      "w": 556,
+      "h": 400
+    },
+    "screenshotPath": "./screenshots/moat-1751136123963-qquahlaam.png",
+    "status": "completed",
+    "timestamp": 1751136124059,
+    "lastModified": 1751136400000
+  },
+  {
+    "id": "30f13de0-9dd9-4fa9-baad-6b6b94200b29",
     "title": "Test Element",
     "comment": "Test annotation for end-to-end flow validation",
     "selector": "body",
@@ -40,36 +150,6 @@
     },
     "screenshotPath": "",
     "status": "pending",
-    "timestamp": 1751121814667
-  },
-  {
-    "id": "835ed21d-9779-4b42-8285-b13de61d733f",
-    "title": "h1: Welcome to Moat Demo",
-    "comment": "Make this text blue",
-    "selector": "div.container > div.hero-content:nth-child(1) > h1.hero-title.float-highlight",
-    "boundingRect": {
-      "x": 277,
-      "y": 160,
-      "w": 556,
-      "h": 192
-    },
-    "screenshotPath": "./screenshots/moat-1751121887817-3y6whfuaq.png",
-    "status": "pending",
-    "timestamp": 1751121887913
-  },
-  {
-    "id": "ab5c9a8c-c6c6-45d9-bb5e-813b0c1a3bf1",
-    "title": "Button: Learn More",
-    "comment": "Test",
-    "selector": "div.container > div.hero-content:nth-child(1) > div.hero-buttons > button:nth-of-type(2)",
-    "boundingRect": {
-      "x": 445,
-      "y": 464,
-      "w": 152,
-      "h": 44
-    },
-    "screenshotPath": "./screenshots/moat-1751121897310-ee4rc40ne.png",
-    "status": "pending",
-    "timestamp": 1751121897394
+    "timestamp": 1751136482972
   }
 ]

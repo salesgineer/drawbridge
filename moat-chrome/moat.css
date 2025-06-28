@@ -45,6 +45,102 @@ body.float-comment-mode * {
   }
 }
 
+/* Floating Across the Moat Animation System */
+@keyframes float-across-moat {
+  0% {
+    transform: translateX(-100vw) scale(0.8);
+    opacity: 0.7;
+    filter: blur(1px);
+  }
+  15% {
+    opacity: 0.9;
+    filter: blur(0.5px);
+  }
+  50% {
+    transform: translateX(calc(50vw - 140px)) scale(0.95);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  85% {
+    transform: translateX(calc(100vw - 280px)) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+@keyframes float-gentle-settle {
+  0% {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    transform: translateY(5px) scale(0.98);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@keyframes float-glow-fade {
+  0% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.4);
+  }
+  100% {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Animation Classes */
+.float-moat-item.float-floating {
+  animation: float-across-moat 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  will-change: transform, opacity, filter;
+  z-index: 100;
+  position: relative;
+}
+
+.float-moat-item.float-settling {
+  animation: float-gentle-settle 0.8s ease-out forwards,
+             float-glow-fade 1.2s ease-out forwards;
+  will-change: transform, box-shadow;
+}
+
+.float-moat-item.float-new-highlight {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 197, 253, 0.05));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  animation: float-new-item-pulse 3s ease-in-out;
+}
+
+@keyframes float-new-item-pulse {
+  0%, 100% {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 197, 253, 0.05));
+    border-color: rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 197, 253, 0.08));
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* Staggered animation delays for multiple items */
+.float-moat-item.float-floating:nth-of-type(1) { animation-delay: 0s; }
+.float-moat-item.float-floating:nth-of-type(2) { animation-delay: 0.2s; }
+.float-moat-item.float-floating:nth-of-type(3) { animation-delay: 0.4s; }
+.float-moat-item.float-floating:nth-of-type(4) { animation-delay: 0.6s; }
+.float-moat-item.float-floating:nth-of-type(5) { animation-delay: 0.8s; }
+
+/* Enhanced visibility for floating items */
+.float-moat.float-moat-bottom .float-moat-queue .float-moat-item.float-floating {
+  min-width: 280px;
+  max-width: 320px;
+  flex-shrink: 0;
+}
+
 /* Notification */
 .float-notification {
   position: fixed;
@@ -487,8 +583,6 @@ body.float-comment-mode * {
   padding: 16px;
 }
 
-
-
 .float-moat-loading {
   text-align: center;
   color: #9ca3af;
@@ -623,8 +717,6 @@ body.float-comment-mode * {
   border-left: 4px solid #EF4444;
 }
 
-
-
 .float-moat-completed {
   opacity: 0.7;
   border-color: #d1d5db;
@@ -639,8 +731,6 @@ body.float-comment-mode * {
 .float-moat-completed .float-moat-content {
   color: #6b7280;
 }
-
-
 
 /* Scrollbar styling for Moat - Right position */
 .float-moat.float-moat-right .float-moat-queue::-webkit-scrollbar,
