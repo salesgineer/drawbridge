@@ -176,7 +176,7 @@ describe('Markdown Generation', () => {
         
         expect(markdown).toContain('# Moat Tasks');
         expect(markdown).toContain('**Total**: 0');
-        expect(markdown).toContain('_No tasks yet. Create an annotation to get started._');
+        expect(markdown).toContain('_press "F" to begin making annotations_');
     });
 
     test('generateMarkdownFromTasks should include footer', () => {

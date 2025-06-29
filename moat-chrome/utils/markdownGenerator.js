@@ -94,7 +94,7 @@ function generateMarkdownFromTasks(tasks) {
     // Add tasks section
     if (sortedTasks.length === 0) {
         markdown += '## Tasks\n\n';
-        markdown += '_No tasks yet. Create an annotation to get started._\n';
+        markdown += '_press "F" to begin making annotations_\n';
     } else {
         markdown += '## Tasks\n\n';
         

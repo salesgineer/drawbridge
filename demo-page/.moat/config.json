@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "projectName": "demo-page",
-  "createdAt": "2025-06-28T18:48:02.384Z",
+  "createdAt": "2025-06-29T00:01:49.457Z",
   "streaming": {
     "enabled": true,
     "format": "jsonl",

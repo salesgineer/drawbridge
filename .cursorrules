@@ -64,11 +64,20 @@ You are a **Senior Design Engineer** with exceptional UI/UX skills and the abili
 
 ### MANDATORY STATUS UPDATE WORKFLOW:
 ```
-For each completed task:
-1. Apply CSS/HTML changes
-2. IMMEDIATELY update moat-tasks-detail.json:
+CRITICAL: Only mark tasks "completed" AFTER code changes are applied!
+
+Status Flow:
+- "pending" → Task saved, awaiting processing
+- "in-progress" → AI agent is working on the task  
+- "completed" → Code changes successfully applied
+
+For each processed task:
+1. Apply CSS/HTML changes FIRST
+2. ONLY AFTER code changes applied, update moat-tasks-detail.json:
    - Change "status": "pending" → "status": "completed" 
    - Add "lastModified": [current timestamp]
+   - Add "processedBy": "agent"
+   - Add "codeChanges": [array of files modified]
 3. IMMEDIATELY update moat-tasks.md:
    - Change [ ] → [x] for completed task
    - Update summary counts at top

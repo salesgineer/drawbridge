@@ -1,155 +1,114 @@
 [
   {
-    "id": "38fb7219-ef17-425b-8e66-e7c492fe09dc",
-    "title": "Test Element",
-    "comment": "Test annotation for end-to-end flow validation",
-    "selector": "body",
-    "boundingRect": {
-      "w": 100,
-      "h": 100
-    },
-    "screenshotPath": "",
-    "status": "completed",
-    "timestamp": 1751134977113,
-    "lastModified": 1751135200000
-  },
-  {
-    "id": "d59fc955-0d87-4c8f-8dde-511e6b2d05d7",
-    "title": "Button: Learn More",
-    "comment": "make this \"vibe more\"",
-    "selector": "div.container > div.hero-content:nth-child(1) > div.hero-buttons > button:nth-of-type(2)",
-    "boundingRect": {
-      "x": 445,
-      "y": 462,
-      "w": 152,
-      "h": 44
-    },
-    "screenshotPath": "./screenshots/moat-1751122996115-dkt80734y.png",
-    "status": "completed",
-    "timestamp": 1751122996199,
-    "lastModified": 1751135200000
-  },
-  {
-    "id": "e815f3ba-87be-43d6-b58b-6e93236a9a28",
-    "title": "h1: Welcome to Moat Demo",
-    "comment": "Make this text cursive",
-    "selector": "div.container > div.hero-content:nth-child(1) > h1.hero-title.float-highlight",
-    "boundingRect": {
-      "x": 277,
-      "y": 116,
-      "w": 556,
-      "h": 192
-    },
-    "screenshotPath": "./screenshots/moat-1751135121512-z206rfc5y.png",
-    "status": "completed",
-    "timestamp": 1751135121610,
-    "lastModified": 1751135200000
-  },
-  {
-    "id": "e7698aea-dd31-4705-b445-1f0d8c069d9c",
-    "title": "h2: Features",
-    "comment": "\"Awesomeness\"",
-    "selector": "#features > div.container > h2.section-title.float-highlight",
-    "boundingRect": {
-      "x": 277,
-      "y": 634,
-      "w": 1160,
-      "h": 64
-    },
-    "screenshotPath": "./screenshots/moat-1751135207464-jyl1p7l7r.png",
-    "status": "completed",
-    "timestamp": 1751135207551,
-    "lastModified": 1751135300000
-  },
-  {
-    "id": "2569255d-4dc5-4ade-902b-82a10001df70",
-    "title": "Test Element",
-    "comment": "Test annotation for end-to-end flow validation",
-    "selector": "body",
-    "boundingRect": {
-      "w": 100,
-      "h": 100
-    },
-    "screenshotPath": "",
-    "status": "completed",
-    "timestamp": 1751136041559,
-    "lastModified": 1751136400000
-  },
-  {
-    "id": "b2be3ec2-c534-4f56-a4ee-c9b661c30e0c",
-    "title": "Background Container",
-    "comment": "make this an animated and pixelated background",
-    "selector": "section.hero.float-highlight:nth-child(2)",
-    "boundingRect": {
-      "x": 0,
-      "y": 71,
-      "w": 1713,
-      "h": 528
-    },
-    "screenshotPath": "./screenshots/moat-1751136082448-1okwn7yb2.png",
-    "status": "completed",
-    "timestamp": 1751136082583,
-    "lastModified": 1751136400000
-  },
-  {
-    "id": "6582a3f6-85e8-43d9-8978-74d9611d52eb",
+    "id": "0819f5b9-a262-4fd3-992c-d545f7eace7a",
     "title": "Button: Get Started",
-    "comment": "make this match the button next to it",
+    "comment": "make this button blue",
     "selector": "div.container > div.hero-content:nth-child(1) > div.hero-buttons > button:nth-of-type(1)",
     "boundingRect": {
       "x": 277,
-      "y": 463,
-      "w": 152,
+      "y": 207,
+      "w": 154,
       "h": 46
     },
-    "screenshotPath": "./screenshots/moat-1751136101352-7mnuvuian.png",
+    "screenshotPath": "./screenshots/moat-1751154976252-zrm7bse0i.png",
     "status": "completed",
-    "timestamp": 1751136101428,
-    "lastModified": 1751136400000
+    "timestamp": 1751154976384,
+    "lastModified": 1751155008278
   },
   {
-    "id": "ae0f834b-acaa-4f05-8e2b-fdab04190395",
+    "id": "b970baf8-9b71-4cdb-aa56-e5c717cc0f7d",
+    "title": "Colored Container",
+    "comment": "change to a shield icon",
+    "selector": "div.features-grid > div.feature-card:nth-child(3) > div.feature-icon.float-highlight",
+    "boundingRect": {
+      "x": 1103,
+      "y": 566,
+      "w": 301,
+      "h": 77
+    },
+    "screenshotPath": "./screenshots/moat-1751155209556-8fga52a2c.png",
+    "status": "completed",
+    "timestamp": 1751155209714,
+    "lastModified": 1751155419000,
+    "processedBy": "agent",
+    "codeChanges": [
+      {
+        "file": "demo-page/index.html",
+        "change": "Changed lock icon (🔒) to shield icon (🛡️) in Ultra-Secure & Reliable feature card",
+        "timestamp": 1751155419000
+      }
+    ]
+  },
+  {
+    "id": "3fb26882-cac4-447b-97e5-b0b3215a69c1",
     "title": "h1: Welcome to Moat Demo",
-    "comment": "change this font to Space Grotesk",
+    "comment": "The bridge to your final product",
     "selector": "div.container > div.hero-content:nth-child(1) > h1.hero-title.float-highlight",
     "boundingRect": {
       "x": 277,
-      "y": 161,
+      "y": 165,
       "w": 556,
       "h": 192
     },
-    "screenshotPath": "./screenshots/moat-1751136111529-suskjq5nf.png",
+    "screenshotPath": "./screenshots/moat-1751155324923-lwpaxkj2z.png",
     "status": "completed",
-    "timestamp": 1751136111617,
-    "lastModified": 1751136400000
+    "timestamp": 1751155325057,
+    "lastModified": 1751155520000,
+    "processedBy": "agent",
+    "codeChanges": [
+      {
+        "file": "demo-page/index.html",
+        "change": "Changed h1 text from 'Welcome to Moat Demo' to 'The bridge to your final product'",
+        "timestamp": 1751155520000
+      }
+    ]
   },
   {
-    "id": "b85a90e7-66cd-455d-a248-d76504de4ceb",
+    "id": "1235a6c3-9aaf-4a4f-bc97-dfaa1b182df2",
+    "title": "h2: Features",
+    "comment": "make this say \"How it works\"",
+    "selector": "#features > div.container > h2.section-title.float-highlight",
+    "boundingRect": {
+      "x": 277,
+      "y": 688,
+      "w": 1160,
+      "h": 64
+    },
+    "screenshotPath": "./screenshots/moat-1751155335695-l10z8460h.png",
+    "status": "completed",
+    "timestamp": 1751155335820,
+    "lastModified": 1751155521000,
+    "processedBy": "agent",
+    "codeChanges": [
+      {
+        "file": "demo-page/index.html",
+        "change": "Changed h2 text from 'Features' to 'How it works'",
+        "timestamp": 1751155521000
+      }
+    ]
+  },
+  {
+    "id": "3e22edda-5195-4e91-98c4-02f3a5c5f1fc",
     "title": "Background Container",
-    "comment": "Grab an image from the internet and replace it here",
-    "selector": "div.container > div.hero-image:nth-child(2) > div.float-highlight",
+    "comment": "make this section sage green",
+    "selector": "section.cta.float-highlight:nth-child(4)",
     "boundingRect": {
-      "x": 881,
-      "y": 136,
-      "w": 556,
-      "h": 400
+      "x": 0,
+      "y": 647,
+      "w": 1713,
+      "h": 346
     },
-    "screenshotPath": "./screenshots/moat-1751136123963-qquahlaam.png",
+    "screenshotPath": "./screenshots/moat-1751155355000-ca8a699ny.png",
     "status": "completed",
-    "timestamp": 1751136124059,
-    "lastModified": 1751136400000
-  },
-  {
-    "id": "30f13de0-9dd9-4fa9-baad-6b6b94200b29",
-    "title": "Test Element",
-    "comment": "Test annotation for end-to-end flow validation",
-    "selector": "body",
-    "boundingRect": {
-      "w": 100,
-      "h": 100
-    },
-    "screenshotPath": "",
-    "status": "pending",
-    "timestamp": 1751136482972
+    "timestamp": 1751155355143,
+    "lastModified": 1751155522000,
+    "processedBy": "agent",
+    "codeChanges": [
+      {
+        "file": "demo-page/styles.css",
+        "change": "Changed CTA section background from blue gradient to sage green gradient (#9CAF88 to #87A96B)",
+        "timestamp": 1751155522000
+      }
+    ]
   }
 ]

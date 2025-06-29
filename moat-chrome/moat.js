@@ -313,6 +313,19 @@
     setMoatPosition(savedPosition);
   }
 
+  // Restore visibility state from localStorage
+  async function restoreVisibilityState() {
+    const savedVisibility = localStorage.getItem('moat.visible');
+    console.log('Moat: Restoring visibility state from localStorage:', savedVisibility);
+    
+    if (savedVisibility === 'true') {
+      console.log('Moat: Auto-showing moat based on saved state');
+      await showMoat();
+    } else {
+      console.log('Moat: Moat will remain hidden based on saved state');
+    }
+  }
+
   // Initialize content visibility after Moat creation
   function initializeContentVisibility() {
     console.log('Moat: Initializing content visibility, projectStatus:', projectStatus);
@@ -323,6 +336,50 @@
     } else {
       showConnectProjectContent();
     }
+  }
+
+  // Initialize moat with persistence
+  async function initializeMoat() {
+    console.log('Moat: Starting moat initialization...');
+    
+    // Create moat if it doesn't exist
+    if (!moat) {
+      createMoat();
+    }
+    
+    // Initialize project connection status first
+    await verifyInitialConnection();
+    
+    // Restore visibility state after connection is verified
+    await restoreVisibilityState();
+    
+    // Start DOM monitoring to ensure moat persistence
+    startDOMMonitoring();
+    
+    console.log('Moat: Moat initialization complete');
+  }
+
+  // Monitor DOM to ensure moat doesn't disappear
+  function startDOMMonitoring() {
+    // Check every 2 seconds if moat is still in DOM when it should be visible
+    setInterval(() => {
+      const savedVisibility = localStorage.getItem('moat.visible');
+      if (savedVisibility === 'true') {
+        // Check if moat element still exists in DOM
+        const existingMoat = document.getElementById('moat-moat');
+        if (!existingMoat && isVisible) {
+          console.log('Moat: Moat disappeared from DOM, recreating...');
+          createMoat();
+          moat.classList.add('float-moat-visible');
+          showNotification('Moat restored');
+        } else if (existingMoat && !existingMoat.classList.contains('float-moat-visible') && isVisible) {
+          console.log('Moat: Moat exists but not visible, restoring visibility...');
+          existingMoat.classList.add('float-moat-visible');
+        }
+      }
+    }, 2000);
+    
+    console.log('Moat: DOM monitoring started');
   }
 
   // Handle connect project cancel
@@ -983,6 +1040,10 @@
     moat.classList.add('float-moat-visible');
     isVisible = true;
     
+    // PERSIST VISIBILITY STATE
+    localStorage.setItem('moat.visible', 'true');
+    console.log('Moat: Visibility state saved to localStorage');
+    
     // Initialize animation tracking when first shown
     initializeTaskTracking();
     
@@ -1000,6 +1061,10 @@
     if (moat) {
       moat.classList.remove('float-moat-visible');
       isVisible = false;
+      
+      // PERSIST VISIBILITY STATE
+      localStorage.setItem('moat.visible', 'false');
+      console.log('Moat: Visibility state saved to localStorage');
       
       // Stop auto-refresh when sidebar is hidden
       stopAutoRefresh();
@@ -1476,6 +1541,28 @@
     }
   });
 
+  // Listen for page visibility changes to restore moat if needed
+  document.addEventListener('visibilitychange', async () => {
+    if (!document.hidden) {
+      console.log('Moat: Page became visible, checking moat state...');
+      const savedVisibility = localStorage.getItem('moat.visible');
+      if (savedVisibility === 'true' && !isVisible) {
+        console.log('Moat: Restoring moat visibility after page focus');
+        await showMoat();
+      }
+    }
+  });
+
+  // Listen for window focus to ensure moat persistence
+  window.addEventListener('focus', async () => {
+    console.log('Moat: Window focused, checking moat state...');
+    const savedVisibility = localStorage.getItem('moat.visible');
+    if (savedVisibility === 'true' && !isVisible) {
+      console.log('Moat: Restoring moat visibility after window focus');
+      await showMoat();
+    }
+  });
+
 
 
   // Task 3.10: Cross-tab synchronization test
@@ -1511,6 +1598,29 @@
     // Task 3.10: Cross-tab sync testing
     testCrossTabSync: testCrossTabSync,
     refreshTasks: refreshTasks,
+    // Moat persistence debugging
+    showMoat: showMoat,
+    hideMoat: hideMoat,
+    toggleMoat: toggleMoat,
+    forceRestoreMoat: async () => {
+      console.log('🔧 MoatDebug: Force restoring moat...');
+      localStorage.setItem('moat.visible', 'true');
+      if (!moat) {
+        createMoat();
+      }
+      await showMoat();
+      return { success: true, visible: isVisible };
+    },
+    checkVisibilityState: () => {
+      const saved = localStorage.getItem('moat.visible');
+      const domExists = !!document.getElementById('moat-moat');
+      return {
+        savedState: saved,
+        currentVisible: isVisible,
+        domExists: domExists,
+        shouldBeVisible: saved === 'true'
+      };
+    },
     // Floating animation system debugging
     resetFloatingAnimation: resetFloatingAnimation,
     initializeTaskTracking: initializeTaskTracking,
@@ -1678,17 +1788,17 @@
   
   if (document.readyState === 'loading') {
     console.log('Moat: Document still loading, waiting for DOMContentLoaded...');
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('Moat: DOMContentLoaded fired, creating sidebar...');
-      createMoat();
-      // Wait for content script to attempt connection restoration
-      setTimeout(verifyInitialConnection, 1000);
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log('Moat: DOMContentLoaded fired, initializing moat with persistence...');
+      // Initialize moat with full persistence support
+      await initializeMoat();
     });
   } else {
-    console.log('Moat: Document already loaded, creating sidebar immediately...');
-    createMoat();
-    // Wait for content script to attempt connection restoration
-    setTimeout(verifyInitialConnection, 1000);
+    console.log('Moat: Document already loaded, initializing moat immediately...');
+    // Initialize moat with full persistence support
+    setTimeout(async () => {
+      await initializeMoat();
+    }, 100); // Small delay to ensure content script is ready
   }
 
   // Detect new tasks and trigger floating animation
