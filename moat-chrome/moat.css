@@ -1,3 +1,6 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@300..700&display=swap');
+
 /* Float Chrome Extension Styles */
 
 /* Comment Mode */
@@ -150,7 +153,7 @@ body.float-comment-mode * {
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 10002;
@@ -181,7 +184,7 @@ body.float-comment-mode * {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
   padding: 16px;
   z-index: 10001;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Shake animation for comment box */
@@ -253,7 +256,7 @@ body.float-comment-mode * {
   position: fixed;
   background: white;
   z-index: 10000;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   flex-direction: column;
 }
@@ -272,18 +275,26 @@ body.float-comment-mode * {
   right: 0;
 }
 
-/* Right position - Hide top bar wrapper */
+/* Right position - Top bar wrapper */
 .float-moat.float-moat-right .float-moat-top-bar {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .float-moat.float-moat-right .float-moat-header {
   padding: 16px;
   border-bottom: 1px solid #E5E7EB;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   background: #F9FAFB;
+}
+
+.float-moat.float-moat-right .float-moat-right-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 /* Bottom position */
@@ -306,7 +317,7 @@ body.float-comment-mode * {
 .float-moat.float-moat-bottom .float-moat-top-bar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
   padding: 12px 16px;
   background: #F9FAFB;
   border-bottom: 1px solid #E5E7EB;
@@ -325,6 +336,17 @@ body.float-comment-mode * {
   font-size: 16px;
   font-weight: 600;
   color: #1F2937;
+  font-family: 'Silkscreen', monospace;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.float-moat.float-moat-bottom .float-moat-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .float-moat.float-moat-bottom .float-moat-project-status {
@@ -346,7 +368,6 @@ body.float-comment-mode * {
 }
 
 .float-moat.float-moat-bottom .float-moat-actions {
-  margin-left: auto;
   flex: none;
 }
 
@@ -390,6 +411,10 @@ body.float-comment-mode * {
 .float-moat-connect-project {
   padding: 24px;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
 }
 
 .float-moat-connect-header h3 {
@@ -491,6 +516,11 @@ body.float-comment-mode * {
   font-size: 16px;
   font-weight: 600;
   color: #1F2937;
+  font-family: 'Silkscreen', monospace;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .float-moat-actions {
@@ -500,16 +530,109 @@ body.float-comment-mode * {
 
 .float-moat-actions button {
   background: transparent;
-  border: none;
+  border: 1px solid #E5E7EB;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 18px;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .float-moat-actions button:hover {
-  background: #E5E7EB;
+  background: #F3F4F6;
+  border-color: #D1D5DB;
+}
+
+/* Pixel Icon Styling */
+.float-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  transition: all 0.2s;
+}
+
+/* Drawbridge Logo Icon */
+.float-drawbridge-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+/* Right Controls Container */
+.float-moat-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* More Button Container */
+.float-moat-more-container {
+  position: relative;
+}
+
+/* More Menu Dropdown */
+.float-moat-more-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10003;
+  overflow: hidden;
+  min-width: 250px;
+  margin-top: 4px;
+}
+
+/* Bottom position menu adjustments */
+.float-moat.float-moat-bottom .float-moat-more-menu {
+  bottom: 100%;
+  top: auto;
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+/* Menu Items */
+.float-moat-menu-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background 0.2s;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.float-moat-menu-item:last-child {
+  border-bottom: none;
+}
+
+.float-moat-menu-item:hover {
+  background: #F9FAFB;
+}
+
+/* Menu Text */
+.float-menu-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.float-menu-title {
+  font-weight: 500;
+  font-size: 14px;
+  color: #1F2937;
+}
+
+.float-menu-desc {
+  font-size: 12px;
+  color: #6B7280;
+  line-height: 1.3;
 }
 
 /* Header Actions */
@@ -521,41 +644,33 @@ body.float-comment-mode * {
   border-bottom: 1px solid #e5e7eb;
 }
 
-/* Task 3.2: Enhanced refresh button styling with rotate icon */
+/* Refresh button styled like connect button */
 .float-moat-refresh-btn {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid #E5E7EB;
   border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: #1F2937;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
   transition: all 0.2s;
+  white-space: nowrap;
   font-family: inherit;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .float-moat-refresh-btn:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
+  background: #F3F4F6;
+  border-color: #D1D5DB;
 }
 
 .float-moat-refresh-btn:active {
   transform: translateY(0);
 }
 
-/* Task 3.6: Loading state styling */
+/* Loading state styling */
 .float-moat-refresh-btn.float-refreshing {
-  background: #6366f1;
+  opacity: 0.6;
   cursor: not-allowed;
-  opacity: 0.8;
-}
-
-.float-moat-refresh-btn.float-refreshing .float-refresh-icon {
-  animation: float-refresh-spin 1s linear infinite;
 }
 
 .float-moat-refresh-btn:disabled {
@@ -563,24 +678,15 @@ body.float-comment-mode * {
   cursor: not-allowed;
 }
 
-@keyframes float-refresh-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
 
-.float-refresh-icon {
-  font-size: 14px;
-  transition: transform 0.2s;
-}
-
-.float-refresh-text {
-  font-size: 13px;
-}
 
 .float-moat-queue {
   flex: 1;
+  width: 100%;
   overflow-y: auto;
   padding: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 .float-moat-loading {
@@ -591,10 +697,51 @@ body.float-comment-mode * {
 }
 
 .float-moat-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  min-height: 200px;
+  padding: 40px 20px;
+}
+
+.float-empty-content {
   text-align: center;
   color: #9CA3AF;
-  padding: 40px 20px;
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.float-empty-content p {
+  margin: 0;
+}
+
+.float-moat-hint {
+  margin: 8px 0 0 0;
+}
+
+.float-empty-connect-btn {
+  background: #000000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  margin-top: 8px;
+}
+
+.float-empty-connect-btn:hover {
+  background: #333333;
+  transform: translateY(-1px);
 }
 
 /* Moat Item */
@@ -779,8 +926,8 @@ body.float-comment-mode * {
   border-bottom: 1px solid #E5E7EB;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  flex: 1;
 }
 
 .float-project-indicator {
@@ -801,30 +948,30 @@ body.float-comment-mode * {
 }
 
 .float-project-label {
-  flex: 1;
   font-size: 12px;
   color: #6B7280;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .float-project-connect {
-  background: transparent;
-  border: 1px solid #E5E7EB;
+  background: #000000;
+  color: white;
+  border: none;
   border-radius: 6px;
-  padding: 4px 12px;
+  padding: 6px 16px;
   font-size: 12px;
-  color: #1F2937;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
   font-family: inherit;
+  font-weight: 500;
+  margin-left: 12px;
 }
 
 .float-project-connect:hover {
-  background: #F3F4F6;
-  border-color: #D1D5DB;
+  background: #333333;
+  transform: translateY(-1px);
 }
 
 /* Project Menu */
@@ -886,7 +1033,7 @@ body.float-comment-mode * {
   width: 90%;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   animation: float-modal-slide 0.3s ease;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 @keyframes float-modal-slide {
