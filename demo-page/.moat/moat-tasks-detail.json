@@ -1,114 +1,32 @@
 [
   {
-    "id": "0819f5b9-a262-4fd3-992c-d545f7eace7a",
-    "title": "Button: Get Started",
-    "comment": "make this button blue",
-    "selector": "div.container > div.hero-content:nth-child(1) > div.hero-buttons > button:nth-of-type(1)",
-    "boundingRect": {
-      "x": 277,
-      "y": 207,
-      "w": 154,
-      "h": 46
-    },
-    "screenshotPath": "./screenshots/moat-1751154976252-zrm7bse0i.png",
-    "status": "completed",
-    "timestamp": 1751154976384,
-    "lastModified": 1751155008278
-  },
-  {
-    "id": "b970baf8-9b71-4cdb-aa56-e5c717cc0f7d",
-    "title": "Colored Container",
-    "comment": "change to a shield icon",
-    "selector": "div.features-grid > div.feature-card:nth-child(3) > div.feature-icon.float-highlight",
-    "boundingRect": {
-      "x": 1103,
-      "y": 566,
-      "w": 301,
-      "h": 77
-    },
-    "screenshotPath": "./screenshots/moat-1751155209556-8fga52a2c.png",
-    "status": "completed",
-    "timestamp": 1751155209714,
-    "lastModified": 1751155419000,
-    "processedBy": "agent",
-    "codeChanges": [
-      {
-        "file": "demo-page/index.html",
-        "change": "Changed lock icon (🔒) to shield icon (🛡️) in Ultra-Secure & Reliable feature card",
-        "timestamp": 1751155419000
-      }
-    ]
-  },
-  {
-    "id": "3fb26882-cac4-447b-97e5-b0b3215a69c1",
-    "title": "h1: Welcome to Moat Demo",
-    "comment": "The bridge to your final product",
+    "id": "b49e0fab-2fb6-4490-8142-e8b421d0d0a7",
+    "title": "h1: The bridge to your final produ",
+    "comment": "Make this text red",
     "selector": "div.container > div.hero-content:nth-child(1) > h1.hero-title.float-highlight",
     "boundingRect": {
-      "x": 277,
-      "y": 165,
+      "x": 174,
+      "y": 164,
       "w": 556,
       "h": 192
     },
-    "screenshotPath": "./screenshots/moat-1751155324923-lwpaxkj2z.png",
-    "status": "completed",
-    "timestamp": 1751155325057,
-    "lastModified": 1751155520000,
-    "processedBy": "agent",
-    "codeChanges": [
-      {
-        "file": "demo-page/index.html",
-        "change": "Changed h1 text from 'Welcome to Moat Demo' to 'The bridge to your final product'",
-        "timestamp": 1751155520000
-      }
-    ]
+    "screenshotPath": "./screenshots/moat-1751295744491-f3qhzfyfm.png",
+    "status": "pending",
+    "timestamp": 1751295744651
   },
   {
-    "id": "1235a6c3-9aaf-4a4f-bc97-dfaa1b182df2",
-    "title": "h2: Features",
-    "comment": "make this say \"How it works\"",
-    "selector": "#features > div.container > h2.section-title.float-highlight",
+    "id": "96944134-ef13-458c-af6d-1651ddec18fd",
+    "title": "p: This is a test page for Moat a",
+    "comment": "This text could be so much more inspiring. Please make sure that it's more inspiring. Do everything you can to make this text more inspiring. You're the best at making texts inspiring.",
+    "selector": "div.container > div.hero-content:nth-child(1) > p.hero-subtitle.float-highlight",
     "boundingRect": {
-      "x": 277,
-      "y": 688,
-      "w": 1160,
+      "x": 174,
+      "y": 372,
+      "w": 556,
       "h": 64
     },
-    "screenshotPath": "./screenshots/moat-1751155335695-l10z8460h.png",
-    "status": "completed",
-    "timestamp": 1751155335820,
-    "lastModified": 1751155521000,
-    "processedBy": "agent",
-    "codeChanges": [
-      {
-        "file": "demo-page/index.html",
-        "change": "Changed h2 text from 'Features' to 'How it works'",
-        "timestamp": 1751155521000
-      }
-    ]
-  },
-  {
-    "id": "3e22edda-5195-4e91-98c4-02f3a5c5f1fc",
-    "title": "Background Container",
-    "comment": "make this section sage green",
-    "selector": "section.cta.float-highlight:nth-child(4)",
-    "boundingRect": {
-      "x": 0,
-      "y": 647,
-      "w": 1713,
-      "h": 346
-    },
-    "screenshotPath": "./screenshots/moat-1751155355000-ca8a699ny.png",
-    "status": "completed",
-    "timestamp": 1751155355143,
-    "lastModified": 1751155522000,
-    "processedBy": "agent",
-    "codeChanges": [
-      {
-        "file": "demo-page/styles.css",
-        "change": "Changed CTA section background from blue gradient to sage green gradient (#9CAF88 to #87A96B)",
-        "timestamp": 1751155522000
-      }
-    ]
+    "screenshotPath": "./screenshots/moat-1751295757976-9i305hbhr.png",
+    "status": "pending",
+    "timestamp": 1751295758108
   }
 ]
