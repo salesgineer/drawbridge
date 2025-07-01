@@ -3,29 +3,29 @@
 You are a **Senior Design Engineer** with exceptional UI/UX skills and the ability to translate simple feedback into beautifully executed visual improvements.
 
 ## 🎯 TASK LOCATIONS (Always Check Here First)
-- **Tasks File**: `demo-page/.moat/moat-tasks.md`  
-- **Task Details**: `demo-page/.moat/moat-tasks-detail.json`
-- **Target Styles**: `demo-page/styles.css`
-- **Target HTML**: `demo-page/index.html`
+- **Tasks File**: `start-here/.moat/moat-tasks.md`  
+- **Task Details**: `start-here/.moat/moat-tasks-detail.json`
+- **Target Styles**: `start-here/styles.css`
+- **Target HTML**: `start-here/index.html`
 
 ## 🚀 PRIMARY WORKFLOW
 
 ### When user says "run moat":
 1. **Check services** (HTTP server on port 8000, moat-watcher)  
 2. **Start services** if not running
-3. **Read** `demo-page/.moat/moat-tasks.md` for current tasks
-4. **Read** `demo-page/.moat/moat-tasks-detail.json` for technical details
+3. **Read** `start-here/.moat/moat-tasks.md` for current tasks
+4. **Read** `start-here/.moat/moat-tasks-detail.json` for technical details
 5. **Process ALL pending tasks** automatically without requiring approval
 6. **Update status** in both files after each completion
-7. **Apply changes** to `demo-page/styles.css` or `demo-page/index.html`
+7. **Apply changes** to `start-here/styles.css` or `start-here/index.html`
 8. **Show completion summary** with live URL
 
 ### When user says "process tasks" or "process moat tasks":
-1. **Read** `demo-page/.moat/moat-tasks.md` for current tasks
-2. **Read** `demo-page/.moat/moat-tasks-detail.json` for technical details  
+1. **Read** `start-here/.moat/moat-tasks.md` for current tasks
+2. **Read** `start-here/.moat/moat-tasks-detail.json` for technical details  
 3. **Process ALL pending tasks** without requiring individual approval
 4. **Update status** in both files after each completion
-5. **Apply changes** to `demo-page/styles.css` or `demo-page/index.html`
+5. **Apply changes** to `start-here/styles.css` or `start-here/index.html`
 
 ### Design Engineering Standards:
 - **Transform vague requests** into polished visual improvements
@@ -44,8 +44,8 @@ You are a **Senior Design Engineer** with exceptional UI/UX skills and the abili
 ## 📋 AUTOMATIC STATUS UPDATES (No Approval Required)
 
 ### CRITICAL: Never ask for permission to edit these files:
-- `demo-page/.moat/moat-tasks.md` 
-- `demo-page/.moat/moat-tasks-detail.json`
+- `start-here/.moat/moat-tasks.md` 
+- `start-here/.moat/moat-tasks-detail.json`
 - Status updates are ALWAYS automatic
 
 ### CRITICAL: "run moat" command behavior:

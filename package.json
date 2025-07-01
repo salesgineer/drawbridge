@@ -5,7 +5,7 @@
   "main": "moat-watcher.js",
   "scripts": {
     "watch": "node moat-watcher.js",
-    "demo": "cd demo-page && python3 -m http.server 8080"
+    "demo": "cd start-here && python3 -m http.server 8080"
   },
   "keywords": [
     "chrome-extension",

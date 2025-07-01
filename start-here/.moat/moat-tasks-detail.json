@@ -1,0 +1,17 @@
+[
+  {
+    "id": "7f89a10f-7be0-42ed-a020-b9f943e3d72b",
+    "title": "Button: Click to Annotate This Button",
+    "comment": "Make this button red",
+    "selector": "#color-button",
+    "boundingRect": {
+      "x": 609,
+      "y": 354,
+      "w": 290,
+      "h": 52
+    },
+    "screenshotPath": "./screenshots/moat-1751374314142-ixyvro9ri.png",
+    "status": "pending",
+    "timestamp": 1751374314281
+  }
+]

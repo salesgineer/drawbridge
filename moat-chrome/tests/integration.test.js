@@ -242,7 +242,7 @@ describe('Integration & QA Tests (Tasks 5.1-5.8)', () => {
     //   npx playwright test --project=chromium
     //   npx playwright test --project=webkit
     //   npx playwright test --project=firefox
-    // The real implementation launches demo-page, injects extension, and runs UI smoke steps.
+    // The real implementation launches start-here, injects extension, and runs UI smoke steps.
     expect(true).toBe(true);
   });
 }); 

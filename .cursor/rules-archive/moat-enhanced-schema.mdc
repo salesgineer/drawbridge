@@ -224,13 +224,13 @@ Process related styling tasks for [component name] using @process-moat-tasks.mdc
 
 ### Technical Details
 - **Element**: `h1.hero-title`
-- **Location**: demo-page/styles.css (lines 45-52)
+- **Location**: start-here/styles.css (lines 45-52)
 - **Component**: Hero Section
 - **Page**: http://localhost:8080/
 
 ### Implementation Plan
 - **Approach**: Update CSS color to blue (#3B82F6) and increase font-size from 3rem to 4rem
-- **Files to Modify**: demo-page/styles.css
+- **Files to Modify**: start-here/styles.css
 - **Dependencies**: None
 - **Testing Notes**: Verify text remains readable on mobile screens
 

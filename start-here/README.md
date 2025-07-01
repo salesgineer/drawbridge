@@ -31,7 +31,7 @@ The demo includes three hands-on exercises:
 1. **Start the Demo Server**
    ```bash
    # From the project root
-   cd demo-page
+       cd start-here
    python -m http.server 8000
    # or
    node -e "require('http').createServer(require('fs').readFileSync.bind(require('fs'))).listen(8000)"
