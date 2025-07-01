@@ -12,6 +12,161 @@
   let animationQueue = [];
   let isAnimating = false;
 
+  // ===== CENTRALIZED NOTIFICATION SYSTEM =====
+  
+  // Notification queue and management
+  let notificationQueue = [];
+  let activeNotifications = [];
+  const MAX_VISIBLE_NOTIFICATIONS = 2;
+  const NOTIFICATION_DURATION = 3000;
+  const STACK_OFFSET = 60; // pixels between stacked notifications
+  
+  // Debounce similar notifications
+  let recentNotifications = new Map();
+  const DEBOUNCE_TIME = 2000; // 2 seconds
+  
+  // Notification priorities (higher number = higher priority)
+  const NOTIFICATION_PRIORITIES = {
+    'user-action': 3,    // Direct user actions (save, remove, etc.)
+    'error': 2,          // Errors that need attention
+    'status': 1,         // Status updates (connection changes)
+    'info': 0            // General info (refreshes, etc.)
+  };
+  
+  function categorizeNotification(message, type = 'info') {
+    // User action notifications
+    if (message.includes('✅') || message.includes('Task saved') || 
+        message.includes('Task removed') || message.includes('Task completed') ||
+        message.includes('connected to project') || message.includes('disconnected')) {
+      return 'user-action';
+    }
+    
+    // Error notifications
+    if (type === 'error' || message.includes('❌') || message.includes('Failed')) {
+      return 'error';
+    }
+    
+    // Status notifications
+    if (message.includes('Connection expired') || message.includes('Project connection') ||
+        message.includes('moved to') || message.includes('restored')) {
+      return 'status';
+    }
+    
+    // Info notifications (refreshes, sync, etc.)
+    return 'info';
+  }
+  
+  function shouldShowNotification(message, category) {
+    // Always show user actions and errors
+    if (category === 'user-action' || category === 'error') {
+      return true;
+    }
+    
+    // Debounce frequent info notifications
+    if (category === 'info') {
+      const key = message.replace(/[0-9]/g, '#'); // normalize numbers
+      const lastShown = recentNotifications.get(key);
+      const now = Date.now();
+      
+      if (lastShown && (now - lastShown) < DEBOUNCE_TIME) {
+        return false;
+      }
+      
+      recentNotifications.set(key, now);
+    }
+    
+    return true;
+  }
+  
+  function createNotificationElement(message, type, category) {
+    const notification = document.createElement('div');
+    notification.className = `float-notification ${type === 'error' ? 'float-error' : ''}`;
+    notification.textContent = message;
+    notification.dataset.category = category;
+    notification.dataset.timestamp = Date.now();
+    
+    return notification;
+  }
+  
+  function positionNotifications() {
+    activeNotifications.forEach((notification, index) => {
+      const bottomOffset = 20 + (index * STACK_OFFSET);
+      notification.style.bottom = `${bottomOffset}px`;
+      notification.style.zIndex = 10002 - index;
+      
+      // Add stacking visual effect
+      if (index > 0) {
+        notification.style.transform = `scale(${1 - (index * 0.05)})`;
+        notification.style.opacity = `${1 - (index * 0.15)}`;
+      }
+    });
+  }
+  
+  function removeNotification(notification) {
+    const index = activeNotifications.indexOf(notification);
+    if (index !== -1) {
+      activeNotifications.splice(index, 1);
+      notification.remove();
+      positionNotifications();
+    }
+  }
+  
+  function processNotificationQueue() {
+    while (notificationQueue.length > 0 && activeNotifications.length < MAX_VISIBLE_NOTIFICATIONS) {
+      const { message, type, category } = notificationQueue.shift();
+      
+      const notification = createNotificationElement(message, type, category);
+      document.body.appendChild(notification);
+      activeNotifications.push(notification);
+      
+      // Set removal timer
+      setTimeout(() => {
+        removeNotification(notification);
+      }, NOTIFICATION_DURATION);
+    }
+    
+    positionNotifications();
+  }
+  
+  // Enhanced notification function with smart filtering
+  function showNotification(message, type = 'info') {
+    const category = categorizeNotification(message, type);
+    
+    // Skip notifications that shouldn't be shown
+    if (!shouldShowNotification(message, category)) {
+      return;
+    }
+    
+    // Add to queue with priority
+    const priority = NOTIFICATION_PRIORITIES[category] || 0;
+    const notificationData = { message, type, category, priority };
+    
+    // Insert by priority (higher priority first)
+    let insertIndex = notificationQueue.length;
+    for (let i = 0; i < notificationQueue.length; i++) {
+      if (notificationQueue[i].priority < priority) {
+        insertIndex = i;
+        break;
+      }
+    }
+    
+    notificationQueue.splice(insertIndex, 0, notificationData);
+    processNotificationQueue();
+  }
+  
+  // Clean up old debounce entries periodically
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, timestamp] of recentNotifications.entries()) {
+      if (now - timestamp > DEBOUNCE_TIME * 2) {
+        recentNotifications.delete(key);
+      }
+    }
+  }, 30000); // Clean every 30 seconds
+  
+  // Expose notification system to global scope for content_script.js
+  window.showMoatNotification = showNotification;
+
   // Create Moat sidebar
   function createMoat() {
     console.log('Moat: createMoat called, creating sidebar element...');
@@ -47,53 +202,46 @@
             </h3>
           </div>
           <div class="float-moat-right-controls">
-            <div class="float-moat-project-status">
-              <span class="float-project-label">Project not connected</span>
-              <span class="float-project-indicator"></span>
-              <button class="float-project-connect">Connect</button>
-            </div>
-            <div class="float-moat-header-actions">
-              <button class="float-moat-refresh-btn" id="float-refresh-btn" title="Refresh Tasks (Cmd+R)" style="display: none;">
-                Refresh
+            <div class="float-moat-project-status-container">
+              <button class="float-moat-project-dropdown" id="float-project-dropdown">
+                <span class="float-project-indicator"></span>
+                            <span class="float-project-label">Disconnected</span>
+            <svg class="float-project-chevron" viewBox="0 0 24 24" style="display: none;">
+              <polygon points="23 8 23 9 22 9 22 10 21 10 21 11 20 11 20 12 19 12 19 13 18 13 18 14 17 14 17 15 16 15 16 16 15 16 15 17 14 17 14 18 13 18 13 19 11 19 11 18 10 18 10 17 9 17 9 16 8 16 8 15 7 15 7 14 6 14 6 13 5 13 5 12 4 12 4 11 3 11 3 10 2 10 2 9 1 9 1 8 2 8 2 7 3 7 3 6 4 6 4 7 5 7 5 8 6 8 6 9 7 9 7 10 8 10 8 11 9 11 9 12 10 12 10 13 11 13 11 14 13 14 13 13 14 13 14 12 15 12 15 11 16 11 16 10 17 10 17 9 18 9 18 8 19 8 19 7 20 7 20 6 21 6 21 7 22 7 22 8 23 8"/>
+            </svg>
               </button>
-            </div>
-            <div class="float-moat-actions">
-              <div class="float-moat-more-container">
-                <button class="float-moat-more-btn" title="More options">
+              <div class="float-moat-project-menu" style="display: none;">
+                <div class="float-moat-menu-item" data-action="export">
                   <svg class="float-icon" viewBox="0 0 24 24">
-                    <rect x="5" y="11" width="2" height="2"/>
-                    <rect x="11" y="11" width="2" height="2"/>
-                    <rect x="17" y="11" width="2" height="2"/>
+                    <polygon points="5 10 4 10 4 8 6 8 6 9 7 9 7 10 8 10 8 11 9 11 9 12 10 12 10 13 11 13 11 1 13 1 13 13 14 13 14 12 15 12 15 11 16 11 16 10 17 10 17 9 18 9 18 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10"/>
+                    <rect x="2" y="21" width="20" height="2"/>
                   </svg>
-                </button>
-                <div class="float-moat-more-menu" style="display: none;">
-                  <div class="float-moat-menu-item" data-action="toggle-position">
-                    <svg class="float-icon" viewBox="0 0 24 24">
-                      <polygon points="9 1 9 3 3 3 3 9 1 9 1 2 2 2 2 1 9 1"/>
-                      <polygon points="9 21 9 23 2 23 2 22 1 22 1 15 3 15 3 21 9 21"/>
-                      <polygon points="23 15 23 22 22 22 22 23 15 23 15 21 21 21 21 15 23 15"/>
-                      <polygon points="23 2 23 9 21 9 21 3 15 3 15 1 22 1 22 2 23 2"/>
-                    </svg>
-                    <div class="float-menu-text">
-                      <span class="float-menu-title">Change Position</span>
-                      <span class="float-menu-desc">Switch between right sidebar and bottom panel</span>
-                    </div>
+                  <div class="float-menu-text">
+                    <span class="float-menu-title">Export Data</span>
+                    <span class="float-menu-desc">Download annotations as JSON file</span>
                   </div>
-                  <div class="float-moat-menu-item" data-action="export">
-                    <svg class="float-icon" viewBox="0 0 24 24">
-                      <polygon points="5 10 4 10 4 8 6 8 6 9 7 9 7 10 8 10 8 11 9 11 9 12 10 12 10 13 11 13 11 1 13 1 13 13 14 13 14 12 15 12 15 11 16 11 16 10 17 10 17 9 18 9 18 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10"/>
-                      <rect x="2" y="21" width="20" height="2"/>
-                    </svg>
-                    <div class="float-menu-text">
-                      <span class="float-menu-title">Export Data</span>
-                      <span class="float-menu-desc">Download annotations as JSON file</span>
-                    </div>
+                </div>
+                <div class="float-moat-menu-item" data-action="refresh">
+                  <svg class="float-icon" viewBox="0 0 24 24">
+                    <polygon points="12 2 12 3 11 3 11 4 10 4 10 5 9 5 9 6 8 6 8 7 7 7 7 8 6 8 6 9 5 9 5 10 4 10 4 11 3 11 3 12 2 12 2 13 1 13 1 12 2 12 2 11 3 11 3 10 4 10 4 9 5 9 5 8 6 8 6 7 7 7 7 6 8 6 8 5 9 5 9 4 10 4 10 3 11 3 11 2 12 2"/>
+                    <polygon points="12 22 12 21 13 21 13 20 14 20 14 19 15 19 15 18 16 18 16 17 17 17 17 16 18 16 18 15 19 15 19 14 20 14 20 13 21 13 21 12 22 12 22 13 23 13 23 12 22 12 22 13 21 13 21 14 20 14 20 15 19 15 19 16 18 16 18 17 17 17 17 18 16 18 16 19 15 19 15 20 14 20 14 21 13 21 13 22 12 22"/>
+                  </svg>
+                  <div class="float-menu-text">
+                    <span class="float-menu-title">Refresh Data</span>
+                    <span class="float-menu-desc">Reload task data from markdown files</span>
                   </div>
                 </div>
               </div>
-              <button class="float-moat-close">
+            </div>
+            <div class="float-moat-actions">
+              <button class="float-moat-position-btn" title="Dock to right">
                 <svg class="float-icon" viewBox="0 0 24 24">
-                  <polygon points="14 13 15 13 15 14 16 14 16 15 17 15 17 16 18 16 18 17 19 17 19 18 20 18 20 19 21 19 21 20 22 20 22 21 21 21 21 22 20 22 20 21 19 21 19 20 18 20 18 19 17 19 17 18 16 18 16 17 15 17 15 16 14 16 14 15 13 15 13 14 11 14 11 15 10 15 10 16 9 16 9 17 8 17 8 18 7 18 7 19 6 19 6 20 5 20 5 21 4 21 4 22 3 22 3 21 2 21 2 20 3 20 3 19 4 19 4 18 5 18 5 17 6 17 6 16 7 16 7 15 8 15 8 14 9 14 9 13 10 13 10 11 9 11 9 10 8 10 8 9 7 9 7 8 6 8 6 7 5 7 5 6 4 6 4 5 3 5 3 4 2 4 2 3 3 3 3 2 4 2 4 3 5 3 5 4 6 4 6 5 7 5 7 6 8 6 8 7 9 7 9 8 10 8 10 9 11 9 11 10 13 10 13 9 14 9 14 8 15 8 15 7 16 7 16 6 17 6 17 5 18 5 18 4 19 4 19 3 20 3 20 2 21 2 21 3 22 3 22 4 21 4 21 5 20 5 20 6 19 6 19 7 18 7 18 8 17 8 17 9 16 9 16 10 15 10 15 11 14 11 14 13"/>
+                  <polygon points="7 19 7 17 8 17 8 16 9 16 9 15 10 15 10 14 11 14 11 13 12 13 12 11 11 11 11 10 10 10 10 9 9 9 9 8 8 8 8 7 7 7 7 5 8 5 8 4 10 4 10 5 11 5 11 6 12 6 12 7 13 7 13 8 14 8 14 9 15 9 15 10 16 10 16 11 17 11 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7">
+                  </svg>
+              </button>
+              <button class="float-moat-close" title="Close Moat">
+                <svg class="float-icon" viewBox="0 0 24 24">
+                  <polygon points="15 13 16 13 16 14 17 14 17 15 18 15 18 16 19 16 19 17 20 17 20 18 21 18 21 19 22 19 22 20 21 20 21 21 20 21 20 22 19 22 19 21 18 21 18 20 17 20 17 19 16 19 16 18 15 18 15 17 14 17 14 16 13 16 13 15 11 15 11 16 10 16 10 17 9 17 9 18 8 18 8 19 7 19 7 20 6 20 6 21 5 21 5 22 4 22 4 21 3 21 3 20 2 20 2 19 3 19 3 18 4 18 4 17 5 17 5 16 6 16 6 15 7 15 7 14 8 14 8 13 9 13 9 11 8 11 8 10 7 10 7 9 6 9 6 8 5 8 5 7 4 7 4 6 3 6 3 5 2 5 2 4 3 4 3 3 4 3 4 2 5 2 5 3 6 3 6 4 7 4 7 5 8 5 8 6 9 6 9 7 10 7 10 8 11 8 11 9 13 9 13 8 14 8 14 7 15 7 15 6 16 6 16 5 17 5 17 4 18 4 18 3 19 3 19 2 20 2 20 3 21 3 21 4 22 4 22 5 21 5 21 6 20 6 20 7 19 7 19 8 18 8 18 9 17 9 17 10 16 10 16 11 15 11 15 13"/>
                 </svg>
               </button>
             </div>
@@ -138,51 +286,54 @@
     // Event listeners
     moat.querySelector('.float-moat-close').addEventListener('click', hideMoat);
     
-    // Connect button with error checking
-    const connectBtn = moat.querySelector('.float-project-connect');
-    if (connectBtn) {
-      connectBtn.addEventListener('click', handleProjectButton);
-      console.log('Moat: Connect button event listener attached successfully');
-    } else {
-      console.error('Moat: Connect button not found!');
-    }
+    // Project dropdown button functionality
+    const projectDropdown = moat.querySelector('.float-moat-project-dropdown');
+    const projectMenu = moat.querySelector('.float-moat-project-menu');
     
-    moat.querySelector('#float-refresh-btn').addEventListener('click', refreshTasks);
-    
-    // More button dropdown functionality
-    const moreBtn = moat.querySelector('.float-moat-more-btn');
-    const moreMenu = moat.querySelector('.float-moat-more-menu');
-    
-    if (moreBtn && moreMenu) {
-      moreBtn.addEventListener('click', function(e) {
+    if (projectDropdown && projectMenu) {
+      projectDropdown.addEventListener('click', function(e) {
         e.stopPropagation();
-        const isVisible = moreMenu.style.display === 'block';
-        moreMenu.style.display = isVisible ? 'none' : 'block';
+        
+        // If not connected, trigger connection flow
+        if (projectStatus === 'not-connected') {
+          handleProjectButton();
+          return;
+        }
+        
+        // If connected, show dropdown menu
+        const isVisible = projectMenu.style.display === 'block';
+        projectMenu.style.display = isVisible ? 'none' : 'block';
       });
       
-      // Handle menu item clicks
-      moreMenu.addEventListener('click', function(e) {
+      // Handle project menu item clicks
+      projectMenu.addEventListener('click', function(e) {
         const menuItem = e.target.closest('.float-moat-menu-item');
         if (menuItem) {
           const action = menuItem.dataset.action;
           
-          if (action === 'toggle-position') {
-            toggleMoatPosition();
-          } else if (action === 'export') {
+          if (action === 'export') {
             exportAnnotations();
+          } else if (action === 'refresh') {
+            refreshTasks(false); // Manual refresh should show notifications
           }
           
           // Close menu after action
-          moreMenu.style.display = 'none';
+          projectMenu.style.display = 'none';
         }
       });
       
-      // Close menu when clicking outside
+      // Close project menu when clicking outside
       document.addEventListener('click', function(e) {
         if (!moat.contains(e.target)) {
-          moreMenu.style.display = 'none';
+          projectMenu.style.display = 'none';
         }
       });
+    }
+    
+    // Position button functionality
+    const positionBtn = moat.querySelector('.float-moat-position-btn');
+    if (positionBtn) {
+      positionBtn.addEventListener('click', toggleMoatPosition);
     }
     
     // Connect project inline buttons
@@ -215,7 +366,7 @@
         // Load existing tasks after successful connection
         setTimeout(async () => {
           console.log('🔄 Moat: Loading tasks after connection...');
-          await refreshTasks();
+          await refreshTasks(true); // Silent refresh after connection
         }, 1000);
         
         // Remove this listener since we only need it once
@@ -383,6 +534,23 @@
       moat.classList.add('float-moat-right');
     }
     
+    // Update position button icon and tooltip based on current position
+    const positionBtn = moat.querySelector('.float-moat-position-btn');
+    if (positionBtn) {
+      const svg = positionBtn.querySelector('svg polygon');
+      if (svg) {
+        if (position === 'right') {
+          // Angle down icon for right position (indicates moving to bottom)
+          svg.setAttribute('points', '5 7 7 7 7 8 8 8 8 9 9 9 9 10 10 10 10 11 11 11 11 12 13 12 13 11 14 11 14 10 15 10 15 9 16 9 16 8 17 8 17 7 19 7 19 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7');
+          positionBtn.title = 'Dock to bottom';
+        } else {
+          // Expand icon for bottom position (indicates moving to right)
+          svg.setAttribute('points', '7 19 7 17 8 17 8 16 9 16 9 15 10 15 10 14 11 14 11 13 12 13 12 11 11 11 11 10 10 10 10 9 9 9 9 8 8 8 8 7 7 7 7 5 8 5 8 4 10 4 10 5 11 5 11 6 12 6 12 7 13 7 13 8 14 8 14 9 15 9 15 10 16 10 16 11 17 11 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 12 17 12 18 11 18 11 19 10 19 10 20 8 20 8 19 7 19');
+          positionBtn.title = 'Dock to right';
+        }
+      }
+    }
+    
     // Update toggle position icon in dropdown menu
     const positionMenuItem = moat.querySelector('[data-action="toggle-position"]');
     if (positionMenuItem) {
@@ -536,33 +704,25 @@
     
     if (!moat) return;
     
-    const indicator = moat.querySelector('.float-project-indicator');
-    const label = moat.querySelector('.float-project-label');
-    const button = moat.querySelector('.float-project-connect');
-    const refreshBtn = moat.querySelector('.float-moat-refresh-btn');
+      const indicator = moat.querySelector('.float-project-indicator');
+  const label = moat.querySelector('.float-project-label');
+  const chevron = moat.querySelector('.float-project-chevron');
+  
+  if (status === 'connected' && path) {
+    indicator.className = 'float-project-indicator float-project-connected';
+    const projectName = path.split('/').pop() || path;
+    label.textContent = `${projectName} connected`;
     
-    if (status === 'connected' && path) {
-      indicator.className = 'float-project-indicator float-project-connected';
-      const projectName = path.split('/').pop() || path;
-      label.textContent = `${projectName} connected`;
-      button.textContent = '⚙️';
-      button.title = 'Project settings';
-      
-      // Show refresh button when connected
-      if (refreshBtn) {
-        refreshBtn.style.display = 'block';
-      }
-    } else {
-      indicator.className = 'float-project-indicator float-project-disconnected';
-      label.textContent = 'Project not connected';
-      button.textContent = 'Connect';
-      button.title = 'Connect to a project folder';
-      
-      // Hide refresh button when not connected
-      if (refreshBtn) {
-        refreshBtn.style.display = 'none';
-      }
-    }
+    // Show chevron when connected
+    if (chevron) chevron.style.display = 'block';
+    
+  } else {
+    indicator.className = 'float-project-indicator float-project-disconnected';
+    label.textContent = 'Disconnected';
+    
+    // Hide chevron when not connected
+    if (chevron) chevron.style.display = 'none';
+  }
   }
 
   // Verify initial connection on page load
@@ -590,7 +750,7 @@
         // Load tasks after verified connection
         setTimeout(async () => {
           console.log('🔄 Moat: Loading tasks after verified connection...');
-          await refreshTasks();
+          await refreshTasks(true); // Silent refresh after verification
         }, 500);
       } else {
         console.log('❌ Moat: Connection verification failed, clearing saved data');
@@ -666,7 +826,7 @@
   }
 
   // Comprehensive refresh function for Tasks 3.1-3.10
-  async function refreshTasks(silent = false) {
+  async function refreshTasks(silent = true) { // Default to silent to reduce notification spam
     if (!silent) {
       console.log('🔄 Moat: Manual refresh triggered');
     }
@@ -698,12 +858,13 @@
         console.warn(`🔄 Moat: Refresh took ${duration.toFixed(1)}ms (exceeds 100ms target)`);
       }
       
+      // Only show success notification for manual refreshes
       if (!silent) {
         showNotification('✅ Tasks refreshed successfully');
       }
       
     } catch (error) {
-      // Task 3.7: Error handling with user feedback
+      // Task 3.7: Error handling with user feedback (always show errors)
       console.error('🔄 Moat: Refresh failed:', error);
       showNotification(`❌ Refresh failed: ${error.message}`, 'error');
       
@@ -716,7 +877,9 @@
       }
     } finally {
       // Task 3.6: Remove loading state
-      setRefreshLoadingState(false);
+      if (!silent) {
+        setRefreshLoadingState(false);
+      }
     }
   }
 
@@ -792,15 +955,15 @@
     return `
       <div class="float-moat-item ${statusClass}" data-id="${task.id}">
         <div class="float-moat-item-header">
-          <span class="float-moat-target">${task.title || task.elementLabel || 'UI Element'}</span>
-          <div class="float-moat-item-actions">
+          <div class="float-moat-status-and-time">
             <span class="float-moat-status-text">${statusText}</span>
-            <button class="float-moat-remove" data-id="${task.id}" title="Remove task">×</button>
+            <span class="float-moat-time">${timeAgo}</span>
           </div>
+          <button class="float-moat-remove" data-id="${task.id}" title="Remove task">×</button>
         </div>
         <div class="float-moat-content">${task.comment}</div>
         <div class="float-moat-meta">
-          <span class="float-moat-time">${timeAgo}</span>
+          <span class="float-moat-target">${task.title || task.elementLabel || 'UI Element'}</span>
           ${task.selector ? `<span class="float-moat-selector">${task.selector}</span>` : ''}
         </div>
       </div>
@@ -969,8 +1132,13 @@
     queueContainer.innerHTML = `
       <div class="float-moat-empty">
         <div class="float-empty-content">
-          <p>No tasks found</p>
-          <p class="float-moat-hint">Connect to a project to see markdown tasks</p>
+          <div class="float-empty-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="2 16 1 16 1 3 2 3 2 2 9 2 9 3 10 3 10 4 19 4 19 5 20 5 20 9 5 9 5 10 4 10 4 12 3 12 3 14 2 14 2 16"/>
+              <polygon points="23 10 23 12 22 12 22 14 21 14 21 16 20 16 20 18 19 18 19 21 18 21 18 22 3 22 3 21 2 21 2 18 3 18 3 16 4 16 4 14 5 14 5 12 6 12 6 10 23 10"/>
+            </svg>
+          </div>
+          <p class="float-moat-hint">Connect to a local folder</p>
           ${projectStatus !== 'connected' ? 
             '<button class="float-empty-connect-btn">Connect</button>' : 
             ''
@@ -1279,20 +1447,27 @@
   function renderSimpleTaskItem(task) {
     const isCompleted = ['completed', 'resolved'].includes(task.status);
     const statusText = getStatusText(task.status);
+    const timeAgo = formatTimeAgo(task.timestamp || task.createdAt);
     
     return `
       <div class="float-moat-item ${isCompleted ? 'float-moat-completed' : ''}" 
            data-id="${task.id}"
            data-type="${task.format || 'current'}">
         <div class="float-moat-item-header">
-          <span class="float-moat-target" title="${task.title}">${task.title}</span>
-          <span class="float-moat-status-text">${statusText}</span>
+          <div class="float-moat-status-and-time">
+            <span class="float-moat-status-text">${statusText}</span>
+            <span class="float-moat-time">${timeAgo}</span>
+          </div>
           ${task.format === 'current' ? 
-            `<button class="float-moat-remove" data-id="${task.id}">×</button>` : 
+            `<button class="float-moat-remove" data-id="${task.id}" title="Remove task">×</button>` : 
             ''
           }
         </div>
         <div class="float-moat-content">${task.content}</div>
+        <div class="float-moat-meta">
+          <span class="float-moat-target" title="${task.title}">${task.title}</span>
+          ${task.selector ? `<span class="float-moat-selector">${task.selector}</span>` : ''}
+        </div>
       </div>
     `;
   }
@@ -1396,15 +1571,7 @@
     }
   }
 
-  // Show notification
-  function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.className = 'float-notification';
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.remove(), 3000);
-  }
+  // Legacy showNotification function removed - now using centralized notification system above
 
   // Remove annotation - supports both new TaskStore system and legacy localStorage
   async function removeAnnotation(id) {
@@ -1451,7 +1618,7 @@
       }
       
       // Refresh the sidebar to show updated task list
-      await refreshTasks();
+      await refreshTasks(true); // Silent refresh after task removal
       
     } catch (error) {
       console.error('❌ Moat: Error removing task:', error);
@@ -1551,7 +1718,7 @@
     // Task 3.5: Real-time task status updates in sidebar
     if (isVisible) {
       console.log('🔄 Moat: Auto-refreshing sidebar due to task update');
-      await refreshTasks();
+      await refreshTasks(true); // Silent refresh for automatic updates
     }
   });
 
@@ -1561,7 +1728,7 @@
     if ((e.metaKey || e.ctrlKey) && e.key === 'r' && isVisible) {
       e.preventDefault();
       console.log('🔄 Moat: Keyboard refresh triggered (Cmd+R)');
-      refreshTasks();
+      refreshTasks(false); // Manual refresh should show notifications
     }
   });
 
@@ -1583,9 +1750,9 @@
   // Task 3.9 & 3.10: Enhanced storage changes listener for cross-tab sync
   window.addEventListener('storage', async (e) => {
     if (e.key === 'moat.queue' && isVisible) {
-      console.log('🔄 Moat: Detected cross-tab localStorage change, refreshing sidebar');
-      // Use refreshTasks for comprehensive sync instead of just renderQueue
-      setTimeout(() => refreshTasks(), 100); // Small delay to avoid rapid refreshes
+      console.log('🔄 Moat: Detected cross-tab localStorage change, refreshing sidebar silently');
+      // Use refreshTasks with silent=true to avoid notification spam
+      setTimeout(() => refreshTasks(true), 100); // Small delay to avoid rapid refreshes
     }
   });
 
@@ -1597,7 +1764,7 @@
         // Refresh tasks when project connects
         console.log('Moat: Project connected, refreshing tasks...');
         if (isVisible) {
-          await refreshTasks(); // Use refreshTasks instead of renderQueue for full refresh
+          await refreshTasks(true); // Silent refresh when project connects
         }
       } else {
         updateProjectStatus('not-connected', null);
