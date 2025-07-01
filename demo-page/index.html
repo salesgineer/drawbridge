@@ -1,120 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Float Demo - Annotation Test Page</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700@display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawbridge - Interactive UI Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">
-                <div class="logo" style="background: #3B82F6; color: white; padding: 8px 16px; border-radius: 6px; font-weight: bold;">Moat</div>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#pricing">Pricing</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact" class="btn-contact">Contact</a></li>
-            </ul>
+  <!-- Header Section -->
+  <header class="demo-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="brand">
+          <svg class="drawbridge-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <!-- Bridge tower left -->
+            <rect x="2" y="8" width="2" height="14"/>
+            <rect x="4" y="6" width="2" height="16"/>
+            <rect x="6" y="4" width="2" height="18"/>
+            <rect x="8" y="2" width="2" height="20"/>
+            <rect x="10" y="1" width="2" height="21"/>
+            
+            <!-- Bridge tower right -->
+            <rect x="12" y="1" width="2" height="21"/>
+            <rect x="14" y="2" width="2" height="20"/>
+            <rect x="16" y="4" width="2" height="18"/>
+            <rect x="18" y="6" width="2" height="16"/>
+            <rect x="20" y="8" width="2" height="14"/>
+            
+            <!-- Bridge span -->
+            <rect x="2" y="14" width="20" height="2"/>
+            
+            <!-- Tower top details -->
+            <rect x="8" y="1" width="8" height="1"/>
+            <rect x="9" y="2" width="6" height="1"/>
+            <rect x="10" y="3" width="4" height="1"/>
+            <rect x="11" y="4" width="2" height="1"/>
+            
+            <!-- Pen tip -->
+            <rect x="11.5" y="0" width="1" height="2"/>
+            
+            <!-- Gate opening -->
+            <rect x="10" y="16" width="4" height="6" fill="white"/>
+            <rect x="9" y="18" width="6" height="4" fill="white"/>
+            <rect x="8" y="19" width="8" height="3" fill="white"/>
+          </svg>
+          <h1>Drawbridge</h1>
         </div>
-    </nav>
+        <nav class="demo-nav">
+          <button class="nav-button" data-target="about">About</button>
+          <button class="nav-button" data-target="exercises">Try It</button>
+          <button class="nav-button" data-target="setup">Setup</button>
+        </nav>
+      </div>
+    </div>
+  </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title" style="color: #3B82F6;">The bridge to your final product</h1>
-                <p class="hero-subtitle">This is a test page for Moat annotations. Press 'f' and click any element to add feedback!</p>
-                <div class="hero-buttons">
-                    <button class="btn btn-primary">Get Started</button>
-                    <button class="btn btn-secondary">Learn More</button>
-                </div>
-            </div>
-            <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&h=800&q=80" 
-                     alt="Modern workspace with floating UI elements and design tools" 
-                     class="hero-image-main">
-            </div>
+  <!-- Hero Section -->
+  <section id="about" class="demo-section hero-section">
+    <div class="container">
+      <div class="hero-content">
+        <h2>Bridge the Gap Between Design & Code</h2>
+        <p class="hero-subtitle">
+          Drawbridge transforms visual feedback into structured code changes. 
+          Click any UI element, describe what you want, and watch AI implement your changes instantly.
+        </p>
+        <div class="hero-features">
+          <div class="feature-card">
+            <div class="feature-icon">👆</div>
+            <h3>Visual Annotations</h3>
+            <p>Click any element and describe your desired changes</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>AI Processing</h3>
+            <p>Intelligent code generation with human approval</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Live Updates</h3>
+            <p>See changes applied instantly in your browser</p>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <div class="container">
-            <h2 class="section-title">How it works</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🚀</div>
-                    <h3>Best-in-Class Performance</h3>
-                    <p>Lightning fast load times and smooth interactions</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <h3>Award-Winning Design</h3>
-                    <p>Modern and clean interface that users love</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🛡️</div>
-                    <h3>Ultra-Secure & Reliable</h3>
-                    <p>Bank-level security for your peace of mind</p>
-                </div>
-            </div>
+  <!-- Interactive Exercises Section -->
+  <section id="exercises" class="demo-section exercises-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Interactive Exercises</h2>
+        <p>Practice using Drawbridge with these hands-on exercises. Press <kbd>f</kbd> to enter annotation mode, then click on the elements below.</p>
+      </div>
+
+      <!-- Exercise 1: Change Color -->
+      <div class="exercise-card" id="exercise-1">
+        <div class="exercise-header">
+          <span class="exercise-number">01</span>
+          <h3>Change Colors</h3>
+          <span class="exercise-status">Try it</span>
         </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta">
-        <div class="container">
-            <h2>Ready to Get Started?</h2>
-            <p>Join thousands of happy customers today</p>
-            <form class="email-form">
-                <input type="email" placeholder="Enter your email" class="email-input">
-                <button type="submit" class="btn btn-submit">Subscribe</button>
-            </form>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Press</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="#">Features</a></li>
-                        <li><a href="#">Pricing</a></li>
-                        <li><a href="#">Security</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Connect</h4>
-                    <div class="social-links">
-                        <a href="#" class="social-link">📧</a>
-                        <a href="#" class="social-link">🐦</a>
-                        <a href="#" class="social-link">💼</a>
-                    </div>
-                </div>
+        <div class="exercise-content">
+          <p class="exercise-description">
+            Click on the button below and describe a color change you'd like to see.
+            Try something like "make this button green" or "change to a purple gradient".
+          </p>
+          <div class="exercise-demo">
+            <button id="color-button" class="demo-button primary">
+              Click to Annotate This Button
+            </button>
+            <div class="hint">
+              <svg class="hint-icon" viewBox="0 0 12 12">
+                <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
+              </svg>
+              <span>Try: "make this a vibrant orange button"</span>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Float Demo. All rights reserved.</p>
-            </div>
+          </div>
         </div>
-    </footer>
+      </div>
 
-    <script src="script.js"></script>
+      <!-- Exercise 2: Change Text/Language -->
+      <div class="exercise-card" id="exercise-2">
+        <div class="exercise-header">
+          <span class="exercise-number">02</span>
+          <h3>Update Content</h3>
+          <span class="exercise-status">Try it</span>
+        </div>
+        <div class="exercise-content">
+          <p class="exercise-description">
+            Click on the welcome message below and change the text or translate it to another language.
+            Try "change this to Spanish" or "make this more friendly".
+          </p>
+          <div class="exercise-demo">
+            <div id="welcome-message" class="demo-message">
+              Welcome to our platform! We're excited to have you here.
+            </div>
+            <div class="hint">
+              <svg class="hint-icon" viewBox="0 0 12 12">
+                <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
+              </svg>
+              <span>Try: "translate this to French" or "make it more casual"</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exercise 3: Move Elements -->
+      <div class="exercise-card" id="exercise-3">
+        <div class="exercise-header">
+          <span class="exercise-number">03</span>
+          <h3>Reposition Elements</h3>
+          <span class="exercise-status">Try it</span>
+        </div>
+        <div class="exercise-content">
+          <p class="exercise-description">
+            Click on the profile card below and describe how you'd like to rearrange its layout.
+            Try "move the avatar to the right" or "center all the content".
+          </p>
+          <div class="exercise-demo">
+            <div id="profile-card" class="demo-profile-card">
+              <div class="profile-avatar">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </div>
+              <div class="profile-info">
+                <h4>Sarah Chen</h4>
+                <p>Product Designer</p>
+                <span class="profile-badge">Team Lead</span>
+              </div>
+            </div>
+            <div class="hint">
+              <svg class="hint-icon" viewBox="0 0 12 12">
+                <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
+              </svg>
+              <span>Try: "stack the avatar above the text" or "align everything to center"</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Indicator -->
+      <div class="progress-section">
+        <h3>Your Progress</h3>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <p class="progress-text">
+          <span id="completed-exercises">0</span> of 3 exercises completed
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup Section -->
+  <section id="setup" class="demo-section setup-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Get Started with Drawbridge</h2>
+        <p>Ready to use Drawbridge in your own projects? Follow these simple steps.</p>
+      </div>
+
+      <div class="setup-steps">
+        <div class="setup-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Install Chrome Extension</h3>
+            <p>Add the Drawbridge extension to Chrome from the Chrome Web Store or load the unpacked extension from GitHub.</p>
+            <button class="setup-button">
+              <svg class="button-icon" viewBox="0 0 12 12">
+                <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
+              </svg>
+              Install Extension
+            </button>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Connect Your Project</h3>
+            <p>Open your local development server and connect Drawbridge to start annotating your UI elements.</p>
+            <button class="setup-button secondary">
+              <svg class="button-icon" viewBox="0 0 12 12">
+                <path d="M6 2L10 6L6 10L5 9L8 6L5 3L6 2Z"/>
+              </svg>
+              View Setup Guide
+            </button>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Start Annotating</h3>
+            <p>Press 'f' to enter annotation mode, click any element, and describe your desired changes. AI will handle the rest!</p>
+            <div class="keyboard-shortcuts">
+              <div class="shortcut">
+                <kbd>f</kbd>
+                <span>Annotation mode</span>
+              </div>
+              <div class="shortcut">
+                <kbd>⌘</kbd><kbd>⇧</kbd><kbd>F</kbd>
+                <span>Toggle sidebar</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="demo-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <svg class="drawbridge-icon small" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <!-- Same SVG content as header -->
+            <rect x="2" y="8" width="2" height="14"/>
+            <rect x="4" y="6" width="2" height="16"/>
+            <rect x="6" y="4" width="2" height="18"/>
+            <rect x="8" y="2" width="2" height="20"/>
+            <rect x="10" y="1" width="2" height="21"/>
+            <rect x="12" y="1" width="2" height="21"/>
+            <rect x="14" y="2" width="2" height="20"/>
+            <rect x="16" y="4" width="2" height="18"/>
+            <rect x="18" y="6" width="2" height="16"/>
+            <rect x="20" y="8" width="2" height="14"/>
+            <rect x="2" y="14" width="20" height="2"/>
+            <rect x="8" y="1" width="8" height="1"/>
+            <rect x="9" y="2" width="6" height="1"/>
+            <rect x="10" y="3" width="4" height="1"/>
+            <rect x="11" y="4" width="2" height="1"/>
+            <rect x="11.5" y="0" width="1" height="2"/>
+            <rect x="10" y="16" width="4" height="6" fill="white"/>
+            <rect x="9" y="18" width="6" height="4" fill="white"/>
+            <rect x="8" y="19" width="8" height="3" fill="white"/>
+          </svg>
+          <span>Drawbridge</span>
+        </div>
+        <p>Bridging the gap between design feedback and code implementation.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html> 

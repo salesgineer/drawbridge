@@ -1,48 +1,94 @@
-# Float Demo Page
+# 🎯 Drawbridge Interactive Demo
 
-This is a simple test page for demonstrating Float annotations.
+An interactive demonstration of the Drawbridge Chrome extension that shows users how to provide visual UI feedback and see it transformed into code changes.
 
-## Quick Start
+## 🚀 What This Demo Shows
 
-1. **Start the demo server:**
+This demo page demonstrates the core Drawbridge workflow:
+
+1. **Visual Annotations** - Click any UI element to describe desired changes
+2. **AI Processing** - Intelligent code generation with human approval  
+3. **Live Updates** - Changes applied instantly to your project
+
+## 🎨 Interactive Exercises
+
+The demo includes three hands-on exercises:
+
+### Exercise 1: Change Colors
+- Click the demo button and describe color changes
+- Practice: "make this button green" or "change to a purple gradient"
+
+### Exercise 2: Update Content  
+- Click the welcome message to change text or translate languages
+- Practice: "change this to Spanish" or "make this more friendly"
+
+### Exercise 3: Reposition Elements
+- Click the profile card to rearrange its layout
+- Practice: "move the avatar to the right" or "center all content"
+
+## 🛠 How to Use
+
+1. **Start the Demo Server**
    ```bash
-   python3 -m http.server 8080
+   # From the project root
+   cd demo-page
+   python -m http.server 8000
+   # or
+   node -e "require('http').createServer(require('fs').readFileSync.bind(require('fs'))).listen(8000)"
    ```
 
-2. **Open in Chrome:**
-   Navigate to `http://localhost:8080`
+2. **Open in Browser**
+   - Navigate to `http://localhost:8000`
+   - Explore the interactive exercises
 
-3. **Make sure Float is active:**
-   - You should see the Float badge (bottom-left)
-   - It should say "AG-UI" if connected to the AG-UI server
+3. **Try with Drawbridge Extension**
+   - Install the Drawbridge Chrome extension
+   - Press `f` to enter annotation mode
+   - Click elements and describe changes
+   - Watch AI implement your feedback
 
-4. **Test an annotation:**
-   - Press `f` to enter comment mode
-   - Click any element (it will highlight in blue)
-   - Type your feedback (e.g., "make this bigger")
-   - Press Enter
+## 🎯 Key Features Demonstrated
 
-## Elements to Test
+- **Modern UI Design** - Clean, responsive interface with Space Grotesk typography
+- **Interactive Elements** - Clickable components that respond to user interaction
+- **Progress Tracking** - Visual progress bar and completion states
+- **Smooth Animations** - Polished micro-interactions and transitions
+- **Responsive Design** - Works beautifully on desktop, tablet, and mobile
 
-Try annotating these elements:
-- **Logo** - "Make the logo bigger"
-- **Hero Title** - "Change color to blue"
-- **Buttons** - "Add more spacing"
-- **Feature Cards** - "Add drop shadow"
-- **Email Input** - "Make the input field wider"
-- **Footer** - "Change background to dark blue"
+## 🔧 Technical Stack
 
-## Viewing Annotations
+- **HTML5** - Semantic markup with accessibility in mind
+- **CSS3** - Modern styling with gradients, animations, and responsive design
+- **Vanilla JavaScript** - Interactive functionality without frameworks
+- **Space Grotesk Font** - Consistent typography with the main extension
+- **SVG Icons** - Scalable vector graphics for crisp visuals
 
-1. **In the Moat sidebar** (press Cmd+Shift+F)
-2. **In the monitor:** `node monitor-float-ag-ui.js`
-3. **In the file:** `.float/.float-stream.jsonl`
+## 📱 Responsive Breakpoints
 
-## Processing Annotations
+- **Desktop**: 1200px and above
+- **Tablet**: 768px - 1199px  
+- **Mobile**: Below 768px
 
-After creating annotations, in Cursor:
-```
-process float annotations
-```
+## 🎨 Design System
 
-This will read and apply your UI feedback automatically! 
+The demo uses the same design system as the Drawbridge extension:
+
+- **Primary Color**: `#3B82F6` (Blue 500)
+- **Secondary Color**: `#2563EB` (Blue 600)
+- **Success Color**: `#16A34A` (Green 600)
+- **Warning Color**: `#D97706` (Amber 600)
+- **Text Color**: `#1F2937` (Gray 800)
+- **Background**: `#FFFFFF` (White)
+
+## 🚀 Next Steps
+
+After completing the demo exercises:
+
+1. Install the Drawbridge Chrome extension
+2. Connect it to your local development project
+3. Start annotating your own UI elements
+4. Experience the full Drawbridge workflow
+
+---
+
+**Built with ❤️ for the developer community** 
