@@ -75,6 +75,93 @@
     "timestamp": 1751446695247,
     "lastModified": 1751457960000,
     "processedBy": "agent",
-    "codeChanges": ["start-here/index.html"]
+    "codeChanges": [
+      "start-here/index.html"
+    ]
+  },
+  {
+    "id": "10d6e723-a105-4f27-bee1-14c9e96059c7",
+    "title": "Colored Container",
+    "comment": "bring the progress bar up below the \"interactive exercises\" section",
+    "selector": "#exercises > div.container > div.progress-section.float-highlight:nth-child(5)",
+    "boundingRect": {
+      "x": 281,
+      "y": 902,
+      "w": 1152,
+      "h": 156
+    },
+    "screenshotPath": "./screenshots/moat-1751449361655-tdj5shcoh.png",
+    "status": "completed",
+    "timestamp": 1751449361801,
+    "lastModified": 1751458800000,
+    "processedBy": "agent",
+    "codeChanges": [
+      "start-here/index.html"
+    ]
+  },
+  {
+    "id": "d8df53ec-f08b-4901-b1ee-5da7dfb82bc5",
+    "title": "h2: Interactive Exercises",
+    "comment": "make this red",
+    "selector": "div.container > div.section-header:nth-child(1) > h2.float-highlight",
+    "boundingRect": {
+      "x": 281,
+      "y": 369,
+      "w": 1152,
+      "h": 77
+    },
+    "screenshotPath": "./screenshots/moat-1751449721845-o4e6x2tw7.png",
+    "status": "completed",
+    "timestamp": 1751449721986,
+    "lastModified": 1751459400000,
+    "processedBy": "agent",
+    "codeChanges": [
+      "start-here/styles.css"
+    ]
+  },
+  {
+    "id": "69bc3282-a3a8-4b5c-ac28-dba52fbf1abb",
+    "title": "h3: Install Chrome Extension",
+    "comment": "Change text to \"Unpack Chrome Extension\"",
+    "selector": "div.setup-step.fade-in:nth-child(1) > div.step-content:nth-child(2) > h3.float-highlight",
+    "boundingRect": {
+      "x": 349,
+      "y": 391,
+      "w": 289,
+      "h": 32
+    },
+    "screenshotPath": "./screenshots/moat-1751450127067-j33kft5i9.png",
+    "status": "pending",
+    "timestamp": 1751450127201
+  },
+  {
+    "id": "8901e7b2-e253-46e1-9f27-7b71ca72d278",
+    "title": "h2: Interactive Exercises",
+    "comment": "Make this blue",
+    "selector": "div.container > div.section-header:nth-child(1) > h2.float-highlight",
+    "boundingRect": {
+      "x": 281,
+      "y": 523,
+      "w": 1152,
+      "h": 77
+    },
+    "screenshotPath": "./screenshots/moat-1751453670991-ryhvj8eid.png",
+    "status": "pending",
+    "timestamp": 1751453671125
+  },
+  {
+    "id": "d0cadbd6-2469-45a9-8ad9-09c2dfe667f3",
+    "title": "Button: Install Extension",
+    "comment": "Get rid of the icon in this button",
+    "selector": "div.setup-steps:nth-child(2) > div.setup-step.fade-in:nth-child(1) > div.step-content:nth-child(2) > button:nth-of-type(1)",
+    "boundingRect": {
+      "x": 349,
+      "y": 192,
+      "w": 172,
+      "h": 42
+    },
+    "screenshotPath": "./screenshots/moat-1751454387896-ux2biytjm.png",
+    "status": "pending",
+    "timestamp": 1751454388042
   }
 ]

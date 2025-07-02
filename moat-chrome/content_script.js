@@ -453,9 +453,15 @@
     initializeProject();
   }
 
+  // Add connection coordination flag
+  let connectionEventDispatched = false;
+
   // Initialize project connection with enhanced persistence
   async function initializeProject() {
     console.log('🚀 Moat: Initializing project with persistence system...');
+    
+    // Reset the coordination flag
+    connectionEventDispatched = false;
     
     // Check if persistence is supported
     if (!MoatPersistence.isSupported()) {
@@ -471,22 +477,38 @@
       if (restoreResult.success) {
         console.log('✅ Moat: Project connection restored from persistence');
         
-        // Set up the global handles
+        // Set up the global handles directly
         window.directoryHandle = restoreResult.moatDirectory;
-        projectRoot = restoreResult.directoryHandle;
+        projectRoot = restoreResult.path; // Use path instead of directoryHandle
         
-        // Complete the connection setup
-        await completeConnectionRestore(restoreResult);
+        // Re-initialize utilities
+        await initializeUtilitiesWithRetry();
+        window.taskStore = taskStore;
+        window.markdownGenerator = markdownGenerator;
         
-        // Dispatch success event
-        window.dispatchEvent(new CustomEvent('moat:project-connected', { 
-          detail: { 
-            path: restoreResult.path,
-            restored: true,
-            timestamp: restoreResult.timestamp,
-            status: 'connected'
-          } 
-        }));
+        // Load existing tasks
+        if (taskStore) {
+          await taskStore.loadTasksFromFile();
+          const loadedTasks = taskStore.getAllTasks();
+          console.log('✅ Moat: Loaded', loadedTasks.length, 'existing tasks from restored connection');
+        }
+        
+        // Create markdown file handle
+        markdownFileHandle = await window.directoryHandle.getFileHandle('moat-tasks.md', { create: true });
+        
+        // Dispatch single success event (no duplicate notifications)
+        if (!connectionEventDispatched) {
+          connectionEventDispatched = true;
+          console.log('🔧 Moat: Dispatching persistence connection event with path:', restoreResult.path);
+          window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+            detail: { 
+              path: restoreResult.path,
+              restored: true,
+              timestamp: restoreResult.timestamp,
+              status: 'connected'
+            } 
+          }));
+        }
         
         return;
         
@@ -543,10 +565,14 @@
     
     console.log('🔧 Moat: No valid connections found - user must connect');
     
-    // Notify Moat that no project is connected
-    window.dispatchEvent(new CustomEvent('moat:project-connected', { 
-      detail: { status: 'not-connected' } 
-    }));
+    // Notify Moat that no project is connected (only if not already dispatched)
+    if (!connectionEventDispatched) {
+      connectionEventDispatched = true;
+      console.log('🔧 Moat: Dispatching not-connected event (no path)');
+      window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+        detail: { status: 'not-connected' } 
+      }));
+    }
   }
 
   // Restore project connection from saved data
@@ -580,6 +606,16 @@
           
           console.log('✅ Moat: Successfully restored using stored handle');
           await completeConnectionRestore();
+          
+          // Dispatch success event for legacy restoration (only if not already dispatched)
+          if (!connectionEventDispatched) {
+            connectionEventDispatched = true;
+            console.log('🔧 Moat: Dispatching legacy restoration event with path:', projectRoot);
+            window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+              detail: { path: projectRoot, status: 'connected' } 
+            }));
+          }
+          
           return true;
           
         } catch (e) {
@@ -631,6 +667,15 @@
       localStorage.setItem(`moat.project.${window.location.origin}`, JSON.stringify(updatedConnection));
       
       await completeConnectionRestore();
+      
+      // Dispatch success event for legacy restoration (only if not already dispatched)
+      if (!connectionEventDispatched) {
+        connectionEventDispatched = true;
+        window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+          detail: { path: projectRoot, status: 'connected' } 
+        }));
+      }
+      
       return true;
       
     } catch (error) {
@@ -645,7 +690,7 @@
     }
   }
 
-  // Complete the connection restoration process
+  // Complete the connection restoration process (legacy path only)
   async function completeConnectionRestore() {
     // Re-initialize utilities
     await initializeUtilitiesWithRetry();
@@ -662,12 +707,8 @@
     // Create markdown file handle
     markdownFileHandle = await window.directoryHandle.getFileHandle('moat-tasks.md', { create: true });
     
-    // Notify success
-    window.dispatchEvent(new CustomEvent('moat:project-connected', { 
-      detail: { path: projectRoot, status: 'connected' } 
-    }));
-    
-    showNotification('✅ Project connection restored!');
+    console.log('✅ Moat: Legacy connection restoration completed');
+    // Note: Events and notifications are handled by the caller
   }
 
   // Set up project connection
@@ -830,12 +871,17 @@ Generated by Moat Chrome Extension
         // .gitignore doesn't exist, that's okay
       }
       
-      // Notify success
-      window.dispatchEvent(new CustomEvent('moat:project-connected', { 
-        detail: { path: dirHandle.name, status: 'connected' } 
-      }));
+      // Notify success (only if not already dispatched)
+      if (!connectionEventDispatched) {
+        connectionEventDispatched = true;
+        console.log('🔧 Moat: Dispatching setup project event with path:', dirHandle.name);
+        window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+          detail: { path: dirHandle.name, status: 'connected' } 
+        }));
+      }
       
-      showNotification('✅ Moat connected to project!');
+      console.log('✅ Moat: Project setup completed successfully');
+      // Note: Success notification will be handled by the UI layer
       
       return true;
     } catch (error) {

@@ -167,6 +167,80 @@
   // Expose notification system to global scope for content_script.js
   window.showMoatNotification = showNotification;
 
+  // Get initial status text for moat creation
+  function getInitialStatusText() {
+    if (projectStatus === 'connected' && projectPath) {
+      const projectName = projectPath.split('/').pop() || projectPath;
+      return projectName;
+    }
+    
+    // Check if we have a saved connection that should be restored
+    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
+    if (savedProject && window.directoryHandle) {
+      try {
+        const projectData = JSON.parse(savedProject);
+        const projectName = projectData.path.split('/').pop() || projectData.path;
+        return projectName;
+      } catch (error) {
+        console.warn('Could not parse saved project for initial status');
+      }
+    }
+    
+    return 'Disconnected';
+  }
+
+  // Get initial status CSS class for moat creation
+  function getInitialStatusClass() {
+    if (projectStatus === 'connected' && projectPath) {
+      return 'float-project-connected';
+    }
+    
+    // Check if we have a saved connection that should be restored
+    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
+    if (savedProject && window.directoryHandle) {
+      return 'float-project-connected';
+    }
+    
+    return 'float-project-disconnected';
+  }
+
+  // Get initial chevron display for moat creation
+  function getInitialChevronDisplay() {
+    if (projectStatus === 'connected' && projectPath) {
+      return 'block';
+    }
+    
+    // Check if we have a saved connection that should be restored
+    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
+    if (savedProject && window.directoryHandle) {
+      return 'block';
+    }
+    
+    return 'none';
+  }
+
+  // Get initial tooltip text for moat creation
+  function getInitialTooltipText() {
+    if (projectStatus === 'connected' && projectPath) {
+      const projectName = projectPath.split('/').pop() || projectPath;
+      return `Connected to ${projectName}`;
+    }
+    
+    // Check if we have a saved connection that should be restored
+    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
+    if (savedProject && window.directoryHandle) {
+      try {
+        const projectData = JSON.parse(savedProject);
+        const projectName = projectData.path.split('/').pop() || projectData.path;
+        return `Connected to ${projectName}`;
+      } catch (error) {
+        console.warn('Could not parse saved project for tooltip');
+      }
+    }
+    
+    return 'Click to connect to project';
+  }
+
   // Create Moat sidebar
   function createMoat() {
     console.log('Moat: createMoat called, creating sidebar element...');
@@ -203,35 +277,19 @@
           </div>
           <div class="float-moat-right-controls">
             <div class="float-moat-project-status-container">
-              <button class="float-moat-project-dropdown" id="float-project-dropdown">
-                <span class="float-project-indicator"></span>
-                            <span class="float-project-label">Disconnected</span>
-            <svg class="float-project-chevron" viewBox="0 0 24 24" style="display: none;">
-              <polygon points="23 8 23 9 22 9 22 10 21 10 21 11 20 11 20 12 19 12 19 13 18 13 18 14 17 14 17 15 16 15 16 16 15 16 15 17 14 17 14 18 13 18 13 19 11 19 11 18 10 18 10 17 9 17 9 16 8 16 8 15 7 15 7 14 6 14 6 13 5 13 5 12 4 12 4 11 3 11 3 10 2 10 2 9 1 9 1 8 2 8 2 7 3 7 3 6 4 6 4 7 5 7 5 8 6 8 6 9 7 9 7 10 8 10 8 11 9 11 9 12 10 12 10 13 11 13 11 14 13 14 13 13 14 13 14 12 15 12 15 11 16 11 16 10 17 10 17 9 18 9 18 8 19 8 19 7 20 7 20 6 21 6 21 7 22 7 22 8 23 8"/>
+              <button class="float-moat-project-dropdown" id="float-project-dropdown" title="${getInitialTooltipText()}">
+                <span class="float-project-indicator ${getInitialStatusClass()}"></span>
+                <svg class="float-project-folder-icon" viewBox="0 0 24 24">
+                  <polygon points="2 16 1 16 1 3 2 3 2 2 9 2 9 3 10 3 10 4 19 4 19 5 20 5 20 9 5 9 5 10 4 10 4 12 3 12 3 14 2 14 2 16"/>
+                  <polygon points="23 10 23 12 22 12 22 14 21 14 21 16 20 16 20 18 19 18 19 21 18 21 18 22 3 22 3 21 2 21 2 18 3 18 3 16 4 16 4 14 5 14 5 12 6 12 6 10 23 10"/>
+                </svg>
+                                                        <span class="float-project-label">${getInitialStatusText()}</span>
+                <span class="float-project-divider" style="display: ${getInitialChevronDisplay()};"></span>
+            <svg class="float-project-chevron" viewBox="0 0 24 24" style="display: ${getInitialChevronDisplay()};">
+                <polygon points="5 7 7 7 7 8 8 8 8 9 9 9 9 10 10 10 10 11 11 11 11 12 13 12 13 11 14 11 14 10 15 10 15 9 16 9 16 8 17 8 17 7 19 7 19 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7"/>
             </svg>
               </button>
-              <div class="float-moat-project-menu" style="display: none;">
-                <div class="float-moat-menu-item" data-action="export">
-                  <svg class="float-icon" viewBox="0 0 24 24">
-                    <polygon points="5 10 4 10 4 8 6 8 6 9 7 9 7 10 8 10 8 11 9 11 9 12 10 12 10 13 11 13 11 1 13 1 13 13 14 13 14 12 15 12 15 11 16 11 16 10 17 10 17 9 18 9 18 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10"/>
-                    <rect x="2" y="21" width="20" height="2"/>
-                  </svg>
-                  <div class="float-menu-text">
-                    <span class="float-menu-title">Export Data</span>
-                    <span class="float-menu-desc">Download annotations as JSON file</span>
-                  </div>
-                </div>
-                <div class="float-moat-menu-item" data-action="refresh">
-                  <svg class="float-icon" viewBox="0 0 24 24">
-                    <polygon points="12 2 12 3 11 3 11 4 10 4 10 5 9 5 9 6 8 6 8 7 7 7 7 8 6 8 6 9 5 9 5 10 4 10 4 11 3 11 3 12 2 12 2 13 1 13 1 12 2 12 2 11 3 11 3 10 4 10 4 9 5 9 5 8 6 8 6 7 7 7 7 6 8 6 8 5 9 5 9 4 10 4 10 3 11 3 11 2 12 2"/>
-                    <polygon points="12 22 12 21 13 21 13 20 14 20 14 19 15 19 15 18 16 18 16 17 17 17 17 16 18 16 18 15 19 15 19 14 20 14 20 13 21 13 21 12 22 12 22 13 23 13 23 12 22 12 22 13 21 13 21 14 20 14 20 15 19 15 19 16 18 16 18 17 17 17 17 18 16 18 16 19 15 19 15 20 14 20 14 21 13 21 13 22 12 22"/>
-                  </svg>
-                  <div class="float-menu-text">
-                    <span class="float-menu-title">Refresh Data</span>
-                    <span class="float-menu-desc">Reload task data from markdown files</span>
-                  </div>
-                </div>
-              </div>
+
             </div>
             <div class="float-moat-actions">
               <button class="float-moat-position-btn" title="Dock to right">
@@ -288,9 +346,8 @@
     
     // Project dropdown button functionality
     const projectDropdown = moat.querySelector('.float-moat-project-dropdown');
-    const projectMenu = moat.querySelector('.float-moat-project-menu');
     
-    if (projectDropdown && projectMenu) {
+    if (projectDropdown) {
       projectDropdown.addEventListener('click', function(e) {
         e.stopPropagation();
         
@@ -300,33 +357,8 @@
           return;
         }
         
-        // If connected, show dropdown menu
-        const isVisible = projectMenu.style.display === 'block';
-        projectMenu.style.display = isVisible ? 'none' : 'block';
-      });
-      
-      // Handle project menu item clicks
-      projectMenu.addEventListener('click', function(e) {
-        const menuItem = e.target.closest('.float-moat-menu-item');
-        if (menuItem) {
-          const action = menuItem.dataset.action;
-          
-          if (action === 'export') {
-            exportAnnotations();
-          } else if (action === 'refresh') {
-            refreshTasks(false); // Manual refresh should show notifications
-          }
-          
-          // Close menu after action
-          projectMenu.style.display = 'none';
-        }
-      });
-      
-      // Close project menu when clicking outside
-      document.addEventListener('click', function(e) {
-        if (!moat.contains(e.target)) {
-          projectMenu.style.display = 'none';
-        }
+        // If connected, show the dynamic project menu
+        showProjectMenu();
       });
     }
     
@@ -354,29 +386,12 @@
     console.log('🔧 Moat: Connect button clicked! projectStatus:', projectStatus);
     
     if (projectStatus === 'not-connected') {
-      // Use the original event system which handles everything properly
-      console.log('🔧 Moat: Dispatching moat:setup-project event...');
+      console.log('Moat: Triggering project setup...');
+      // Trigger the content script project setup
       window.dispatchEvent(new CustomEvent('moat:setup-project'));
-      
-      // Listen for successful connection to update UI
-      window.addEventListener('moat:project-connected', function handleConnection(e) {
-        console.log('🔧 Moat: Received project-connected event:', e.detail);
-        updateProjectStatus('connected', e.detail.path);
-        
-        // Load existing tasks after successful connection
-        setTimeout(async () => {
-          console.log('🔄 Moat: Loading tasks after connection...');
-          await refreshTasks(true); // Silent refresh after connection
-        }, 1000);
-        
-        // Remove this listener since we only need it once
-        window.removeEventListener('moat:project-connected', handleConnection);
-      });
-      
-    } else if (projectStatus === 'connected') {
-      console.log('Moat: Already connected, showing project menu...');
-      showProjectMenu();
+      // Note: Connection event will be handled by the permanent listener below
     }
+    // Note: Connected state dropdown is now handled directly by the click event
   }
 
   // Show setup confirmation
@@ -422,22 +437,56 @@
 
   // Show project menu
   function showProjectMenu() {
+    // Remove any existing menus
+    const existingMenu = document.querySelector('.float-project-menu');
+    if (existingMenu) {
+      existingMenu.remove();
+    }
+    
     const menu = document.createElement('div');
     menu.className = 'float-project-menu';
     menu.innerHTML = `
-      <div class="float-project-menu-item" data-action="disconnect">
-        <span>🔌</span> Disconnect Project
+      <div class="float-project-menu-item" data-action="export">
+        <svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+          <rect x="2" y="20" width="20" height="3"/>
+          <polygon points="20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7 7 7 7 8 8 8 8 9 9 9 9 10 10 10 10 1 14 1 14 10 15 10 15 9 16 9 16 8 17 8 17 7 19 7 19 8 20 8"/>
+        </svg>
+        <span>Export data</span>
       </div>
-      <div class="float-project-menu-item" data-action="change">
-        <span>📁</span> Change Project
+      <div class="float-project-menu-item" data-action="refresh">
+        <svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+          <polygon points="23 14 23 15 22 15 22 17 21 17 21 19 20 19 20 20 19 20 19 21 17 21 17 22 15 22 15 23 9 23 9 22 7 22 7 21 5 21 5 20 3 20 3 21 2 21 2 22 1 22 1 14 9 14 9 15 8 15 8 16 7 16 7 18 8 18 8 19 10 19 10 20 14 20 14 19 16 19 16 18 17 18 17 17 18 17 18 15 19 15 19 14 23 14"/>
+          <polygon points="23 2 23 10 15 10 15 9 16 9 16 8 17 8 17 6 16 6 16 5 14 5 14 4 10 4 10 5 8 5 8 6 7 6 7 7 6 7 6 9 5 9 5 10 1 10 1 9 2 9 2 7 3 7 3 5 4 5 4 4 5 4 5 3 7 3 7 2 9 2 9 1 15 1 15 2 17 2 17 3 19 3 19 4 21 4 21 3 22 3 22 2 23 2"/>
+        </svg>
+        <span>Refresh data</span>
+      </div>
+      <div class="float-project-menu-item" data-action="disconnect" style="border-top: 1px solid #E5E7EB;">
+        <svg style="width: 12px; height: 12px; fill: #DC2626;" viewBox="0 0 24 24">
+          <polygon points="2 13 1 13 1 11 2 11 2 9 3 9 3 8 4 8 4 7 5 7 5 6 7 6 7 5 15 5 15 6 14 6 14 7 13 7 13 6 11 6 11 7 9 7 9 8 8 8 8 9 7 9 7 11 6 11 6 13 7 13 7 14 6 14 6 15 5 15 5 16 3 16 3 15 2 15 2 13"/>
+          <rect x="8" y="11" width="1" height="1"/>
+          <rect x="11" y="8" width="1" height="1"/>
+          <polygon points="9 17 8 17 8 18 7 18 7 19 6 19 6 20 5 20 5 21 4 21 4 22 3 22 3 21 2 21 2 20 3 20 3 19 4 19 4 18 5 18 5 17 6 17 6 16 7 16 7 15 8 15 8 14 9 14 9 13 10 13 10 12 11 12 11 11 12 11 12 10 13 10 13 9 14 9 14 8 15 8 15 7 16 7 16 6 17 6 17 5 18 5 18 4 19 4 19 3 20 3 20 2 21 2 21 3 22 3 22 4 21 4 21 5 20 5 20 6 19 6 19 7 18 7 18 8 17 8 17 9 16 9 16 10 15 10 15 11 14 11 14 12 13 12 13 13 12 13 12 14 11 14 11 15 10 15 10 16 9 16 9 17"/>
+          <rect x="12" y="15" width="1" height="1"/>
+          <rect x="13" y="14" width="1" height="1"/>
+          <rect x="15" y="12" width="1" height="1"/>
+          <rect x="14" y="13" width="1" height="1"/>
+          <polygon points="23 11 23 13 22 13 22 15 21 15 21 16 20 16 20 17 19 17 19 18 17 18 17 19 9 19 9 18 10 18 10 17 11 17 11 18 13 18 13 17 15 17 15 16 16 16 16 15 17 15 17 13 18 13 18 11 17 11 17 10 18 10 18 9 19 9 19 8 21 8 21 9 22 9 22 11 23 11"/>
+        </svg>
+        <span style="color: #DC2626;">Disconnect project</span>
       </div>
     `;
     
     // Position menu below button
-    const button = moat.querySelector('.float-project-connect');
+    const button = moat.querySelector('.float-moat-project-dropdown');
+    if (!button) {
+      console.warn('Could not find project dropdown button');
+      return;
+    }
+    
     const rect = button.getBoundingClientRect();
-    menu.style.top = `${rect.bottom + 5}px`;
+    menu.style.top = `${rect.bottom + 4}px`;
     menu.style.right = `${window.innerWidth - rect.right}px`;
+    menu.style.minWidth = `${rect.width}px`;
     
     document.body.appendChild(menu);
     
@@ -448,8 +497,10 @@
         const action = item.dataset.action;
         if (action === 'disconnect') {
           disconnectProject();
-        } else if (action === 'change') {
-          window.dispatchEvent(new CustomEvent('moat:setup-project'));
+        } else if (action === 'export') {
+          exportAnnotations();
+        } else if (action === 'refresh') {
+          refreshTasks(false); // Manual refresh should show notifications
         }
       }
       menu.remove();
@@ -458,7 +509,7 @@
     // Close menu on outside click
     setTimeout(() => {
       document.addEventListener('click', function closeMenu(e) {
-        if (!menu.contains(e.target)) {
+        if (!menu.contains(e.target) && !button.contains(e.target)) {
           menu.remove();
           document.removeEventListener('click', closeMenu);
         }
@@ -471,6 +522,9 @@
     // Clear all project-related data
     localStorage.removeItem(`moat.project.${window.location.origin}`);
     
+    // Clear current session task queue for clean slate
+    localStorage.removeItem('moat.queue');
+    
     // Clear file handles (prevents reading from disconnected project)
     if (window.directoryHandle) {
       window.directoryHandle = null;
@@ -479,6 +533,14 @@
     // Reset animation system when disconnecting
     resetFloatingAnimation();
     
+    // Clear UI task display for clean disconnect experience
+    if (moat) {
+      const queueContainer = moat.querySelector('.float-moat-queue');
+      if (queueContainer) {
+        queueContainer.innerHTML = '';
+      }
+    }
+    
     // Update UI status
     updateProjectStatus('not-connected', null);
     
@@ -486,7 +548,7 @@
     showConnectProjectContent();
     
     showNotification('Project disconnected');
-    console.log('Moat: Project disconnected, all handles cleared');
+    console.log('Moat: Project disconnected, all handles and task queue cleared');
   }
 
   // Clear current session annotations (debugging helper)
@@ -619,7 +681,11 @@
       createMoat();
     }
     
-    // Initialize project connection status first
+    // Give content script time to restore persistence connection (500ms delay)
+    console.log('🔧 Moat: Waiting for content script to restore connection...');
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Initialize project connection status after delay
     await verifyInitialConnection();
     
     // Restore visibility state after connection is verified
@@ -627,6 +693,8 @@
     
     // Start DOM monitoring to ensure moat persistence
     startDOMMonitoring();
+    
+
     
     console.log('Moat: Moat initialization complete');
   }
@@ -699,36 +767,104 @@
 
   // Update project status UI
   function updateProjectStatus(status, path) {
+    console.log('🔧 Moat: updateProjectStatus called with:', { status, path });
     projectStatus = status;
     projectPath = path;
     
-    if (!moat) return;
+    if (!moat) {
+      console.log('🔧 Moat: No moat element found, cannot update UI');
+      return;
+    }
     
-      const indicator = moat.querySelector('.float-project-indicator');
-  const label = moat.querySelector('.float-project-label');
-  const chevron = moat.querySelector('.float-project-chevron');
-  
-  if (status === 'connected' && path) {
-    indicator.className = 'float-project-indicator float-project-connected';
-    const projectName = path.split('/').pop() || path;
-    label.textContent = `${projectName} connected`;
+    const indicator = moat.querySelector('.float-project-indicator');
+    const label = moat.querySelector('.float-project-label');
+    const chevron = moat.querySelector('.float-project-chevron');
+    const divider = moat.querySelector('.float-project-divider');
+    const button = moat.querySelector('.float-moat-project-dropdown');
     
-    // Show chevron when connected
-    if (chevron) chevron.style.display = 'block';
+    console.log('🔧 Moat: Found DOM elements:', { 
+      indicator: !!indicator, 
+      label: !!label, 
+      chevron: !!chevron,
+      divider: !!divider,
+      button: !!button
+    });
     
-  } else {
-    indicator.className = 'float-project-indicator float-project-disconnected';
-    label.textContent = 'Disconnected';
-    
-    // Hide chevron when not connected
-    if (chevron) chevron.style.display = 'none';
-  }
+    if (status === 'connected' && path) {
+      console.log('🔧 Moat: Updating to connected state');
+      if (indicator) indicator.className = 'float-project-indicator float-project-connected';
+      
+      const projectName = path.split('/').pop() || path;
+      if (label) {
+        label.textContent = projectName;
+        console.log('🔧 Moat: Set label text to:', label.textContent);
+      }
+      
+      // Update tooltip
+      if (button) {
+        button.title = `Connected to ${projectName}`;
+        console.log('🔧 Moat: Set tooltip to:', button.title);
+      }
+      
+      // Show chevron and divider when connected
+      if (chevron) chevron.style.display = 'block';
+      if (divider) divider.style.display = 'block';
+      
+    } else {
+      console.log('🔧 Moat: Updating to disconnected state');
+      if (indicator) indicator.className = 'float-project-indicator float-project-disconnected';
+      if (label) {
+        label.textContent = 'Disconnected';
+        console.log('🔧 Moat: Set label text to:', label.textContent);
+      }
+      
+      // Update tooltip for disconnected state
+      if (button) {
+        button.title = 'Click to connect to project';
+        console.log('🔧 Moat: Set tooltip to:', button.title);
+      }
+      
+      // Hide chevron and divider when not connected
+      if (chevron) chevron.style.display = 'none';
+      if (divider) divider.style.display = 'none';
+    }
   }
 
   // Verify initial connection on page load
   async function verifyInitialConnection() {
     console.log('🔧 Moat: Verifying initial connection...');
     
+    // Don't override if we're already connected (from events)
+    if (projectStatus === 'connected') {
+      console.log('🔧 Moat: Already connected, skipping verification');
+      return;
+    }
+    
+    // First check if the new persistence system has already restored the connection
+    if (window.directoryHandle) {
+      console.log('🔧 Moat: Directory handle already available from persistence system');
+      const isWorking = await verifyConnectionWorking();
+      if (isWorking) {
+        // Get the project path from localStorage for UI display
+        const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
+        let projectPath = 'Unknown Project';
+        if (savedProject) {
+          try {
+            const projectData = JSON.parse(savedProject);
+            projectPath = projectData.path;
+          } catch (error) {
+            console.warn('🔧 Moat: Could not parse saved project for path');
+          }
+        }
+        
+        // Update UI status immediately since connection is working
+        updateProjectStatus('connected', projectPath);
+        console.log('✅ Moat: Persistence-restored connection verified and UI updated');
+        return;
+      }
+    }
+    
+    // Fallback: Check localStorage for legacy connections
     const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
     if (!savedProject) {
       console.log('🔧 Moat: No saved project found');
@@ -738,22 +874,22 @@
     
     try {
       const projectData = JSON.parse(savedProject);
-      console.log('🔧 Moat: Found saved project:', projectData.path);
+      console.log('🔧 Moat: Found legacy saved project:', projectData.path);
       
       // Verify that we actually have a working connection
       const isActuallyConnected = await verifyConnectionWorking();
       
       if (isActuallyConnected) {
-        console.log('✅ Moat: Connection verified, updating status to connected');
+        console.log('✅ Moat: Legacy connection verified, updating status');
         updateProjectStatus('connected', projectData.path);
         
         // Load tasks after verified connection
         setTimeout(async () => {
-          console.log('🔄 Moat: Loading tasks after verified connection...');
+          console.log('🔄 Moat: Loading tasks after verified legacy connection...');
           await refreshTasks(true); // Silent refresh after verification
         }, 500);
       } else {
-        console.log('❌ Moat: Connection verification failed, clearing saved data');
+        console.log('❌ Moat: Legacy connection verification failed, clearing saved data');
         localStorage.removeItem(`moat.project.${window.location.origin}`);
         updateProjectStatus('not-connected', null);
         showNotification('Connection expired - please reconnect to project');
@@ -905,6 +1041,8 @@
       
       // Task 3.6: Update sidebar rendering to use new task format
       await renderTasksFromNewSystem(allTasks);
+      
+
       
       // Dispatch synchronization event
       window.dispatchEvent(new CustomEvent('moat:tasks-synchronized', {
@@ -1756,19 +1894,68 @@
     }
   });
 
-  // Listen for project connection events
+  // Track last connection notification to prevent duplicates
+  let lastConnectionNotification = 0;
+  
+  // Initialize project connection monitoring (single event listener)
   window.addEventListener('moat:project-connected', async (e) => {
-    if (e.detail) {
-      if (e.detail.status === 'connected') {
-        updateProjectStatus('connected', e.detail.path);
-        // Refresh tasks when project connects
-        console.log('Moat: Project connected, refreshing tasks...');
-        if (isVisible) {
-          await refreshTasks(true); // Silent refresh when project connects
-        }
-      } else {
-        updateProjectStatus('not-connected', null);
+    console.log('🔧 Moat: Received project-connected event:', e.detail);
+    console.log('🔧 Moat: Event detail path:', e.detail.path);
+    console.log('🔧 Moat: Event detail status:', e.detail.status);
+    
+    if (e.detail.status === 'connected') {
+      console.log('🔧 Moat: Processing connection event...');
+      
+      // Ensure we have a valid path for the UI
+      let displayPath = e.detail.path;
+      
+      // Don't allow undefined/empty paths to overwrite existing connected status
+      if ((!displayPath || displayPath === 'undefined') && projectStatus === 'connected' && projectPath) {
+        console.log('🔧 Moat: Ignoring event with undefined path - already connected to:', projectPath);
+        return; // Skip this event since we're already properly connected
       }
+      
+      if (!displayPath || displayPath === 'undefined') {
+        // Fallback: try to get path from localStorage
+        const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
+        if (savedProject) {
+          try {
+            const projectData = JSON.parse(savedProject);
+            displayPath = projectData.path;
+            console.log('🔧 Moat: Using fallback path from localStorage:', displayPath);
+          } catch (error) {
+            displayPath = 'Connected Project';
+            console.warn('🔧 Moat: Could not get path, using generic name');
+          }
+        } else {
+          displayPath = 'Connected Project';
+        }
+      }
+      
+      console.log('🔧 Moat: About to call updateProjectStatus with:', { status: 'connected', path: displayPath });
+      updateProjectStatus('connected', displayPath);
+      console.log('🔧 Moat: Called updateProjectStatus, current projectStatus:', projectStatus);
+      
+      // Switch to connected view
+      initializeContentVisibility();
+      
+      // Show success notification only once per connection session (prevent duplicates)
+      const now = Date.now();
+      if (now - lastConnectionNotification > 2000) { // 2 second debounce
+        lastConnectionNotification = now;
+        showNotification('✅ Moat connected to project');
+        console.log('🔧 Moat: Connection notification shown');
+      } else {
+        console.log('🔧 Moat: Skipping duplicate connection notification');
+      }
+      
+      console.log('Moat: Project connected, refreshing tasks...');
+      await refreshTasks(true); // Silent refresh to avoid notification spam
+      
+    } else if (e.detail.status === 'not-connected') {
+      console.log('🔧 Moat: Processing disconnection event...');
+      updateProjectStatus('not-connected', null);
+      initializeContentVisibility();
     }
   });
 

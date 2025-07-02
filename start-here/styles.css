@@ -195,6 +195,13 @@ body {
   background: #F9FAFB;
 }
 
+.exercises-section .section-header h2 {
+  background: linear-gradient(135deg, #DC2626, #B91C1C);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .exercise-card {
   background: white;
   border-radius: 16px;
