@@ -453,56 +453,126 @@
     initializeProject();
   }
 
-  // Initialize project connection
+  // Add connection coordination flag
+  let connectionEventDispatched = false;
+
+  // Initialize project connection with enhanced persistence
   async function initializeProject() {
-    // Check for saved project connection
+    console.log('🚀 Moat: Initializing project with persistence system...');
+    
+    // Reset the coordination flag
+    connectionEventDispatched = false;
+    
+    // Check if persistence is supported
+    if (!MoatPersistence.isSupported()) {
+      console.warn('⚠️ Moat: Persistence not supported (missing File System API or IndexedDB)');
+      await checkLegacyConnection();
+      return;
+    }
+
+    try {
+      // Try to restore from new persistence system
+      const restoreResult = await window.moatPersistence.restoreProjectConnection();
+      
+      if (restoreResult.success) {
+        console.log('✅ Moat: Project connection restored from persistence');
+        
+        // Set up the global handles directly
+        window.directoryHandle = restoreResult.moatDirectory;
+        projectRoot = restoreResult.path; // Use path instead of directoryHandle
+        
+        // Re-initialize utilities
+        await initializeUtilitiesWithRetry();
+        window.taskStore = taskStore;
+        window.markdownGenerator = markdownGenerator;
+        
+        // Load existing tasks
+        if (taskStore) {
+          await taskStore.loadTasksFromFile();
+          const loadedTasks = taskStore.getAllTasks();
+          console.log('✅ Moat: Loaded', loadedTasks.length, 'existing tasks from restored connection');
+        }
+        
+        // Create markdown file handle
+        markdownFileHandle = await window.directoryHandle.getFileHandle('moat-tasks.md', { create: true });
+        
+        // Dispatch single success event (no duplicate notifications)
+        if (!connectionEventDispatched) {
+          connectionEventDispatched = true;
+          console.log('🔧 Moat: Dispatching persistence connection event with path:', restoreResult.path);
+          window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+            detail: { 
+              path: restoreResult.path,
+              restored: true,
+              timestamp: restoreResult.timestamp,
+              status: 'connected'
+            } 
+          }));
+        }
+        
+        return;
+        
+      } else {
+        console.log('ℹ️ Moat: Persistence restoration failed:', restoreResult.reason);
+        
+        // If permission was denied but we have the path, show helpful message
+        if (restoreResult.requiresReconnection) {
+          console.log('🔄 Moat: Previous connection lost permission, user needs to reconnect');
+          
+          window.dispatchEvent(new CustomEvent('moat:project-connection-expired', { 
+            detail: { 
+              path: restoreResult.path,
+              reason: restoreResult.reason
+            } 
+          }));
+        }
+        
+        // Fall back to old localStorage check for backwards compatibility
+        console.log('🔄 Moat: Checking localStorage for legacy connections...');
+        await checkLegacyConnection();
+      }
+      
+    } catch (error) {
+      console.error('❌ Moat: Persistence initialization failed:', error);
+      await checkLegacyConnection();
+    }
+  }
+
+  // Check for legacy localStorage connections
+  async function checkLegacyConnection() {
     const projectKey = `moat.project.${window.location.origin}`;
     const savedConnection = localStorage.getItem(projectKey);
     
     if (savedConnection) {
       try {
         const connectionData = JSON.parse(savedConnection);
-        console.log('🔧 Moat: Found saved project connection:', connectionData.path);
+        console.log('🔧 Moat: Found legacy connection:', connectionData.path);
         
-        // Attempt to restore the project connection
+        // Try to restore using old method
         const restored = await restoreProjectConnection(connectionData);
         if (restored) {
-          console.log('✅ Moat: Project connection restored successfully');
+          console.log('✅ Moat: Legacy connection restored successfully');
           return;
         } else {
-          console.log('❌ Moat: Failed to restore project connection');
-          // Clear the invalid saved connection
+          console.log('❌ Moat: Legacy connection failed to restore');
           localStorage.removeItem(projectKey);
-          
-          // Dispatch failure event
-          window.dispatchEvent(new CustomEvent('moat:project-connection-failed', { 
-            detail: { 
-              path: connectionData.path,
-              reason: 'Failed to persist project connection'
-            } 
-          }));
-          return;
         }
       } catch (error) {
-        console.log('⚠️ Moat: Failed to restore saved connection:', error.message);
+        console.log('⚠️ Moat: Legacy connection restoration failed:', error.message);
         localStorage.removeItem(projectKey);
-        
-        // Dispatch failure event
-        window.dispatchEvent(new CustomEvent('moat:project-connection-failed', { 
-          detail: { 
-            reason: 'Failed to restore project connection: ' + error.message
-          } 
-        }));
-        return;
       }
     }
     
-    console.log('🔧 Moat: No saved connection found - user must connect');
+    console.log('🔧 Moat: No valid connections found - user must connect');
     
-    // Notify Moat that no project is connected
-    window.dispatchEvent(new CustomEvent('moat:project-connected', { 
-      detail: { status: 'not-connected' } 
-    }));
+    // Notify Moat that no project is connected (only if not already dispatched)
+    if (!connectionEventDispatched) {
+      connectionEventDispatched = true;
+      console.log('🔧 Moat: Dispatching not-connected event (no path)');
+      window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+        detail: { status: 'not-connected' } 
+      }));
+    }
   }
 
   // Restore project connection from saved data
@@ -522,8 +592,30 @@
           window.directoryHandle = moatDir;
           projectRoot = connectionData.path;
           
+          // Migrate to new persistence system if not already done
+          console.log('🔄 Moat: Migrating successful legacy connection to persistence system...');
+          try {
+            await window.moatPersistence.persistProjectConnection(
+              connectionData.directoryHandle, 
+              connectionData.path
+            );
+            console.log('✅ Moat: Legacy connection migrated to persistence system');
+          } catch (error) {
+            console.warn('⚠️ Moat: Failed to migrate to persistence system:', error);
+          }
+          
           console.log('✅ Moat: Successfully restored using stored handle');
           await completeConnectionRestore();
+          
+          // Dispatch success event for legacy restoration (only if not already dispatched)
+          if (!connectionEventDispatched) {
+            connectionEventDispatched = true;
+            console.log('🔧 Moat: Dispatching legacy restoration event with path:', projectRoot);
+            window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+              detail: { path: projectRoot, status: 'connected' } 
+            }));
+          }
+          
           return true;
           
         } catch (e) {
@@ -554,6 +646,18 @@
       window.directoryHandle = moatDir;
       projectRoot = dirHandle.name;
       
+      // Migrate to new persistence system
+      console.log('🔄 Moat: Migrating legacy connection to new persistence system...');
+      try {
+        await window.moatPersistence.persistProjectConnection(
+          dirHandle, 
+          connectionData.path
+        );
+        console.log('✅ Moat: Legacy connection migrated to persistence system');
+      } catch (error) {
+        console.warn('⚠️ Moat: Failed to migrate to persistence system:', error);
+      }
+      
       // Update stored connection with new handle
       const updatedConnection = {
         ...connectionData,
@@ -563,6 +667,15 @@
       localStorage.setItem(`moat.project.${window.location.origin}`, JSON.stringify(updatedConnection));
       
       await completeConnectionRestore();
+      
+      // Dispatch success event for legacy restoration (only if not already dispatched)
+      if (!connectionEventDispatched) {
+        connectionEventDispatched = true;
+        window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+          detail: { path: projectRoot, status: 'connected' } 
+        }));
+      }
+      
       return true;
       
     } catch (error) {
@@ -577,7 +690,7 @@
     }
   }
 
-  // Complete the connection restoration process
+  // Complete the connection restoration process (legacy path only)
   async function completeConnectionRestore() {
     // Re-initialize utilities
     await initializeUtilitiesWithRetry();
@@ -594,12 +707,8 @@
     // Create markdown file handle
     markdownFileHandle = await window.directoryHandle.getFileHandle('moat-tasks.md', { create: true });
     
-    // Notify success
-    window.dispatchEvent(new CustomEvent('moat:project-connected', { 
-      detail: { path: projectRoot, status: 'connected' } 
-    }));
-    
-    showNotification('✅ Project connection restored!');
+    console.log('✅ Moat: Legacy connection restoration completed');
+    // Note: Events and notifications are handled by the caller
   }
 
   // Set up project connection
@@ -726,7 +835,19 @@ Generated by Moat Chrome Extension
         
 
       
-      // Save project connection with directory handle for persistence
+      // Save project connection with enhanced persistence system
+      const persistenceSuccess = await window.moatPersistence.persistProjectConnection(
+        dirHandle, 
+        dirHandle.name
+      );
+      
+      if (persistenceSuccess) {
+        console.log('✅ Moat: Project connection persisted with new system');
+      } else {
+        console.warn('⚠️ Moat: Failed to persist with new system, falling back to localStorage');
+      }
+      
+      // Keep localStorage as fallback for legacy compatibility
       localStorage.setItem(`moat.project.${window.location.origin}`, JSON.stringify({
         path: dirHandle.name,
         directoryHandle: dirHandle,
@@ -750,12 +871,17 @@ Generated by Moat Chrome Extension
         // .gitignore doesn't exist, that's okay
       }
       
-      // Notify success
-      window.dispatchEvent(new CustomEvent('moat:project-connected', { 
-        detail: { path: dirHandle.name, status: 'connected' } 
-      }));
+      // Notify success (only if not already dispatched)
+      if (!connectionEventDispatched) {
+        connectionEventDispatched = true;
+        console.log('🔧 Moat: Dispatching setup project event with path:', dirHandle.name);
+        window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+          detail: { path: dirHandle.name, status: 'connected' } 
+        }));
+      }
       
-      showNotification('✅ Moat connected to project!');
+      console.log('✅ Moat: Project setup completed successfully');
+      // Note: Success notification will be handled by the UI layer
       
       return true;
     } catch (error) {
