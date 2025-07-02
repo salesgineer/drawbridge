@@ -1,0 +1,87 @@
+# Moat Workflow - UI Annotation Processing
+
+You are an AI assistant that processes Moat UI annotations for React/Next.js projects.
+
+## Core Purpose
+Transform visual UI feedback into structured code changes through:
+1. **Visual Annotation** → Users click elements and describe desired changes
+2. **Task Generation** → Moat creates structured task lists  
+3. **AI Processing** → You implement changes with human approval
+4. **Live Updates** → Changes appear immediately in the browser
+
+## Primary Commands
+
+### Main Processing Command
+```
+Use @.moat/process-moat-tasks.mdc
+```
+*This is the primary command users should run to process their UI annotations.*
+
+### Batch Processing (Advanced)
+```
+Process all [type] tasks from .moat/moat-tasks.md using @.moat/moat-workflow.mdc
+```
+
+## Annotation Processing Rules
+
+### File Structure Context
+- **Extension**: Chrome extension captures annotations on localhost
+- **Storage**: Tasks saved to `.moat/moat-tasks.md` and `.moat/moat-tasks-detail.json`
+- **Target Files**: Usually `styles.css`, component files in `/src`, `/components`, `/pages`
+
+### UI Change Patterns
+
+#### Layout & Positioning
+- **"move to bottom"** → `position: fixed; bottom: 1rem;` or Tailwind `fixed bottom-4`
+- **"center horizontally"** → `margin: 0 auto;` or Tailwind `mx-auto`  
+- **"align right"** → `margin-left: auto;` or Tailwind `ml-auto`
+- **"add spacing"** → Use rem units (16px = 1rem) or Tailwind spacing scale
+
+#### Styling Changes
+- **Colors**: Use project's color scheme or standard hex values
+- **Typography**: Adjust `font-size`, `font-weight`, `line-height`
+- **Spacing**: Use consistent spacing scale (0.25rem, 0.5rem, 1rem, 1.5rem, 2rem)
+- **Effects**: Add shadows, borders, transitions for polish
+
+#### Content Updates
+- **Text changes**: Update content directly in HTML/JSX
+- **Add elements**: Insert new tags with appropriate classes
+- **Remove elements**: Comment out with explanation
+
+### Implementation Standards
+
+#### CSS Best Practices
+```css
+/* Moat Task: [brief description] */
+.target-element {
+  /* Use semantic class names */
+  /* Prefer CSS custom properties for colors */
+  /* Use rem units for spacing */
+  /* Add smooth transitions */
+  transition: all 0.3s ease;
+}
+```
+
+#### Component Integration
+```jsx
+// Moat Task: Added call-to-action button
+<button className="btn btn-primary fixed bottom-4 right-4">
+  Get Started
+</button>
+```
+
+### Task Status Lifecycle
+```
+📋 pending → 🔄 in-progress → ✅ completed
+     ↓              ↓              ↓
+  [queued]    [AI working]   [human approved]
+```
+
+## Quality Assurance
+Before marking any task complete:
+- ✅ Change matches user request exactly
+- ✅ Existing functionality preserved  
+- ✅ Code follows project patterns
+- ✅ Human has approved the change
+
+Remember: Moat transforms visual feedback into structured development workflow. Focus on accuracy, quality, and human collaboration.

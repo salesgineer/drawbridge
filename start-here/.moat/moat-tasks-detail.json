@@ -1,0 +1,80 @@
+[
+  {
+    "id": "7f89a10f-7be0-42ed-a020-b9f943e3d72b",
+    "title": "Button: Click to Annotate This Button",
+    "comment": "Make this button red",
+    "selector": "#color-button",
+    "boundingRect": {
+      "x": 609,
+      "y": 354,
+      "w": 290,
+      "h": 52
+    },
+    "screenshotPath": "./screenshots/moat-1751374314142-ixyvro9ri.png",
+    "status": "completed",
+    "timestamp": 1751374314281,
+    "lastModified": 1751450800000,
+    "processedBy": "agent",
+    "codeChanges": [
+      "start-here/styles.css"
+    ]
+  },
+  {
+    "id": "287e12b4-13a1-40ad-92c0-20fe8323e441",
+    "title": "Container #welcome-message",
+    "comment": "Change this to spanish",
+    "selector": "#welcome-message",
+    "boundingRect": {
+      "x": 607,
+      "y": 588,
+      "w": 500,
+      "h": 108
+    },
+    "screenshotPath": "./screenshots/moat-1751445997818-xc84p8a9t.png",
+    "status": "completed",
+    "timestamp": 1751445997964,
+    "lastModified": 1751457160000,
+    "processedBy": "agent",
+    "codeChanges": [
+      "start-here/index.html"
+    ]
+  },
+  {
+    "id": "6704dd26-7258-48bc-a222-4644dd5b8d3d",
+    "title": "Container #profile-card",
+    "comment": "move this avatar to the right. make the card fill this container",
+    "selector": "#profile-card",
+    "boundingRect": {
+      "x": 733,
+      "y": 542,
+      "w": 247,
+      "h": 139
+    },
+    "screenshotPath": "./screenshots/moat-1751446029826-e97b7e4pm.png",
+    "status": "completed",
+    "timestamp": 1751446029976,
+    "lastModified": 1751457160000,
+    "processedBy": "agent",
+    "codeChanges": [
+      "start-here/styles.css"
+    ]
+  },
+  {
+    "id": "b540b6ac-5b28-4656-b1e5-b1cac4e906c0",
+    "title": "Container #setup",
+    "comment": "move this section above the Interactive Exercises section",
+    "selector": "#setup",
+    "boundingRect": {
+      "x": 0,
+      "y": 550,
+      "w": 1713,
+      "h": 588
+    },
+    "screenshotPath": "./screenshots/moat-1751446694911-y14fphv9o.png",
+    "status": "completed",
+    "timestamp": 1751446695247,
+    "lastModified": 1751457960000,
+    "processedBy": "agent",
+    "codeChanges": ["start-here/index.html"]
+  }
+]

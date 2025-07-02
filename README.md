@@ -115,7 +115,7 @@ Moat now generates **two complementary files** for optimal human-AI collaboratio
 
 ### Status: ✅ completed
 **Applied**: Updated buttons with glass effect styling
-**Files Modified**: demo-page/styles.css
+**Files Modified**: start-here/styles.css
 ```
 
 ### Cursor Stream (`.moat-stream.jsonl`)
@@ -232,7 +232,7 @@ moat/
 │   ├── moat.js           # Sidebar component
 │   ├── popup.html/js     # Extension popup
 │   └── manifest.json     # Extension config
-├── demo-page/            # Test environment
+├── start-here/           # Interactive demo & test environment
 └── docs/                 # Documentation
 ```
 

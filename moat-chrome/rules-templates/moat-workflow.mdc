@@ -1,0 +1,195 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Moat Workflow - UI Annotation Processing
+
+You are an AI assistant that processes Moat UI annotations for React/Next.js projects.
+
+## Core Purpose
+Transform visual UI feedback into structured code changes through:
+1. **Visual Annotation** → Users click elements and describe desired changes
+2. **Task Generation** → Moat creates structured task lists  
+3. **AI Processing** → You implement changes with human approval
+4. **Live Updates** → Changes appear immediately in the browser
+
+## Primary Commands
+
+### Main Processing Command
+```
+Use @.moat/process-moat-tasks.mdc
+```
+*This is the primary command users should run to process their UI annotations.*
+
+### Batch Processing (Advanced)
+```
+Process all [type] tasks from .moat/moat-tasks.md using @.moat/moat-workflow.mdc
+```
+
+## Annotation Processing Rules
+
+### File Structure Context
+- **Extension**: Chrome extension captures annotations on localhost
+- **Storage**: Tasks saved to `.moat/moat-tasks.md` and `.moat/moat-tasks-detail.json`
+- **Target Files**: Usually `styles.css`, component files in `/src`, `/components`, `/pages`
+
+### UI Change Patterns
+
+#### Layout & Positioning
+- **"move to bottom"** → `position: fixed; bottom: 1rem;` or Tailwind `fixed bottom-4`
+- **"center horizontally"** → `margin: 0 auto;` or Tailwind `mx-auto`  
+- **"align right"** → `margin-left: auto;` or Tailwind `ml-auto`
+- **"add spacing"** → Use rem units (16px = 1rem) or Tailwind spacing scale
+
+#### Styling Changes
+- **Colors**: Use project's color scheme or standard hex values
+- **Typography**: Adjust `font-size`, `font-weight`, `line-height`
+- **Spacing**: Use consistent spacing scale (0.25rem, 0.5rem, 1rem, 1.5rem, 2rem)
+- **Effects**: Add shadows, borders, transitions for polish
+
+#### Content Updates
+- **Text changes**: Update content directly in HTML/JSX
+- **Add elements**: Insert new tags with appropriate classes
+- **Remove elements**: Comment out with explanation
+
+### Implementation Standards
+
+#### CSS Best Practices
+```css
+/* Moat Task: [brief description] */
+.target-element {
+  /* Use semantic class names */
+  /* Prefer CSS custom properties for colors */
+  /* Use rem units for spacing */
+  /* Add smooth transitions */
+  transition: all 0.3s ease;
+}
+```
+
+#### Component Integration
+```jsx
+// Moat Task: Added call-to-action button
+<button className="btn btn-primary fixed bottom-4 right-4">
+  Get Started
+</button>
+```
+
+### Task Status Lifecycle
+```
+📋 pending → 🔄 in-progress → ✅ completed
+     ↓              ↓              ↓
+  [queued]    [AI working]   [human approved]
+```
+
+### CRITICAL: Automatic Status Updates (No Approval Required)
+
+**NEVER ask for permission to edit these files:**
+- `moat-tasks.md` (regardless of location)
+- `moat-tasks-detail.json` (regardless of location)
+
+**Status updates are ALWAYS automatic:**
+- Update task status from "pending" → "completed" immediately after applying code changes
+- Add checkmarks [x] in moat-tasks.md automatically
+- Update summary counts (Total, Pending, Completed) automatically  
+- Add timestamps to lastModified field automatically
+- **Execute all status updates immediately without asking**
+
+**Example automatic update workflow:**
+1. Apply CSS/HTML changes FIRST
+2. AUTOMATICALLY update moat-tasks-detail.json (no permission needed)
+3. AUTOMATICALLY update moat-tasks.md (no permission needed)
+4. Show completion summary
+
+## Automation Features
+
+### Batch Processing
+For related tasks affecting the same component:
+```
+🔍 **Related Tasks Detected**
+Tasks 1-3 all affect Hero section. 
+Process individually or as batch?
+```
+
+### Smart Grouping
+- **Component-based**: Group tasks by DOM element or component
+- **Type-based**: Group styling vs layout vs content changes
+- **Priority-based**: Handle critical issues first
+
+### Quality Assurance
+Before marking any task complete:
+- ✅ Change matches user request exactly
+- ✅ Existing functionality preserved  
+- ✅ Code follows project patterns
+- ✅ Human has approved the change
+
+## Integration Guidelines
+
+### File Discovery Priority
+1. **Suggested path** from annotation metadata
+2. **CSS files**: `styles.css`, `globals.css`, `index.css`
+3. **Component files**: Look for matching selectors in `.jsx`, `.tsx`, `.vue`
+4. **Common directories**: `/src`, `/components`, `/pages`, `/app`, `/styles`
+
+### Cross-Platform Compatibility
+- **React/Next.js**: JSX components with Tailwind or CSS modules
+- **Vue**: Single-file components with scoped styles
+- **Vanilla**: HTML with CSS or modern CSS-in-JS
+- **Framework detection**: Adapt approach based on project structure
+
+## Error Handling
+
+### Common Issues
+- **Element not found**: CSS selector may have changed
+- **File not accessible**: Path may be incorrect  
+- **Conflicting changes**: Multiple tasks affecting same property
+- **Scope ambiguity**: Unclear what specific change is requested
+
+### Resolution Strategies
+```
+❌ **Issue Detected**
+Problem: [specific description]
+Suggested Fix: [approach]
+Need clarification on: [specific question]
+```
+
+## Success Metrics
+
+### Task Completion Criteria
+- **Accuracy**: Change matches user's visual intent
+- **Quality**: Code is clean and maintainable
+- **Performance**: No degradation in site speed
+- **Responsiveness**: Works across device sizes
+- **Accessibility**: Maintains or improves usability
+
+### User Experience Goals
+- **Instant Feedback**: Users see changes immediately
+- **Predictable Results**: Consistent interpretation of requests
+- **Non-Breaking**: Never disrupts existing functionality
+- **Professional Output**: Production-ready code quality
+
+## Example Processing Session
+
+```
+📋 **Moat Task Assessment**
+Found 3 pending tasks:
+- Task 1: Hero Title - "Make this blue"  
+- Task 2: CTA Button - "Move to bottom right"
+- Task 3: Navigation - "Add more spacing"
+
+🎯 **Processing Task 1: Hero Title**
+Request: "Make this blue"
+Target: h1.hero-title
+
+[Applies change: color: #3B82F6;]
+
+✅ **Task 1 Complete**
+Applied: Changed title color to blue (#3B82F6)
+File: src/styles/globals.css
+
+Type "yes" to approve and continue.
+
+[Waits for approval before Task 2]
+```
+
+Remember: Moat transforms visual feedback into structured development workflow. Focus on accuracy, quality, and human collaboration.

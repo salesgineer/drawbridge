@@ -267,4 +267,47 @@ No action required! Check the console for `✅ Migration completed successfully!
 - **Refresh Button** (`🔄 Refresh`) in the sidebar regenerates markdown from JSON ensuring perfect sync.
 - **Large Projects** – Tested with **1 000+ tasks** in <250 ms markdown generation time.
 
+## Troubleshooting Connection Issues
+
+### **🔄 Why Do I Need to Reconnect?**
+
+**Browser Security Limitation**: File System Access API connections cannot persist across browser sessions for security reasons. You'll need to reconnect when:
+
+- ✅ **Browser restarts** (most common)
+- ✅ **Project directory renamed/moved** 
+- ✅ **Browser data cleared**
+- ✅ **Extension updated**
+
+### **🛠 How to Reconnect**
+
+1. **Quick Reconnect**: Press `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows)
+2. **Via Popup**: Click the Moat extension icon
+3. **Console**: Run `setupProject()` in browser console
+
+### **✅ Connection Status Check**
+
+To verify your connection:
+```javascript
+// In browser console
+window.directoryHandle ? "✅ Connected" : "❌ Not Connected"
+```
+
+### **🎯 Best Practices**
+
+- **Bookmark localhost**: Keep your dev server URL bookmarked
+- **Use consistent naming**: Avoid renaming project directories
+- **Check connection first**: If annotations aren't saving, reconnect
+- **One project per tab**: Each tab needs its own connection
+
+### **🔧 Debug Connection Issues**
+
+If you're having persistent issues:
+```javascript
+// Check system status
+window.moatDebug?.checkSystemStatus()
+
+// Test connection health
+window.moatDebug?.verifyFiles()
+```
+
 --- 

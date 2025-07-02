@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "projectName": "start-here",
+  "createdAt": "2025-07-02T08:57:27.318Z",
+  "streaming": {
+    "enabled": true,
+    "format": "jsonl",
+    "cursorIntegration": true
+  },
+  "ui": {
+    "autoShowMoat": true,
+    "confirmBeforeSend": false
+  }
+}

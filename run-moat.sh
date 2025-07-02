@@ -4,7 +4,7 @@
 echo "🚀 Starting Moat..."
 
 # Check if we're in the right directory
-if [ ! -d "demo-page/.moat" ]; then
+if [ ! -d "start-here/.moat" ]; then
     echo "❌ Error: Not in Moat project directory or .moat folder not found"
     echo "   Please run this script from the project root"
     exit 1
@@ -20,7 +20,7 @@ if check_process "python.*http.server 8000"; then
     echo "✅ HTTP Server: Already running on http://localhost:8000"
 else
     echo "🔄 Starting HTTP server..."
-    cd demo-page
+    cd start-here
     python3 -m http.server 8000 > /dev/null 2>&1 &
     cd ..
     sleep 2
@@ -37,7 +37,7 @@ if check_process "moat-watcher.js"; then
     echo "✅ Moat Watcher: Already running"
 else
     echo "🔄 Starting Moat watcher..."
-    cd demo-page
+    cd start-here
     node ../moat-watcher.js > /dev/null 2>&1 &
     cd ..
     sleep 2
@@ -50,9 +50,9 @@ else
 fi
 
 # Check for pending tasks
-if [ -f "demo-page/.moat/moat-tasks.md" ]; then
-    PENDING_COUNT=$(grep -c "^[0-9]\+\. \[ \]" demo-page/.moat/moat-tasks.md 2>/dev/null || echo "0")
-    TOTAL_COUNT=$(grep -c "^[0-9]\+\." demo-page/.moat/moat-tasks.md 2>/dev/null || echo "0")
+if [ -f "start-here/.moat/moat-tasks.md" ]; then
+    PENDING_COUNT=$(grep -c "^[0-9]\+\. \[ \]" start-here/.moat/moat-tasks.md 2>/dev/null || echo "0")
+    TOTAL_COUNT=$(grep -c "^[0-9]\+\." start-here/.moat/moat-tasks.md 2>/dev/null || echo "0")
     
     echo ""
     echo "📋 Task Status:"

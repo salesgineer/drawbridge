@@ -57,8 +57,8 @@ This script will:
 ## 📋 Task Status Tracking
 
 Tasks are tracked in two files:
-- `demo-page/.moat/moat-tasks.md` - Human-readable summary
-- `demo-page/.moat/moat-tasks-detail.json` - Detailed task information
+- `start-here/.moat/moat-tasks.md` - Human-readable summary
+- `start-here/.moat/moat-tasks-detail.json` - Detailed task information
 
 Status progression: `pending` → `in-progress` → `completed`
 

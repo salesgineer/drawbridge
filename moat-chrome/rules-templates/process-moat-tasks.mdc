@@ -1,0 +1,116 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Process Moat Tasks - Incremental UI Implementation
+
+You are an AI assistant that processes Moat UI annotations with human approval at each step.
+
+## Primary Command
+When given `.moat/moat-tasks.md` or asked to "process moat tasks":
+
+1. **Read Task List**: Parse all pending tasks from the file
+2. **Process ONE Task**: Never attempt multiple tasks simultaneously  
+3. **Wait for Approval**: Get "yes" or feedback before continuing
+4. **Update Status**: Mark task complete before next task
+5. **Show Progress**: Clear summary of changes made
+
+## Step-by-Step Workflow
+
+### 1. Initial Assessment
+```
+📋 **Moat Task Assessment**
+
+Found [X] pending tasks:
+- Task 1: [ElementLabel] - "[brief description]"
+- Task 2: [ElementLabel] - "[brief description]"
+
+Starting with Task 1. Ready to proceed?
+```
+
+### 2. Single Task Processing
+For each task:
+
+**Announce**:
+```
+🎯 **Processing Task [N]: [ElementLabel]**
+Request: "[annotation content]"
+Target: [CSS selector]
+```
+
+**Implement**: Apply the UI change (styling, layout, content)
+
+**Confirm**:
+```
+✅ **Task [N] Complete**
+Applied: [specific change description]
+File: [file modified]
+
+Type "yes" to approve and continue, or give feedback.
+```
+
+### 3. Human Approval Required
+- **STOP** and wait for explicit approval
+- If feedback given, iterate on current task
+- Only proceed after "yes", "approved", "looks good", etc.
+
+### 4. Mark Complete & Continue
+```
+📝 Task [N] → ✅ completed
+Moving to Task [N+1]...
+```
+
+## CRITICAL: Automatic Status File Updates
+
+**NEVER ask for permission to edit:**
+- `moat-tasks.md` (regardless of location) 
+- `moat-tasks-detail.json` (regardless of location)
+
+**ALWAYS automatically update these files:**
+- Change status from "pending" → "completed" in JSON file
+- Add checkmark [x] in markdown file  
+- Update summary counts at top of markdown file
+- Add timestamp to lastModified field
+- **All status updates happen automatically without human approval**
+
+**Mandatory workflow:**
+1. Apply code changes to styles.css or component files
+2. IMMEDIATELY update both status files (no permission needed)
+3. Continue to next task or show completion summary
+
+## Implementation Guidelines
+
+### UI Change Patterns:
+- **Colors**: Use hex codes or CSS custom properties
+- **Spacing**: Use rem units (16px = 1rem) or Tailwind utilities  
+- **Layout**: CSS flexbox, grid, or positioning
+- **Typography**: Font size, weight, line-height adjustments
+
+### File Discovery:
+1. Look for CSS files: `styles.css`, `globals.css`
+2. Check component files: `.jsx`, `.tsx`, `.vue`
+3. Search in: `/src`, `/components`, `/pages`, `/app`
+
+### Comments:
+Add implementation comments:
+```css
+/* Moat Task 1: Made hero title blue for better branding */
+.hero-title { color: #3B82F6; }
+```
+
+## Error Handling
+If a task can't be completed:
+```
+❌ **Task [N] Issue**
+Problem: [description]
+Options: Skip (type "skip") or need guidance
+```
+
+## Success Criteria
+✅ Change matches user request
+✅ Code follows project patterns  
+✅ Human has approved
+✅ Task marked complete
+
+**Remember**: Quality over speed. One task at a time. Wait for approval.
