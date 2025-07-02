@@ -16,6 +16,7 @@
     {
       "matches": ["http://localhost:*/*", "https://localhost:*/*"],
       "js": [
+        "utils/persistence.js",
         "utils/taskStore.js",
         "utils/markdownGenerator.js",
         "utils/migrateLegacyFiles.js",
