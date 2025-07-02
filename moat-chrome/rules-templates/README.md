@@ -38,6 +38,24 @@ The AI will:
 4. **Approve**: Type "yes" to apply the changes
 5. **See Results**: Changes appear immediately in your browser!
 
+## 🔄 Connection Issues?
+
+If the AI can't find your tasks, the Chrome extension might need to reconnect:
+
+### **Quick Fix:**
+- Press `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows) in your browser
+- Select your project directory again
+- Moat will automatically redeploy these workflow files
+
+### **Why This Happens:**
+Browser security prevents file connections from persisting across browser restarts. This is normal and expected behavior.
+
+### **Check Connection:**
+```javascript
+// In browser console:
+window.directoryHandle ? "✅ Connected" : "❌ Need to reconnect"
+```
+
 ## 💡 Common Annotation Examples
 
 ### Styling Changes

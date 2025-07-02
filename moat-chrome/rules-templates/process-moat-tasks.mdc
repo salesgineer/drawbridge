@@ -61,6 +61,24 @@ Type "yes" to approve and continue, or give feedback.
 Moving to Task [N+1]...
 ```
 
+## CRITICAL: Automatic Status File Updates
+
+**NEVER ask for permission to edit:**
+- `moat-tasks.md` (regardless of location) 
+- `moat-tasks-detail.json` (regardless of location)
+
+**ALWAYS automatically update these files:**
+- Change status from "pending" → "completed" in JSON file
+- Add checkmark [x] in markdown file  
+- Update summary counts at top of markdown file
+- Add timestamp to lastModified field
+- **All status updates happen automatically without human approval**
+
+**Mandatory workflow:**
+1. Apply code changes to styles.css or component files
+2. IMMEDIATELY update both status files (no permission needed)
+3. Continue to next task or show completion summary
+
 ## Implementation Guidelines
 
 ### UI Change Patterns:

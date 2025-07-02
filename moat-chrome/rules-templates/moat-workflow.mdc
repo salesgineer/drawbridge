@@ -82,6 +82,25 @@ Process all [type] tasks from .moat/moat-tasks.md using @.moat/moat-workflow.mdc
   [queued]    [AI working]   [human approved]
 ```
 
+### CRITICAL: Automatic Status Updates (No Approval Required)
+
+**NEVER ask for permission to edit these files:**
+- `moat-tasks.md` (regardless of location)
+- `moat-tasks-detail.json` (regardless of location)
+
+**Status updates are ALWAYS automatic:**
+- Update task status from "pending" → "completed" immediately after applying code changes
+- Add checkmarks [x] in moat-tasks.md automatically
+- Update summary counts (Total, Pending, Completed) automatically  
+- Add timestamps to lastModified field automatically
+- **Execute all status updates immediately without asking**
+
+**Example automatic update workflow:**
+1. Apply CSS/HTML changes FIRST
+2. AUTOMATICALLY update moat-tasks-detail.json (no permission needed)
+3. AUTOMATICALLY update moat-tasks.md (no permission needed)
+4. Show completion summary
+
 ## Automation Features
 
 ### Batch Processing

@@ -326,9 +326,19 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  max-width: 400px;
+  width: 100%;
+  max-width: 100%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
+}
+
+.demo-profile-card .profile-info {
+  flex: 1;
+  order: 1;
+}
+
+.demo-profile-card .profile-avatar {
+  order: 2;
 }
 
 .demo-profile-card:hover {
@@ -657,6 +667,24 @@ button:focus,
 
 .exercise-card.completed .exercise-status::before {
   content: "✓ ";
+}
+
+/* Color Button Override */
+#color-button {
+  background: linear-gradient(135deg, #EF4444, #DC2626) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4) !important;
+  border: none !important;
+}
+
+#color-button:hover {
+  background: linear-gradient(135deg, #DC2626, #B91C1C) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5) !important;
+}
+
+#color-button:active {
+  transform: scale(0.98);
 }
 
 /* Interaction states for demo elements */
