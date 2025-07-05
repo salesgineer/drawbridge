@@ -48,6 +48,116 @@ body.float-comment-mode * {
   }
 }
 
+/* ========== HEADER NOTIFICATIONS ========== */
+.float-header-notifications {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 12px;
+}
+
+
+
+.float-notification-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  max-width: 280px;
+  overflow: hidden;
+}
+
+.float-header-notification {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2563eb;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(20px);
+  animation: slideInHeader 0.4s ease forwards;
+  transition: all 0.2s ease;
+}
+
+@keyframes slideInHeader {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.float-header-notification.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+.float-header-notification.warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
+  color: #d97706;
+}
+
+.float-header-notification.info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
+  color: #2563eb;
+}
+
+.float-header-notification.connected {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+  color: #059669;
+}
+
+.float-header-notification.disconnected {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+.float-header-notification-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.float-header-notification-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+
+.float-header-notification.removing {
+  animation: slideOutHeader 0.3s ease forwards;
+}
+
+@keyframes slideOutHeader {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
 /* Floating Across the Moat Animation System */
 @keyframes float-across-moat {
   0% {

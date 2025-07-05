@@ -592,16 +592,7 @@
   let animationQueue = [];
   let isAnimating = false;
   
-  // ===== CENTRALIZED NOTIFICATION SYSTEM =====
-  
-  // Notification queue and management
-  let notificationQueue = [];
-  let activeNotifications = [];
-  const MAX_VISIBLE_NOTIFICATIONS = 1; // Show one at a time for better UX
-  const NOTIFICATION_DURATION = 3000;
-  const NOTIFICATION_SEQUENCE_DELAY = 800; // Delay between sequential notifications
-  const STACK_OFFSET = 60; // pixels between stacked notifications
-  let isProcessingNotifications = false;
+  // ===== HEADER NOTIFICATION SYSTEM =====
   
   // Debounce similar notifications
   let recentNotifications = new Map();
@@ -616,31 +607,42 @@
   };
   
   function categorizeNotification(message, type = 'info') {
-    // User action notifications
-    if (message.includes('✅') || message.includes('Task saved') || 
-        message.includes('Task removed') || message.includes('Task completed') ||
-        message.includes('connected to project') || message.includes('disconnected')) {
-      return 'user-action';
+    // Check for disconnection notifications
+    if (message.includes('disconnected') || message.includes('Project disconnected') ||
+        message.includes('Connection lost') || message.includes('Disconnect')) {
+      return 'disconnected';
+    }
+    
+    // Check for task notifications (should be green)
+    if (message.includes('Task saved') || message.includes('Task completed') ||
+        message.includes('Task removed') || message.includes('Annotation saved')) {
+      return 'connected';
+    }
+    
+    // Check for connection notifications (should be green)
+    if (message.includes('connected to project') || message.includes('Project connection') ||
+        message.includes('restored') || message.includes('Migration complete') || 
+        message.includes('Rollback complete')) {
+      return 'connected';
     }
     
     // Error notifications
-    if (type === 'error' || message.includes('❌') || message.includes('Failed')) {
+    if (type === 'error' || message.includes('Failed') || message.includes('Error')) {
       return 'error';
     }
     
-    // Status notifications
-    if (message.includes('Connection expired') || message.includes('Project connection') ||
-        message.includes('moved to') || message.includes('restored')) {
-      return 'status';
+    // Warning notifications
+    if (type === 'warning') {
+      return 'warning';
     }
     
-    // Info notifications (refreshes, sync, etc.)
+    // All other notifications (workflow files, refreshes, etc.) default to info (blue)
     return 'info';
   }
   
   function shouldShowNotification(message, category) {
-    // Always show user actions and errors
-    if (category === 'user-action' || category === 'error') {
+    // Always show connection/disconnection and error notifications
+    if (category === 'connected' || category === 'disconnected' || category === 'error' || category === 'warning') {
       return true;
     }
     
@@ -660,110 +662,67 @@
     return true;
   }
   
-  function createNotificationElement(message, type, category) {
-    const notification = document.createElement('div');
-    notification.className = `float-notification ${type === 'error' ? 'float-error' : ''}`;
-    notification.textContent = message;
-    notification.dataset.category = category;
-    notification.dataset.timestamp = Date.now();
-    
-    return notification;
-  }
+  // Global notification debug tools
+  window.moatDebugNotifications = {
+    testConnection: () => showNotification('Test connection notification', 'info', 'connection-test'),
+    testError: () => showNotification('Test error notification', 'error', 'error-test'),
+    testWarning: () => showNotification('Test warning notification', 'warning', 'warning-test'),
+    getQueue: () => headerNotificationQueue,
+    clear: () => {
+      headerNotificationQueue = [];
+      const notification = document.querySelector('.float-header-notification');
+      if (notification) notification.remove();
+    },
+    getRecentNotifications: () => Array.from(recentNotifications.entries()),
+    getStats: () => ({
+      queueLength: headerNotificationQueue.length,
+      isProcessing: isShowingHeaderNotification,
+      queue: headerNotificationQueue.map(n => ({
+        message: n.message,
+        type: n.type,
+        source: n.source,
+        priority: n.priority,
+        timestamp: n.timestamp
+      }))
+    }),
+    testSequencing: () => {
+      showNotification('First notification', 'info', 'test-1');
+      showNotification('Second notification', 'info', 'test-2');
+      showNotification('Third notification', 'info', 'test-3');
+    },
+    testColors: () => {
+      showNotification('Moat connected to project', 'info', 'connection-test');
+      setTimeout(() => showNotification('Project disconnected', 'info', 'disconnect-test'), 4500);
+      setTimeout(() => showNotification('Task saved successfully', 'info', 'task-test'), 9000);
+      setTimeout(() => showNotification('Moat workflow files created in your project', 'info', 'workflow-files-created'), 13500);
+    }
+  };
+
+  // Initialize global debugging
+  window.connectionEventManager = connectionEventManager;
+  window.notificationDeduplicator = notificationDeduplicator;
+  window.connectionManager = connectionManager;
   
-  function positionNotifications() {
-    activeNotifications.forEach((notification, index) => {
-      const bottomOffset = 20 + (index * STACK_OFFSET);
-      notification.style.bottom = `${bottomOffset}px`;
-      notification.style.zIndex = 10002 - index;
-      
-      // Add stacking visual effect
-      if (index > 0) {
-        notification.style.transform = `scale(${1 - (index * 0.05)})`;
-        notification.style.opacity = `${1 - (index * 0.15)}`;
-      }
-    });
-  }
+  // Expose debugging tools for deduplication system
+  window.moatDebugNotifications.testNotification = (message, type) => showNotification(message, type, 'debug-test'),
+  window.moatDebugNotifications.deduplicator = notificationDeduplicator,
+  window.moatDebugNotifications.connectionEventManager = connectionEventManager,
+  window.moatDebugNotifications.connectionManager = connectionManager;
   
-  function removeNotification(notification) {
-    const index = activeNotifications.indexOf(notification);
-    if (index !== -1) {
-      activeNotifications.splice(index, 1);
-      notification.remove();
-      positionNotifications();
-      
-      // Process next notification if any are waiting
-      setTimeout(() => {
-        if (notificationQueue.length > 0 && !isProcessingNotifications) {
-          console.log('🔔 Notification: Processing next after removal...');
-          processNotificationQueue();
-        }
-      }, 100); // Small delay to allow UI to settle
-    }
-  }
-  
-  function processNotificationQueue() {
-    // Prevent overlapping processing
-    if (isProcessingNotifications) {
-      return;
-    }
-    
-    // If we have notifications queued and room to show them
-    if (notificationQueue.length > 0 && activeNotifications.length < MAX_VISIBLE_NOTIFICATIONS) {
-      isProcessingNotifications = true;
-      
-      const { message, type, category, source, timestamp } = notificationQueue.shift();
-      
-      const notification = createNotificationElement(message, type, category);
-      document.body.appendChild(notification);
-      activeNotifications.push(notification);
-      
-      console.log('🔔 Notification: Showing notification:', {
-        message: message.substring(0, 50),
-        source,
-        queueLength: notificationQueue.length
-      });
-      
-      // Set removal timer
-      setTimeout(() => {
-        removeNotification(notification);
-      }, NOTIFICATION_DURATION);
-      
-      // Position current notification
-      positionNotifications();
-      
-      // Reset processing flag and handle next notification after delay
-      setTimeout(() => {
-        isProcessingNotifications = false;
-        
-        // Process next notification if any are queued
-        if (notificationQueue.length > 0) {
-          console.log('🔔 Notification: Processing next in queue after delay...');
-          processNotificationQueue();
-        }
-      }, NOTIFICATION_SEQUENCE_DELAY);
-    }
-  }
-  
-  // Enhanced notification function with smart filtering and deduplication
-  function showNotification(message, type = 'info', source = 'moat') {
-    // Use new deduplication system first
-    if (!notificationDeduplicator.shouldShowNotification(message, type, source)) {
-      return false; // Notification was blocked
-    }
-    
-    const category = categorizeNotification(message, type);
-    
-    // Skip notifications that shouldn't be shown (legacy filtering)
-    if (!shouldShowNotification(message, category)) {
-      return false;
-    }
+  // Header notification system
+  let headerNotificationTimeout;
+  let headerNotificationQueue = [];
+  let isShowingHeaderNotification = false;
+
+  function showHeaderNotification(message, type = 'info', source = 'moat', duration = 3000) {
+    console.log('🔔 Header Notification:', message, type, source);
     
     // Add to queue with priority and special handling
-    const priority = NOTIFICATION_PRIORITIES[category] || 0;
+    const priority = NOTIFICATION_PRIORITIES[categorizeNotification(message, type)] || 0;
     const notificationData = { 
       message, 
       type, 
-      category, 
+      duration,
       priority,
       source,
       timestamp: Date.now(),
@@ -771,25 +730,146 @@
     };
     
     // Insert by priority (higher priority first)
-    let insertIndex = notificationQueue.length;
-    for (let i = 0; i < notificationQueue.length; i++) {
-      if (notificationQueue[i].priority < priority) {
+    let insertIndex = headerNotificationQueue.length;
+    for (let i = 0; i < headerNotificationQueue.length; i++) {
+      if (headerNotificationQueue[i].priority < priority) {
         insertIndex = i;
         break;
       }
     }
     
-    notificationQueue.splice(insertIndex, 0, notificationData);
+    headerNotificationQueue.splice(insertIndex, 0, notificationData);
     
-    // For connection-related notifications, add a small delay to allow sequencing
-    if (source.includes('connection') || source.includes('workflow') || source.includes('setup')) {
-      // Add a brief delay for connection-related notifications to ensure proper sequencing
-      setTimeout(() => {
-        processNotificationQueue();
-      }, 100);
-    } else {
-      processNotificationQueue();
+    // Process queue if not already showing
+    if (!isShowingHeaderNotification) {
+      processHeaderNotificationQueue();
     }
+  }
+
+  function processHeaderNotificationQueue() {
+    if (headerNotificationQueue.length === 0) {
+      isShowingHeaderNotification = false;
+      return;
+    }
+
+    isShowingHeaderNotification = true;
+    const { message, type, duration, source } = headerNotificationQueue.shift();
+    
+    console.log('🔔 Processing header notification:', message, type, source);
+    
+    // Clear any existing notification
+    const existingNotification = document.querySelector('.float-header-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+    
+    // Get containers
+    const notificationContainer = document.getElementById('notification-container');
+    
+    if (!notificationContainer) {
+      console.warn('Header notification container not found');
+      isShowingHeaderNotification = false;
+      return;
+    }
+
+    // Determine the notification category for styling
+    const category = categorizeNotification(message, type);
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `float-header-notification ${category}`;
+    
+    // Add icon based on category and source
+    const iconSvg = getNotificationIcon(category, source);
+    
+    notification.innerHTML = `
+      ${iconSvg}
+      <span class="float-header-notification-text">${message}</span>
+    `;
+    
+    // Add to container
+    notificationContainer.appendChild(notification);
+    
+    // Auto-remove after duration
+    headerNotificationTimeout = setTimeout(() => {
+      removeHeaderNotification();
+    }, duration);
+  }
+
+  function removeHeaderNotification() {
+    const notification = document.querySelector('.float-header-notification');
+    if (notification) {
+      notification.classList.add('removing');
+      setTimeout(() => {
+        notification.remove();
+        
+        // No need to hide indicator since we removed it
+        
+        // Process next notification in queue after a brief delay
+        setTimeout(() => {
+          processHeaderNotificationQueue();
+        }, 100);
+      }, 300);
+    }
+    
+    if (headerNotificationTimeout) {
+      clearTimeout(headerNotificationTimeout);
+      headerNotificationTimeout = null;
+    }
+  }
+
+  function getNotificationIcon(category, source = 'moat') {
+    // Special case for workflow files created notification
+    if (source === 'workflow-files-created') {
+      // Use folder-open.svg for workflow files created (blue)
+      return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #2563eb;"><polygon points="2 16 1 16 1 3 2 3 2 2 9 2 9 3 10 3 10 4 19 4 19 5 20 5 20 9 5 9 5 10 4 10 4 12 3 12 3 14 2 14 2 16"/><polygon points="23 10 23 12 22 12 22 14 21 14 21 16 20 16 20 18 19 18 19 21 18 21 18 22 3 22 3 21 2 21 2 18 3 18 3 16 4 16 4 14 5 14 5 12 6 12 6 10 23 10"/></svg>';
+    }
+    
+    switch (category) {
+      case 'disconnected':
+        // Use exclamation-triangle-solid.svg for disconnected (red)
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #dc2626;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
+      case 'connected':
+        // Use check-box-solid.svg for connected (green)
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #059669;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v-1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
+      case 'error':
+        // Use exclamation-triangle-solid.svg for errors (red)
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #dc2626;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
+      case 'warning':
+        // Use exclamation-triangle-solid.svg for warnings (orange)
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #d97706;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
+      case 'info':
+      default:
+        // Use check-box-solid.svg for info and other notifications (blue)
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #2563eb;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v-1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
+    }
+  }
+
+  // Enhanced notification function that checks deduplication first
+  function showNotification(message, type = 'info', source = 'moat') {
+    console.log('🔔 Notification request:', message, type, source);
+    
+    // Use new deduplication system first
+    if (!notificationDeduplicator.shouldShowNotification(message, type, source)) {
+      console.log('🔔 Notification blocked by deduplication system');
+      return false; // Notification was blocked
+    }
+    
+    const category = categorizeNotification(message, type);
+    
+    // Skip notifications that shouldn't be shown (legacy filtering)
+    if (!shouldShowNotification(message, category)) {
+      console.log('🔔 Notification blocked by legacy filtering');
+      return false;
+    }
+    
+    // Duration based on category
+    let duration = 3000;
+    if (category === 'error') duration = 5000;
+    if (category === 'connected' || category === 'disconnected') duration = 4000;
+    
+    // Show header notification
+    showHeaderNotification(message, type, source, duration);
     
     return true; // Notification was shown
   }
@@ -806,6 +886,7 @@
   
   // Expose notification system to global scope for content_script.js
   window.showMoatNotification = showNotification;
+  window.removeHeaderNotification = removeHeaderNotification;
 
   // Get initial status text for moat creation
   function getInitialStatusText() {
@@ -862,6 +943,11 @@
             </h3>
           </div>
           <div class="float-moat-right-controls">
+            <div class="float-header-notifications">
+              <div class="float-notification-container" id="notification-container">
+                <!-- Current notification content will be displayed here -->
+              </div>
+            </div>
             <div class="float-moat-project-status-container">
               <button class="float-moat-project-dropdown" id="float-project-dropdown" title="${getInitialTooltipText()}">
                 <span class="float-project-indicator ${getInitialStatusClass()}"></span>
@@ -875,7 +961,6 @@
                 <polygon points="5 7 7 7 7 8 8 8 8 9 9 9 9 10 10 10 10 11 11 11 11 12 13 12 13 11 14 11 14 10 15 10 15 9 16 9 16 8 17 8 17 7 19 7 19 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7"/>
             </svg>
               </button>
-
             </div>
             <div class="float-moat-actions">
               <button class="float-moat-position-btn" title="Dock to right">
@@ -1138,6 +1223,10 @@
     
     // Clear notification deduplication history to allow reconnection notifications
     notificationDeduplicator.recentNotifications.clear();
+    // Also clear header notification queue for clean disconnect
+    headerNotificationQueue = [];
+    const notification = document.querySelector('.float-header-notification');
+    if (notification) notification.remove();
     console.log('🔧 Moat: Notification history cleared for fresh reconnection');
     
     // Reset animation system when disconnecting
@@ -1499,7 +1588,7 @@
     // Task 3.6: Visual loading state (only for manual refresh)
     if (!silent) {
       setRefreshLoadingState(true);
-      showNotification('🔄 Refreshing tasks...');
+      showNotification('Refreshing tasks...');
     }
     
     try {
@@ -1524,13 +1613,13 @@
       
       // Only show success notification for manual refreshes
       if (!silent) {
-        showNotification('✅ Tasks refreshed successfully');
+        showNotification('Tasks refreshed successfully');
       }
       
     } catch (error) {
       // Task 3.7: Error handling with user feedback (always show errors)
       console.error('🔄 Moat: Refresh failed:', error);
-      showNotification(`❌ Refresh failed: ${error.message}`, 'error');
+      showNotification(`Refresh failed: ${error.message}`, 'error');
       
       // Fallback to showing current session
       try {
@@ -2269,10 +2358,10 @@
           await window.markdownGenerator.rebuildMarkdownFile(allTasks);
           console.log('✅ Moat: Markdown file regenerated after removal');
           
-          showNotification('✅ Task removed successfully');
+          showNotification('Task removed successfully');
         } else {
           console.warn('⚠️ Moat: Task not found in TaskStore:', id);
-          showNotification('⚠️ Task not found for removal');
+          showNotification('Task not found for removal');
         }
         
       } else {
@@ -2286,10 +2375,10 @@
         if (queue.length < originalLength) {
           localStorage.setItem('moat.queue', JSON.stringify(queue));
           console.log('✅ Moat: Task removed from localStorage');
-          showNotification('✅ Task removed successfully');
+          showNotification('Task removed successfully');
         } else {
           console.warn('⚠️ Moat: Task not found in localStorage:', id);
-          showNotification('⚠️ Task not found for removal');
+          showNotification('Task not found for removal');
         }
       }
       
@@ -2298,7 +2387,7 @@
       
     } catch (error) {
       console.error('❌ Moat: Error removing task:', error);
-      showNotification(`❌ Failed to remove task: ${error.message}`);
+      showNotification(`Failed to remove task: ${error.message}`);
     }
   }
 
@@ -2447,7 +2536,7 @@
       
       // Show success notification using our centralized deduplication system
       // The deduplication system will handle preventing duplicates
-      const notificationShown = showNotification('✅ Moat connected to project', 'info', `connection-${e.detail.source || 'unknown'}`);
+      const notificationShown = showNotification('Moat connected to project', 'info', `connection-${e.detail.source || 'unknown'}`);
       if (notificationShown) {
         console.log('🔧 Moat: Connection notification shown');
       } else {
