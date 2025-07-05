@@ -2811,7 +2811,11 @@ You can edit the \`.mdc\` files in this directory to customize how Moat processe
       }
       
       console.log('✅ Moat: All rule templates deployed successfully');
-      showNotification('📁 Moat workflow files created in your project', 'info', 'workflow-files-created');
+      
+      // Delay workflow notification to ensure it appears after connection notification
+      setTimeout(() => {
+        showNotification('📁 Moat workflow files created in your project', 'info', 'workflow-files-created');
+      }, 500); // Half second delay to sequence properly
       
       return true;
     } catch (error) {

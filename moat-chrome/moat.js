@@ -555,6 +555,24 @@
     clearNotificationHistory: () => {
       notificationDeduplicator.recentNotifications.clear();
       console.log('🧹 Notification history cleared');
+    },
+    getQueueStatus: () => ({
+      queueLength: notificationQueue.length,
+      activeNotifications: activeNotifications.length,
+      isProcessing: isProcessingNotifications,
+      queue: notificationQueue.map(n => ({
+        message: n.message.substring(0, 30),
+        source: n.source,
+        priority: n.priority,
+        category: n.category
+      }))
+    }),
+    testSequencing: () => {
+      console.log('🧪 Testing notification sequencing...');
+      showNotification('First notification', 'info', 'test-1');
+      showNotification('Second notification', 'info', 'test-2');
+      showNotification('Third notification', 'info', 'test-3');
+      console.log('🧪 Three notifications queued - they should appear sequentially');
     }
   };
   
@@ -579,9 +597,11 @@
   // Notification queue and management
   let notificationQueue = [];
   let activeNotifications = [];
-  const MAX_VISIBLE_NOTIFICATIONS = 2;
+  const MAX_VISIBLE_NOTIFICATIONS = 1; // Show one at a time for better UX
   const NOTIFICATION_DURATION = 3000;
+  const NOTIFICATION_SEQUENCE_DELAY = 800; // Delay between sequential notifications
   const STACK_OFFSET = 60; // pixels between stacked notifications
+  let isProcessingNotifications = false;
   
   // Debounce similar notifications
   let recentNotifications = new Map();
@@ -670,24 +690,58 @@
       activeNotifications.splice(index, 1);
       notification.remove();
       positionNotifications();
+      
+      // Process next notification if any are waiting
+      setTimeout(() => {
+        if (notificationQueue.length > 0 && !isProcessingNotifications) {
+          console.log('🔔 Notification: Processing next after removal...');
+          processNotificationQueue();
+        }
+      }, 100); // Small delay to allow UI to settle
     }
   }
   
   function processNotificationQueue() {
-    while (notificationQueue.length > 0 && activeNotifications.length < MAX_VISIBLE_NOTIFICATIONS) {
-      const { message, type, category } = notificationQueue.shift();
+    // Prevent overlapping processing
+    if (isProcessingNotifications) {
+      return;
+    }
+    
+    // If we have notifications queued and room to show them
+    if (notificationQueue.length > 0 && activeNotifications.length < MAX_VISIBLE_NOTIFICATIONS) {
+      isProcessingNotifications = true;
+      
+      const { message, type, category, source, timestamp } = notificationQueue.shift();
       
       const notification = createNotificationElement(message, type, category);
       document.body.appendChild(notification);
       activeNotifications.push(notification);
       
+      console.log('🔔 Notification: Showing notification:', {
+        message: message.substring(0, 50),
+        source,
+        queueLength: notificationQueue.length
+      });
+      
       // Set removal timer
       setTimeout(() => {
         removeNotification(notification);
       }, NOTIFICATION_DURATION);
+      
+      // Position current notification
+      positionNotifications();
+      
+      // Reset processing flag and handle next notification after delay
+      setTimeout(() => {
+        isProcessingNotifications = false;
+        
+        // Process next notification if any are queued
+        if (notificationQueue.length > 0) {
+          console.log('🔔 Notification: Processing next in queue after delay...');
+          processNotificationQueue();
+        }
+      }, NOTIFICATION_SEQUENCE_DELAY);
     }
-    
-    positionNotifications();
   }
   
   // Enhanced notification function with smart filtering and deduplication
@@ -704,7 +758,7 @@
       return false;
     }
     
-    // Add to queue with priority
+    // Add to queue with priority and special handling
     const priority = NOTIFICATION_PRIORITIES[category] || 0;
     const notificationData = { 
       message, 
@@ -712,7 +766,8 @@
       category, 
       priority,
       source,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      isUrgent: type === 'error' || priority >= 2 // Errors and high priority are urgent
     };
     
     // Insert by priority (higher priority first)
@@ -725,7 +780,16 @@
     }
     
     notificationQueue.splice(insertIndex, 0, notificationData);
-    processNotificationQueue();
+    
+    // For connection-related notifications, add a small delay to allow sequencing
+    if (source.includes('connection') || source.includes('workflow') || source.includes('setup')) {
+      // Add a brief delay for connection-related notifications to ensure proper sequencing
+      setTimeout(() => {
+        processNotificationQueue();
+      }, 100);
+    } else {
+      processNotificationQueue();
+    }
     
     return true; // Notification was shown
   }
