@@ -5,6 +5,187 @@
   let draggedItem = null;
   let moatPosition = 'bottom'; // 'right' or 'bottom' - default to bottom
   
+  // ===== NOTIFICATION DEDUPLICATION SYSTEM =====
+  class NotificationDeduplicator {
+    constructor() {
+      this.recentNotifications = new Map();
+      this.messageSignatures = new Map();
+      this.debugMode = false;
+    }
+    
+    getMessageSignature(message) {
+      // Normalize message for duplicate detection
+      return message
+        .replace(/[0-9]+/g, '#')  // Replace numbers with #
+        .replace(/\s+/g, ' ')     // Normalize whitespace
+        .replace(/[^\w\s#]/g, '') // Remove special chars except # and words
+        .toLowerCase()
+        .trim();
+    }
+    
+    shouldShowNotification(message, type, source = 'unknown') {
+      const signature = this.getMessageSignature(message);
+      const key = `${signature}-${type}`;
+      const now = Date.now();
+      
+      // Check recent duplicates with longer debounce for some types
+      const debounceTime = type === 'error' ? 1000 : 3000; // Errors show more frequently
+      const lastShown = this.recentNotifications.get(key);
+      
+      if (lastShown && (now - lastShown) < debounceTime) {
+        if (this.debugMode) {
+          console.log('🔕 NotificationDeduplicator: Blocking duplicate:', {
+            message: message.substring(0, 50),
+            signature,
+            source,
+            lastShown: new Date(lastShown),
+            timeSince: now - lastShown
+          });
+        }
+        return false;
+      }
+      
+      this.recentNotifications.set(key, now);
+      
+      if (this.debugMode) {
+        console.log('✅ NotificationDeduplicator: Allowing notification:', {
+          message: message.substring(0, 50),
+          signature,
+          source
+        });
+      }
+      
+      return true;
+    }
+    
+    // Clean up old entries periodically
+    cleanup() {
+      const now = Date.now();
+      const maxAge = 10000; // 10 seconds
+      
+      for (const [key, timestamp] of this.recentNotifications.entries()) {
+        if (now - timestamp > maxAge) {
+          this.recentNotifications.delete(key);
+        }
+      }
+    }
+    
+    // Debug helpers
+    enableDebug() { this.debugMode = true; }
+    disableDebug() { this.debugMode = false; }
+    getStats() {
+      return {
+        totalTracked: this.recentNotifications.size,
+        entries: Array.from(this.recentNotifications.entries()).map(([key, timestamp]) => ({
+          key,
+          age: Date.now() - timestamp
+        }))
+      };
+    }
+  }
+  
+  // ===== CONNECTION EVENT COORDINATION =====
+  class ConnectionEventManager {
+    constructor() {
+      this.lastEventSignature = null;
+      this.eventQueue = [];
+      this.processingEvent = false;
+      this.debugMode = false;
+    }
+    
+    getEventSignature(eventData) {
+      // Create unique signature for connection events
+      return `${eventData.status}-${eventData.path || 'no-path'}-${eventData.source || 'unknown'}`;
+    }
+    
+    async dispatchConnectionEvent(eventData, source = 'unknown') {
+      const signature = this.getEventSignature({ ...eventData, source });
+      const now = Date.now();
+      
+      // Prevent rapid duplicate events (within 500ms)
+      if (this.lastEventSignature === signature && 
+          this.lastEventTime && 
+          (now - this.lastEventTime) < 500) {
+        
+        if (this.debugMode) {
+          console.log('🔕 ConnectionEventManager: Blocking duplicate event:', {
+            signature,
+            source,
+            timeSince: now - this.lastEventTime
+          });
+        }
+        return false;
+      }
+      
+      // Prevent overlapping event processing
+      if (this.processingEvent) {
+        if (this.debugMode) {
+          console.log('🔄 ConnectionEventManager: Queuing event (processing in progress):', signature);
+        }
+        this.eventQueue.push({ eventData: { ...eventData, source }, signature });
+        return false;
+      }
+      
+      this.processingEvent = true;
+      this.lastEventSignature = signature;
+      this.lastEventTime = now;
+      
+      if (this.debugMode) {
+        console.log('🚀 ConnectionEventManager: Dispatching event:', {
+          signature,
+          source,
+          eventData
+        });
+      }
+      
+      // Dispatch the coordinated event
+      window.dispatchEvent(new CustomEvent('moat:project-connected', { 
+        detail: { 
+          ...eventData, 
+          source,
+          eventSignature: signature,
+          timestamp: now
+        } 
+      }));
+      
+      // Reset processing flag after a delay
+      setTimeout(() => { 
+        this.processingEvent = false;
+        this.processQueue();
+      }, 1000);
+      
+      return true;
+    }
+    
+    processQueue() {
+      if (this.eventQueue.length > 0 && !this.processingEvent) {
+        const { eventData, signature } = this.eventQueue.shift();
+        this.dispatchConnectionEvent(eventData, eventData.source);
+      }
+    }
+    
+    // Debug helpers
+    enableDebug() { this.debugMode = true; }
+    disableDebug() { this.debugMode = false; }
+    getStats() {
+      return {
+        lastEventSignature: this.lastEventSignature,
+        lastEventTime: this.lastEventTime ? new Date(this.lastEventTime) : null,
+        queueLength: this.eventQueue.length,
+        processingEvent: this.processingEvent
+      };
+    }
+  }
+  
+  // Create global instances
+  const notificationDeduplicator = new NotificationDeduplicator();
+  const connectionEventManager = new ConnectionEventManager();
+  
+  // Clean up old entries periodically
+  setInterval(() => {
+    notificationDeduplicator.cleanup();
+  }, 30000); // Every 30 seconds
+  
   // ===== CENTRALIZED CONNECTION STATE MANAGER =====
   class ConnectionManager {
     constructor() {
@@ -332,6 +513,10 @@
   // Expose for debugging
   window.connectionManager = connectionManager;
   
+  // Expose notification and event management systems to global scope
+  window.connectionEventManager = connectionEventManager;
+  window.notificationDeduplicator = notificationDeduplicator;
+
   // Expose debug helpers
   window.moatDebugConnection = {
     getConnectionState: () => connectionManager.getDebugInfo(),
@@ -345,6 +530,21 @@
     },
     resetConnectionFlag: () => {
       window.dispatchEvent(new CustomEvent('moat:reset-connection-state'));
+    }
+  };
+  
+  // Enhanced debug helpers for notification system
+  window.moatDebugNotifications = {
+    getDeduplicationStats: () => notificationDeduplicator.getStats(),
+    getEventManagerStats: () => connectionEventManager.getStats(),
+    enableNotificationDebug: () => notificationDeduplicator.enableDebug(),
+    disableNotificationDebug: () => notificationDeduplicator.disableDebug(),
+    enableEventDebug: () => connectionEventManager.enableDebug(),
+    disableEventDebug: () => connectionEventManager.disableDebug(),
+    testNotification: (message, type) => showNotification(message, type, 'debug-test'),
+    clearNotificationHistory: () => {
+      notificationDeduplicator.recentNotifications.clear();
+      console.log('🧹 Notification history cleared');
     }
   };
   
@@ -480,18 +680,30 @@
     positionNotifications();
   }
   
-  // Enhanced notification function with smart filtering
-  function showNotification(message, type = 'info') {
+  // Enhanced notification function with smart filtering and deduplication
+  function showNotification(message, type = 'info', source = 'moat') {
+    // Use new deduplication system first
+    if (!notificationDeduplicator.shouldShowNotification(message, type, source)) {
+      return false; // Notification was blocked
+    }
+    
     const category = categorizeNotification(message, type);
     
-    // Skip notifications that shouldn't be shown
+    // Skip notifications that shouldn't be shown (legacy filtering)
     if (!shouldShowNotification(message, category)) {
-      return;
+      return false;
     }
     
     // Add to queue with priority
     const priority = NOTIFICATION_PRIORITIES[category] || 0;
-    const notificationData = { message, type, category, priority };
+    const notificationData = { 
+      message, 
+      type, 
+      category, 
+      priority,
+      source,
+      timestamp: Date.now()
+    };
     
     // Insert by priority (higher priority first)
     let insertIndex = notificationQueue.length;
@@ -504,6 +716,8 @@
     
     notificationQueue.splice(insertIndex, 0, notificationData);
     processNotificationQueue();
+    
+    return true; // Notification was shown
   }
   
   // Clean up old debounce entries periodically
