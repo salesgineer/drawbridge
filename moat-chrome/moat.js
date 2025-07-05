@@ -28,8 +28,16 @@
       const key = `${signature}-${type}`;
       const now = Date.now();
       
-      // Check recent duplicates with longer debounce for some types
-      const debounceTime = type === 'error' ? 1000 : 3000; // Errors show more frequently
+      // Check recent duplicates with adaptive debounce timing
+      let debounceTime;
+      if (type === 'error') {
+        debounceTime = 1000; // Errors show more frequently
+      } else if (source.includes('connection') || source.includes('workflow') || source.includes('setup')) {
+        debounceTime = 5000; // Connection-related notifications have longer debounce
+      } else {
+        debounceTime = 3000; // Default debounce
+      }
+      
       const lastShown = this.recentNotifications.get(key);
       
       if (lastShown && (now - lastShown) < debounceTime) {
@@ -39,7 +47,8 @@
             signature,
             source,
             lastShown: new Date(lastShown),
-            timeSince: now - lastShown
+            timeSince: now - lastShown,
+            debounceTime
           });
         }
         return false;
@@ -51,7 +60,8 @@
         console.log('✅ NotificationDeduplicator: Allowing notification:', {
           message: message.substring(0, 50),
           signature,
-          source
+          source,
+          debounceTime
         });
       }
       
@@ -1062,6 +1072,10 @@
     // Reset content script connection state flag
     window.dispatchEvent(new CustomEvent('moat:reset-connection-state'));
     
+    // Clear notification deduplication history to allow reconnection notifications
+    notificationDeduplicator.recentNotifications.clear();
+    console.log('🔧 Moat: Notification history cleared for fresh reconnection');
+    
     // Reset animation system when disconnecting
     resetFloatingAnimation();
     
@@ -1079,7 +1093,7 @@
     // Show clean empty state when disconnected
     renderEmptySidebar();
     
-    showNotification('Project disconnected');
+    showNotification('Project disconnected', 'info', 'disconnect');
     console.log('🔧 Moat: Project disconnect process completed');
   }
 
@@ -2354,9 +2368,6 @@
     }
   });
 
-  // Track last connection notification to prevent duplicates
-  let lastConnectionNotification = 0;
-  
   // Initialize project connection monitoring (single event listener)
   window.addEventListener('moat:project-connected', async (e) => {
     console.log('🔧 Moat: Received project-connected event:', e.detail);
@@ -2370,14 +2381,13 @@
       // Switch to connected view
       initializeContentVisibility();
       
-      // Show success notification only once per connection session (prevent duplicates)
-      const now = Date.now();
-      if (now - lastConnectionNotification > 2000) { // 2 second debounce
-        lastConnectionNotification = now;
-        showNotification('✅ Moat connected to project');
+      // Show success notification using our centralized deduplication system
+      // The deduplication system will handle preventing duplicates
+      const notificationShown = showNotification('✅ Moat connected to project', 'info', `connection-${e.detail.source || 'unknown'}`);
+      if (notificationShown) {
         console.log('🔧 Moat: Connection notification shown');
       } else {
-        console.log('🔧 Moat: Skipping duplicate connection notification');
+        console.log('🔧 Moat: Connection notification blocked by deduplication');
       }
       
       console.log('Moat: Project connected, refreshing tasks...');
