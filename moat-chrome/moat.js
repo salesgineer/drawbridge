@@ -679,6 +679,10 @@
     // Set up connection manager UI update callback
     connectionManager.onStateChange(() => {
       updateConnectionUI();
+      // Update content visibility when connection state changes
+      if (moat) {
+        initializeContentVisibility();
+      }
     });
     
     console.log('Moat: Event listeners attached');
@@ -858,8 +862,8 @@
     // Update connection manager state
     connectionManager.setDisconnected();
     
-    // Show connect project content when disconnected
-    showConnectProjectContent();
+    // Show clean empty state when disconnected
+    renderEmptySidebar();
     
     showNotification('Project disconnected');
     console.log('🔧 Moat: Project disconnect process completed');
@@ -979,12 +983,10 @@
     const state = connectionManager.getState();
     console.log('Moat: Initializing content visibility, connection state:', state);
     
-    // Show appropriate content based on current project status
-    if (state.status === 'connected') {
-      showEmptyState();
-    } else {
-      showConnectProjectContent();
-    }
+    // Always show the dynamic empty state which adapts to connection status
+    // This shows "Connect to a local folder" when disconnected
+    // or "No annotations yet" when connected but no tasks
+    renderEmptySidebar();
   }
 
   // Initialize moat with persistence
@@ -1041,7 +1043,7 @@
 
   // Handle connect project cancel
   function handleConnectCancel() {
-    showEmptyState();
+    renderEmptySidebar();
   }
 
   // Handle connect project confirm
@@ -1405,8 +1407,8 @@
       // Check if we're connected to a project
       const state = connectionManager.getState();
       if (state.status !== 'connected' || !state.directoryHandle) {
-        console.log('Moat: Not connected to project, clearing markdown tasks from sidebar');
-        await renderSidebarWithCurrentSessionOnly();
+        console.log('Moat: Not connected to project, showing empty state');
+        await renderEmptySidebar();
         return { success: true, taskCount: 0, source: 'no-project' };
       }
 
@@ -1795,7 +1797,7 @@
     }
     
     if (allTasks.length === 0) {
-      showEmptyState();
+      await renderEmptySidebar();
       return;
     }
     
