@@ -3,15 +3,367 @@
   let moat = null;
   let isVisible = false;
   let draggedItem = null;
-  let projectStatus = 'not-connected';
-  let projectPath = null;
   let moatPosition = 'bottom'; // 'right' or 'bottom' - default to bottom
+  
+  // ===== CENTRALIZED CONNECTION STATE MANAGER =====
+  class ConnectionManager {
+    constructor() {
+      this.status = 'not-connected';
+      this.path = null;
+      this.directoryHandle = null;
+      this.isVerifying = false;
+      this.lastVerificationTime = 0;
+      this.stateChangeCallbacks = [];
+      
+      // Debounce connection events to prevent spam
+      this.lastConnectionEvent = 0;
+      this.CONNECTION_EVENT_DEBOUNCE = 1000; // 1 second
+      
+      console.log('🔧 ConnectionManager: Initialized');
+    }
+    
+    // Register callback for state changes
+    onStateChange(callback) {
+      this.stateChangeCallbacks.push(callback);
+    }
+    
+    // Remove callback
+    offStateChange(callback) {
+      const index = this.stateChangeCallbacks.indexOf(callback);
+      if (index > -1) {
+        this.stateChangeCallbacks.splice(index, 1);
+      }
+    }
+    
+    // Notify all callbacks of state change
+    notifyStateChange() {
+      const stateSnapshot = {
+        status: this.status,
+        path: this.path,
+        directoryHandle: this.directoryHandle,
+        isVerifying: this.isVerifying,
+        timestamp: Date.now()
+      };
+      
+      this.stateChangeCallbacks.forEach(callback => {
+        try {
+          callback(stateSnapshot);
+        } catch (error) {
+          console.error('🔧 ConnectionManager: Error in state change callback:', error);
+        }
+      });
+    }
+    
+    // Get current connection state
+    getState() {
+      return {
+        status: this.status,
+        path: this.path,
+        directoryHandle: this.directoryHandle,
+        isVerifying: this.isVerifying,
+        isConnected: this.status === 'connected',
+        lastVerificationTime: this.lastVerificationTime
+      };
+    }
+    
+    // Update connection state atomically
+    updateState(newState) {
+      const previousState = { ...this.getState() };
+      let hasChanged = false;
+      
+      // Update status
+      if (newState.status !== undefined && newState.status !== this.status) {
+        console.log('🔧 ConnectionManager: Status changing from', this.status, 'to', newState.status);
+        this.status = newState.status;
+        hasChanged = true;
+      }
+      
+      // Update path
+      if (newState.path !== undefined && newState.path !== this.path) {
+        console.log('🔧 ConnectionManager: Path changing from', this.path, 'to', newState.path);
+        this.path = newState.path;
+        hasChanged = true;
+      }
+      
+      // Update directory handle
+      if (newState.directoryHandle !== undefined && newState.directoryHandle !== this.directoryHandle) {
+        console.log('🔧 ConnectionManager: Directory handle changing');
+        this.directoryHandle = newState.directoryHandle;
+        hasChanged = true;
+      }
+      
+      // Update verification state
+      if (newState.isVerifying !== undefined && newState.isVerifying !== this.isVerifying) {
+        this.isVerifying = newState.isVerifying;
+        hasChanged = true;
+      }
+      
+      // Update global directoryHandle for compatibility
+      if (newState.directoryHandle !== undefined) {
+        window.directoryHandle = newState.directoryHandle;
+      }
+      
+      // Notify listeners if state changed
+      if (hasChanged) {
+        console.log('🔧 ConnectionManager: State updated:', this.getState());
+        this.notifyStateChange();
+      }
+      
+      return hasChanged;
+    }
+    
+    // Set connected state
+    setConnected(path, directoryHandle) {
+      return this.updateState({
+        status: 'connected',
+        path: path,
+        directoryHandle: directoryHandle,
+        isVerifying: false
+      });
+    }
+    
+    // Set disconnected state
+    setDisconnected() {
+      console.log('🔧 ConnectionManager: Setting disconnected state');
+      return this.updateState({
+        status: 'not-connected',
+        path: null,
+        directoryHandle: null,
+        isVerifying: false
+      });
+    }
+    
+    // Set verifying state
+    setVerifying(isVerifying) {
+      return this.updateState({
+        isVerifying: isVerifying
+      });
+    }
+    
+    // Verify connection and update state accordingly
+    async verifyConnection() {
+      if (this.isVerifying) {
+        console.log('🔧 ConnectionManager: Verification already in progress');
+        return this.getState();
+      }
+      
+      console.log('🔧 ConnectionManager: Starting connection verification');
+      this.setVerifying(true);
+      
+      try {
+        // Check if we have a directory handle
+        if (!this.directoryHandle) {
+          console.log('🔧 ConnectionManager: No directory handle, checking for restoration');
+          const restored = await this.attemptRestore();
+          if (!restored) {
+            this.setDisconnected();
+            return this.getState();
+          }
+        }
+        
+        // Test directory access
+        try {
+          await this.directoryHandle.getFileHandle('config.json', { create: false });
+          console.log('🔧 ConnectionManager: Directory access verified');
+          
+          // Ensure we have a path
+          if (!this.path) {
+            this.updateState({ path: this.directoryHandle.name || 'Connected Project' });
+          }
+          
+          this.updateState({ 
+            status: 'connected',
+            isVerifying: false
+          });
+          
+          this.lastVerificationTime = Date.now();
+          return this.getState();
+          
+        } catch (error) {
+          console.log('🔧 ConnectionManager: Directory access failed:', error);
+          this.setDisconnected();
+          return this.getState();
+        }
+        
+      } catch (error) {
+        console.error('🔧 ConnectionManager: Verification error:', error);
+        this.setDisconnected();
+        return this.getState();
+      }
+    }
+    
+    // Attempt to restore connection from persistence
+    async attemptRestore() {
+      console.log('🔧 ConnectionManager: Attempting to restore connection');
+      
+      // Try new persistence system first
+      if (window.moatPersistence) {
+        try {
+          const restoreResult = await window.moatPersistence.restoreProjectConnection();
+          if (restoreResult.success) {
+            console.log('🔧 ConnectionManager: Restored from persistence system');
+            this.updateState({
+              status: 'connected',
+              path: restoreResult.path,
+              directoryHandle: restoreResult.moatDirectory
+            });
+            return true;
+          }
+        } catch (error) {
+          console.warn('🔧 ConnectionManager: Persistence restoration failed:', error);
+        }
+      }
+      
+      // Try localStorage fallback
+      try {
+        const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
+        if (savedProject) {
+          const projectData = JSON.parse(savedProject);
+          if (projectData.directoryHandle) {
+            // Test if handle is still valid
+            try {
+              await projectData.directoryHandle.getFileHandle('config.json', { create: false });
+              console.log('🔧 ConnectionManager: Restored from localStorage');
+              this.updateState({
+                status: 'connected',
+                path: projectData.path,
+                directoryHandle: projectData.directoryHandle
+              });
+              return true;
+            } catch (error) {
+              console.log('🔧 ConnectionManager: localStorage handle invalid');
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('🔧 ConnectionManager: localStorage restoration failed:', error);
+      }
+      
+      return false;
+    }
+    
+    // Handle connection events with debouncing
+    handleConnectionEvent(eventDetail) {
+      const now = Date.now();
+      
+      // Allow connection events during status transitions (disconnect -> connect)
+      const isStatusChange = (eventDetail.status === 'connected' && this.status === 'not-connected') ||
+                            (eventDetail.status === 'not-connected' && this.status === 'connected');
+      
+      // Skip debouncing for status changes or if enough time has passed
+      if (!isStatusChange && now - this.lastConnectionEvent < this.CONNECTION_EVENT_DEBOUNCE) {
+        console.log('🔧 ConnectionManager: Ignoring duplicate connection event');
+        return;
+      }
+      
+      this.lastConnectionEvent = now;
+      
+      console.log('🔧 ConnectionManager: Processing connection event:', eventDetail);
+      
+      if (eventDetail.status === 'connected') {
+        // Don't allow undefined/empty paths to overwrite existing connected status
+        // UNLESS this is a reconnection after disconnect
+        if ((!eventDetail.path || eventDetail.path === 'undefined') && 
+            this.status === 'connected' && this.path && !isStatusChange) {
+          console.log('🔧 ConnectionManager: Ignoring event with undefined path - already connected to:', this.path);
+          return;
+        }
+        
+        let displayPath = eventDetail.path;
+        if (!displayPath || displayPath === 'undefined') {
+          displayPath = this.path || 'Connected Project';
+        }
+        
+        this.setConnected(displayPath, eventDetail.directoryHandle || this.directoryHandle);
+        
+      } else if (eventDetail.status === 'not-connected') {
+        this.setDisconnected();
+      }
+    }
+    
+    // Get display name for UI
+    getDisplayName() {
+      if (this.status === 'connected' && this.path) {
+        return this.path.split('/').pop() || this.path;
+      }
+      return 'Disconnected';
+    }
+    
+    // Get CSS class for UI
+    getStatusClass() {
+      return this.status === 'connected' ? 'float-project-connected' : 'float-project-disconnected';
+    }
+    
+    // Get tooltip text for UI
+    getTooltipText() {
+      if (this.status === 'connected' && this.path) {
+        const projectName = this.path.split('/').pop() || this.path;
+        return `Connected to ${projectName}`;
+      }
+      return 'Click to connect to project';
+    }
+    
+    // Should show chevron
+    shouldShowChevron() {
+      return this.status === 'connected';
+    }
+    
+    // Debug helper - get full state info
+    getDebugInfo() {
+      return {
+        status: this.status,
+        path: this.path,
+        hasDirectoryHandle: !!this.directoryHandle,
+        directoryHandleName: this.directoryHandle?.name,
+        isVerifying: this.isVerifying,
+        lastVerificationTime: this.lastVerificationTime,
+        lastConnectionEvent: this.lastConnectionEvent,
+        timeSinceLastEvent: Date.now() - this.lastConnectionEvent,
+        globalDirectoryHandle: !!window.directoryHandle,
+        localStorage: !!localStorage.getItem(`moat.project.${window.location.origin}`),
+        stateChangeCallbacks: this.stateChangeCallbacks.length
+      };
+    }
+  }
+  
+  // Create global connection manager instance
+  const connectionManager = new ConnectionManager();
+  
+  // Expose for debugging
+  window.connectionManager = connectionManager;
+  
+  // Expose debug helpers
+  window.moatDebugConnection = {
+    getConnectionState: () => connectionManager.getDebugInfo(),
+    forceDisconnect: () => disconnectProject(),
+    checkPersistence: async () => {
+      if (window.moatPersistence) {
+        const handles = await window.moatPersistence.getAllHandles();
+        return handles;
+      }
+      return 'Persistence not available';
+    },
+    resetConnectionFlag: () => {
+      window.dispatchEvent(new CustomEvent('moat:reset-connection-state'));
+    }
+  };
+  
+  // Legacy compatibility - maintain backward compatibility
+  Object.defineProperty(window, 'projectStatus', {
+    get: () => connectionManager.status,
+    set: (value) => connectionManager.updateState({ status: value })
+  });
+  
+  Object.defineProperty(window, 'projectPath', {
+    get: () => connectionManager.path,
+    set: (value) => connectionManager.updateState({ path: value })
+  });
   
   // Floating animation system
   let lastKnownTaskIds = new Set();
   let animationQueue = [];
   let isAnimating = false;
-
+  
   // ===== CENTRALIZED NOTIFICATION SYSTEM =====
   
   // Notification queue and management
@@ -169,76 +521,22 @@
 
   // Get initial status text for moat creation
   function getInitialStatusText() {
-    if (projectStatus === 'connected' && projectPath) {
-      const projectName = projectPath.split('/').pop() || projectPath;
-      return projectName;
-    }
-    
-    // Check if we have a saved connection that should be restored
-    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-    if (savedProject && window.directoryHandle) {
-      try {
-        const projectData = JSON.parse(savedProject);
-        const projectName = projectData.path.split('/').pop() || projectData.path;
-        return projectName;
-      } catch (error) {
-        console.warn('Could not parse saved project for initial status');
-      }
-    }
-    
-    return 'Disconnected';
+    return connectionManager.getDisplayName();
   }
 
   // Get initial status CSS class for moat creation
   function getInitialStatusClass() {
-    if (projectStatus === 'connected' && projectPath) {
-      return 'float-project-connected';
-    }
-    
-    // Check if we have a saved connection that should be restored
-    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-    if (savedProject && window.directoryHandle) {
-      return 'float-project-connected';
-    }
-    
-    return 'float-project-disconnected';
+    return connectionManager.getStatusClass();
   }
 
   // Get initial chevron display for moat creation
   function getInitialChevronDisplay() {
-    if (projectStatus === 'connected' && projectPath) {
-      return 'block';
-    }
-    
-    // Check if we have a saved connection that should be restored
-    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-    if (savedProject && window.directoryHandle) {
-      return 'block';
-    }
-    
-    return 'none';
+    return connectionManager.shouldShowChevron() ? 'block' : 'none';
   }
 
   // Get initial tooltip text for moat creation
   function getInitialTooltipText() {
-    if (projectStatus === 'connected' && projectPath) {
-      const projectName = projectPath.split('/').pop() || projectPath;
-      return `Connected to ${projectName}`;
-    }
-    
-    // Check if we have a saved connection that should be restored
-    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-    if (savedProject && window.directoryHandle) {
-      try {
-        const projectData = JSON.parse(savedProject);
-        const projectName = projectData.path.split('/').pop() || projectData.path;
-        return `Connected to ${projectName}`;
-      } catch (error) {
-        console.warn('Could not parse saved project for tooltip');
-      }
-    }
-    
-    return 'Click to connect to project';
+    return connectionManager.getTooltipText();
   }
 
   // Create Moat sidebar
@@ -352,7 +650,7 @@
         e.stopPropagation();
         
         // If not connected, trigger connection flow
-        if (projectStatus === 'not-connected') {
+        if (connectionManager.getState().status === 'not-connected') {
           handleProjectButton();
           return;
         }
@@ -378,14 +676,20 @@
     // Initialize content visibility based on current project status
     initializeContentVisibility();
     
+    // Set up connection manager UI update callback
+    connectionManager.onStateChange(() => {
+      updateConnectionUI();
+    });
+    
     console.log('Moat: Event listeners attached');
   }
 
   // Handle project button click
   async function handleProjectButton() {
-    console.log('🔧 Moat: Connect button clicked! projectStatus:', projectStatus);
+    const state = connectionManager.getState();
+    console.log('🔧 Moat: Connect button clicked! Connection state:', state);
     
-    if (projectStatus === 'not-connected') {
+    if (state.status === 'not-connected') {
       console.log('Moat: Triggering project setup...');
       // Trigger the content script project setup
       window.dispatchEvent(new CustomEvent('moat:setup-project'));
@@ -519,16 +823,26 @@
 
   // Disconnect project
   function disconnectProject() {
+    console.log('🔧 Moat: Starting project disconnect process...');
+    
     // Clear all project-related data
     localStorage.removeItem(`moat.project.${window.location.origin}`);
     
     // Clear current session task queue for clean slate
     localStorage.removeItem('moat.queue');
     
-    // Clear file handles (prevents reading from disconnected project)
-    if (window.directoryHandle) {
-      window.directoryHandle = null;
+    // Clear persistence system (IndexedDB)
+    if (window.moatPersistence) {
+      const projectId = `project_${window.location.origin}`;
+      window.moatPersistence.removeDirectoryHandle(projectId).then(() => {
+        console.log('🔧 Moat: Persistence system cleared');
+      }).catch(error => {
+        console.warn('⚠️ Moat: Failed to clear persistence system:', error);
+      });
     }
+    
+    // Reset content script connection state flag
+    window.dispatchEvent(new CustomEvent('moat:reset-connection-state'));
     
     // Reset animation system when disconnecting
     resetFloatingAnimation();
@@ -541,14 +855,14 @@
       }
     }
     
-    // Update UI status
-    updateProjectStatus('not-connected', null);
+    // Update connection manager state
+    connectionManager.setDisconnected();
     
     // Show connect project content when disconnected
     showConnectProjectContent();
     
     showNotification('Project disconnected');
-    console.log('Moat: Project disconnected, all handles and task queue cleared');
+    console.log('🔧 Moat: Project disconnect process completed');
   }
 
   // Clear current session annotations (debugging helper)
@@ -662,10 +976,11 @@
 
   // Initialize content visibility after Moat creation
   function initializeContentVisibility() {
-    console.log('Moat: Initializing content visibility, projectStatus:', projectStatus);
+    const state = connectionManager.getState();
+    console.log('Moat: Initializing content visibility, connection state:', state);
     
     // Show appropriate content based on current project status
-    if (projectStatus === 'connected') {
+    if (state.status === 'connected') {
       showEmptyState();
     } else {
       showConnectProjectContent();
@@ -685,7 +1000,11 @@
     console.log('🔧 Moat: Waiting for content script to restore connection...');
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Initialize project connection status after delay
+    // Ensure UI reflects current state before verification
+    updateConnectionUI();
+    
+    // Initialize project connection status after delay - this will trigger UI updates through callbacks
+    console.log('🔧 Moat: Starting connection verification with proper timing...');
     await verifyInitialConnection();
     
     // Restore visibility state after connection is verified
@@ -693,8 +1012,6 @@
     
     // Start DOM monitoring to ensure moat persistence
     startDOMMonitoring();
-    
-
     
     console.log('Moat: Moat initialization complete');
   }
@@ -768,13 +1085,23 @@
   // Update project status UI
   function updateProjectStatus(status, path) {
     console.log('🔧 Moat: updateProjectStatus called with:', { status, path });
-    projectStatus = status;
-    projectPath = path;
     
+    // Update connection manager state
+    connectionManager.updateState({ status, path });
+    
+    // Update UI immediately
+    updateConnectionUI();
+  }
+  
+  // Update connection UI based on connection manager state
+  function updateConnectionUI() {
     if (!moat) {
       console.log('🔧 Moat: No moat element found, cannot update UI');
       return;
     }
+    
+    const state = connectionManager.getState();
+    console.log('🔧 Moat: Updating UI with connection state:', state);
     
     const indicator = moat.querySelector('.float-project-indicator');
     const label = moat.querySelector('.float-project-label');
@@ -790,150 +1117,56 @@
       button: !!button
     });
     
-    if (status === 'connected' && path) {
-      console.log('🔧 Moat: Updating to connected state');
-      if (indicator) indicator.className = 'float-project-indicator float-project-connected';
-      
-      const projectName = path.split('/').pop() || path;
-      if (label) {
-        label.textContent = projectName;
-        console.log('🔧 Moat: Set label text to:', label.textContent);
-      }
-      
-      // Update tooltip
-      if (button) {
-        button.title = `Connected to ${projectName}`;
-        console.log('🔧 Moat: Set tooltip to:', button.title);
-      }
-      
-      // Show chevron and divider when connected
-      if (chevron) chevron.style.display = 'block';
-      if (divider) divider.style.display = 'block';
-      
-    } else {
-      console.log('🔧 Moat: Updating to disconnected state');
-      if (indicator) indicator.className = 'float-project-indicator float-project-disconnected';
-      if (label) {
-        label.textContent = 'Disconnected';
-        console.log('🔧 Moat: Set label text to:', label.textContent);
-      }
-      
-      // Update tooltip for disconnected state
-      if (button) {
-        button.title = 'Click to connect to project';
-        console.log('🔧 Moat: Set tooltip to:', button.title);
-      }
-      
-      // Hide chevron and divider when not connected
-      if (chevron) chevron.style.display = 'none';
-      if (divider) divider.style.display = 'none';
+    // Update indicator class
+    if (indicator) {
+      indicator.className = `float-project-indicator ${state.status === 'connected' ? 'float-project-connected' : 'float-project-disconnected'}`;
     }
+    
+    // Update label text
+    if (label) {
+      label.textContent = connectionManager.getDisplayName();
+      console.log('🔧 Moat: Set label text to:', label.textContent);
+    }
+    
+    // Update tooltip
+    if (button) {
+      button.title = connectionManager.getTooltipText();
+      console.log('🔧 Moat: Set tooltip to:', button.title);
+    }
+    
+    // Show/hide chevron and divider based on connection state
+    const showChevron = connectionManager.shouldShowChevron();
+    if (chevron) chevron.style.display = showChevron ? 'block' : 'none';
+    if (divider) divider.style.display = showChevron ? 'block' : 'none';
+    
+    console.log('🔧 Moat: UI update complete');
   }
 
   // Verify initial connection on page load
   async function verifyInitialConnection() {
     console.log('🔧 Moat: Verifying initial connection...');
     
-    // Don't override if we're already connected (from events)
-    if (projectStatus === 'connected') {
-      console.log('🔧 Moat: Already connected, skipping verification');
-      return;
-    }
+    // Use connection manager to verify connection
+    const state = await connectionManager.verifyConnection();
     
-    // First check if the new persistence system has already restored the connection
-    if (window.directoryHandle) {
-      console.log('🔧 Moat: Directory handle already available from persistence system');
-      const isWorking = await verifyConnectionWorking();
-      if (isWorking) {
-        // Get the project path from localStorage for UI display
-        const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-        let projectPath = 'Unknown Project';
-        if (savedProject) {
-          try {
-            const projectData = JSON.parse(savedProject);
-            projectPath = projectData.path;
-          } catch (error) {
-            console.warn('🔧 Moat: Could not parse saved project for path');
-          }
-        }
-        
-        // Update UI status immediately since connection is working
-        updateProjectStatus('connected', projectPath);
-        console.log('✅ Moat: Persistence-restored connection verified and UI updated');
-        return;
-      }
-    }
+    console.log('🔧 Moat: Connection verification complete:', state);
     
-    // Fallback: Check localStorage for legacy connections
-    const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-    if (!savedProject) {
-      console.log('🔧 Moat: No saved project found');
-      updateProjectStatus('not-connected', null);
-      return;
-    }
-    
-    try {
-      const projectData = JSON.parse(savedProject);
-      console.log('🔧 Moat: Found legacy saved project:', projectData.path);
+    if (state.status === 'connected') {
+      console.log('✅ Moat: Connection verified and UI updated');
       
-      // Verify that we actually have a working connection
-      const isActuallyConnected = await verifyConnectionWorking();
-      
-      if (isActuallyConnected) {
-        console.log('✅ Moat: Legacy connection verified, updating status');
-        updateProjectStatus('connected', projectData.path);
-        
-        // Load tasks after verified connection
-        setTimeout(async () => {
-          console.log('🔄 Moat: Loading tasks after verified legacy connection...');
-          await refreshTasks(true); // Silent refresh after verification
-        }, 500);
-      } else {
-        console.log('❌ Moat: Legacy connection verification failed, clearing saved data');
-        localStorage.removeItem(`moat.project.${window.location.origin}`);
-        updateProjectStatus('not-connected', null);
-        showNotification('Connection expired - please reconnect to project');
-      }
-      
-    } catch (error) {
-      console.error('🔧 Moat: Error parsing saved project data:', error);
+      // Load tasks after verified connection
+      setTimeout(async () => {
+        console.log('🔄 Moat: Loading tasks after verified connection...');
+        await refreshTasks(true); // Silent refresh after verification
+      }, 500);
+    } else {
+      console.log('❌ Moat: No valid connection found');
+      // Clear any stale localStorage data
       localStorage.removeItem(`moat.project.${window.location.origin}`);
-      updateProjectStatus('not-connected', null);
     }
   }
 
-  // Verify that the connection actually works
-  async function verifyConnectionWorking() {
-    try {
-      // Check if we have a directory handle
-      if (!window.directoryHandle) {
-        console.log('🔧 Moat: No directoryHandle available');
-        return false;
-      }
-      
-      // Test if we can actually access the directory
-      const testAccess = await window.directoryHandle.getDirectoryHandle('.moat', { create: false });
-      if (!testAccess) {
-        console.log('🔧 Moat: Cannot access .moat directory');
-        return false;
-      }
-      
-      // Test if we can read a file
-      try {
-        const testFile = await testAccess.getFileHandle('moat-tasks-detail.json', { create: false });
-        const file = await testFile.getFile();
-        console.log('🔧 Moat: Successfully verified file access');
-        return true;
-      } catch (fileError) {
-        console.log('🔧 Moat: Cannot access task files, but directory exists');
-        return true; // Directory exists, files will be created as needed
-      }
-      
-    } catch (error) {
-      console.log('🔧 Moat: Connection verification failed:', error);
-      return false;
-    }
-  }
+
 
   // AUTO-REFRESH SYSTEM: Automatically sync status every 3 seconds
   let autoRefreshInterval = null;
@@ -943,7 +1176,8 @@
     
     console.log('🔄 Moat: Starting auto-refresh every 3 seconds');
     autoRefreshInterval = setInterval(async () => {
-      if (projectStatus === 'connected' && isVisible) {
+      const state = connectionManager.getState();
+      if (state.status === 'connected' && isVisible) {
         try {
           await refreshTasks(true); // Silent refresh
         } catch (error) {
@@ -1131,13 +1365,15 @@
   function canUseNewTaskSystem() {
     const hasTaskStore = !!window.taskStore;
     const hasMarkdownGenerator = !!window.markdownGenerator;
-    const hasDirectoryHandle = !!window.directoryHandle;
+    const state = connectionManager.getState();
+    const hasDirectoryHandle = !!state.directoryHandle && state.status === 'connected';
     const result = hasTaskStore && hasMarkdownGenerator && hasDirectoryHandle;
     
     console.log('🔧 Moat: canUseNewTaskSystem check:');
     console.log('  - taskStore:', hasTaskStore);
     console.log('  - markdownGenerator:', hasMarkdownGenerator);
     console.log('  - directoryHandle:', hasDirectoryHandle);
+    console.log('  - connectionStatus:', state.status);
     console.log('  - Result:', result ? '✅ CAN use new system' : '❌ CANNOT use new system');
     
     return result;
@@ -1167,7 +1403,8 @@
     
     try {
       // Check if we're connected to a project
-      if (projectStatus !== 'connected' || !window.directoryHandle) {
+      const state = connectionManager.getState();
+      if (state.status !== 'connected' || !state.directoryHandle) {
         console.log('Moat: Not connected to project, clearing markdown tasks from sidebar');
         await renderSidebarWithCurrentSessionOnly();
         return { success: true, taskCount: 0, source: 'no-project' };
@@ -1277,7 +1514,7 @@
             </svg>
           </div>
           <p class="float-moat-hint">Connect to a local folder</p>
-          ${projectStatus !== 'connected' ? 
+          ${connectionManager.getState().status !== 'connected' ? 
             '<button class="float-empty-connect-btn">Connect</button>' : 
             ''
           }
@@ -1362,7 +1599,8 @@
 
   // Read tasks from markdown files (if connected to project)
   async function readTasksFromMarkdown() {
-    if (projectStatus !== 'connected' || !window.directoryHandle) {
+    const state = connectionManager.getState();
+    if (state.status !== 'connected' || !state.directoryHandle) {
       return [];
     }
     
@@ -1382,7 +1620,13 @@
   async function readTasksFromDetailedFile() {
     try {
       // Read from moat-tasks.md (generated from moat-tasks-detail.json)
-      const fileHandle = await window.directoryHandle.getFileHandle('moat-tasks.md');
+      const directoryHandle = connectionManager.getState().directoryHandle;
+      if (!directoryHandle) {
+        console.warn('Moat: No directory handle available for reading tasks');
+        return [];
+      }
+      
+      const fileHandle = await directoryHandle.getFileHandle('moat-tasks.md');
       const file = await fileHandle.getFile();
       const content = await file.text();
       return parseDetailedTasks(content);
@@ -1482,7 +1726,7 @@
     startAutoRefresh();
     
     console.log('Moat: Sidebar should now be visible, isVisible:', isVisible);
-    console.log('Moat: Project status:', projectStatus, 'Can use new system:', canUseNewTaskSystem());
+            console.log('Moat: Project status:', connectionManager.getState().status, 'Can use new system:', canUseNewTaskSystem());
     await refreshTasks(); // Use refreshTasks for comprehensive loading
   }
 
@@ -1900,42 +2144,13 @@
   // Initialize project connection monitoring (single event listener)
   window.addEventListener('moat:project-connected', async (e) => {
     console.log('🔧 Moat: Received project-connected event:', e.detail);
-    console.log('🔧 Moat: Event detail path:', e.detail.path);
-    console.log('🔧 Moat: Event detail status:', e.detail.status);
     
-    if (e.detail.status === 'connected') {
-      console.log('🔧 Moat: Processing connection event...');
-      
-      // Ensure we have a valid path for the UI
-      let displayPath = e.detail.path;
-      
-      // Don't allow undefined/empty paths to overwrite existing connected status
-      if ((!displayPath || displayPath === 'undefined') && projectStatus === 'connected' && projectPath) {
-        console.log('🔧 Moat: Ignoring event with undefined path - already connected to:', projectPath);
-        return; // Skip this event since we're already properly connected
-      }
-      
-      if (!displayPath || displayPath === 'undefined') {
-        // Fallback: try to get path from localStorage
-        const savedProject = localStorage.getItem(`moat.project.${window.location.origin}`);
-        if (savedProject) {
-          try {
-            const projectData = JSON.parse(savedProject);
-            displayPath = projectData.path;
-            console.log('🔧 Moat: Using fallback path from localStorage:', displayPath);
-          } catch (error) {
-            displayPath = 'Connected Project';
-            console.warn('🔧 Moat: Could not get path, using generic name');
-          }
-        } else {
-          displayPath = 'Connected Project';
-        }
-      }
-      
-      console.log('🔧 Moat: About to call updateProjectStatus with:', { status: 'connected', path: displayPath });
-      updateProjectStatus('connected', displayPath);
-      console.log('🔧 Moat: Called updateProjectStatus, current projectStatus:', projectStatus);
-      
+    // Use connection manager to handle the event
+    connectionManager.handleConnectionEvent(e.detail);
+    
+    const state = connectionManager.getState();
+    
+    if (state.status === 'connected') {
       // Switch to connected view
       initializeContentVisibility();
       
@@ -1952,9 +2167,8 @@
       console.log('Moat: Project connected, refreshing tasks...');
       await refreshTasks(true); // Silent refresh to avoid notification spam
       
-    } else if (e.detail.status === 'not-connected') {
+    } else if (state.status === 'not-connected') {
       console.log('🔧 Moat: Processing disconnection event...');
-      updateProjectStatus('not-connected', null);
       initializeContentVisibility();
     }
   });
@@ -1966,8 +2180,8 @@
     // Clear any stored connection data
     localStorage.removeItem(`moat.project.${window.location.origin}`);
     
-    // Update UI to not connected
-    updateProjectStatus('not-connected', null);
+    // Update connection manager to not connected
+    connectionManager.setDisconnected();
     
     // Show error notification
     showNotification(e.detail.reason || 'Failed to restore project connection');
@@ -1986,7 +2200,7 @@
       console.log('🔧 Moat: Clearing directoryHandle due to disconnection event');
       window.directoryHandle = null;
     }
-    updateProjectStatus('not-connected', null);
+    connectionManager.setDisconnected();
     // Refresh the current view to clear cached tasks
     if (isVisible) {
       await renderQueue();
@@ -2251,7 +2465,7 @@
       const markdownTasks = await readTasksFromMarkdown();
       
       return {
-        projectConnected: projectStatus === 'connected',
+        projectConnected: connectionManager.getState().status === 'connected',
         sidebarVisible: isVisible,
         markdownFiles: validation,
         currentSessionTasks: currentQueue.length,
