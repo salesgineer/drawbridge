@@ -969,26 +969,7 @@
               <div class="float-moat-top-bar">
           <div class="float-moat-header">
             <h3>
-              <svg class="float-drawbridge-icon" viewBox="0 0 24 24">
-                <rect x="2" y="8" width="2" height="14"/>
-                <rect x="4" y="6" width="2" height="16"/>
-                <rect x="6" y="4" width="2" height="18"/>
-                <rect x="8" y="2" width="2" height="20"/>
-                <rect x="10" y="1" width="2" height="21"/>
-                <rect x="12" y="1" width="2" height="21"/>
-                <rect x="14" y="2" width="2" height="20"/>
-                <rect x="16" y="4" width="2" height="18"/>
-                <rect x="18" y="6" width="2" height="16"/>
-                <rect x="20" y="8" width="2" height="14"/>
-                <rect x="2" y="14" width="20" height="2"/>
-                <rect x="8" y="1" width="8" height="1"/>
-                <rect x="9" y="2" width="6" height="1"/>
-                <rect x="10" y="3" width="4" height="1"/>
-                <rect x="11" y="4" width="2" height="1"/>
-                <rect x="10" y="16" width="4" height="6" fill="white"/>
-                <rect x="9" y="18" width="6" height="4" fill="white"/>
-                <rect x="8" y="19" width="8" height="3" fill="white"/>
-              </svg>
+              <img class="float-drawbridge-icon" id="moat-logo" src="" alt="Drawbridge" style="width: 20px; height: 20px;">
               Drawbridge
             </h3>
           </div>
@@ -1121,6 +1102,9 @@
     // Initialize position from saved preference
     initializePosition();
     
+    // Initialize logo based on current theme
+    initializeLogo();
+    
     // Initialize content visibility based on current project status
     initializeContentVisibility();
     
@@ -1216,7 +1200,7 @@
         </svg>
         <span>Refresh data</span>
       </div>
-      <div class="float-project-menu-item" data-action="disconnect" style="border-top: 1px solid #E5E7EB;">
+      <div class="float-project-menu-item float-project-menu-divider" data-action="disconnect">
         <svg style="width: 12px; height: 12px; fill: #DC2626;" viewBox="0 0 24 24">
           <polygon points="2 13 1 13 1 11 2 11 2 9 3 9 3 8 4 8 4 7 5 7 5 6 7 6 7 5 15 5 15 6 14 6 14 7 13 7 13 6 11 6 11 7 9 7 9 8 8 8 8 9 7 9 7 11 6 11 6 13 7 13 7 14 6 14 6 15 5 15 5 16 3 16 3 15 2 15 2 13"/>
           <rect x="8" y="11" width="1" height="1"/>
@@ -1448,6 +1432,7 @@
     const currentTheme = getCurrentTheme();
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
+    updateLogo(); // Update logo when theme changes
     showNotification(`Switched to ${newTheme} mode`, 'info');
   }
 
@@ -1455,6 +1440,25 @@
     const savedTheme = getCurrentTheme();
     document.documentElement.setAttribute('data-moat-theme', savedTheme);
     console.log('Moat: Theme initialized to', savedTheme);
+  }
+
+  // Logo management functions
+  function updateLogo() {
+    const logo = document.getElementById('moat-logo');
+    if (!logo) return;
+    
+    const currentTheme = getCurrentTheme();
+    const logoPath = currentTheme === 'dark' 
+      ? chrome.runtime.getURL('icons/db-logo-light.png')
+      : chrome.runtime.getURL('icons/db-logo-dark.png');
+    
+    logo.src = logoPath;
+    console.log('Moat: Logo updated for', currentTheme, 'theme');
+  }
+
+  function initializeLogo() {
+    // Initialize logo after DOM is ready
+    setTimeout(updateLogo, 0);
   }
 
   // Toggle Moat position between right and bottom
@@ -1542,6 +1546,9 @@
     if (!moat) {
       createMoat();
     }
+    
+    // Update logo after UI is created and theme is initialized
+    updateLogo();
     
     // Give content script time to restore persistence connection (500ms delay)
     console.log('🔧 Moat: Waiting for content script to restore connection...');

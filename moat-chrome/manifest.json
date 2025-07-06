@@ -41,5 +41,11 @@
     "16": "icons/moat-16.png",
     "48": "icons/moat-48.png",
     "128": "icons/moat-128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/db-logo-light.png", "icons/db-logo-dark.png"],
+      "matches": ["http://localhost:*/*", "https://localhost:*/*"]
+    }
+  ]
 } 

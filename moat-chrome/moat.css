@@ -1398,6 +1398,10 @@ body.float-comment-mode * {
   background: var(--moat-error-light);
 }
 
+.float-project-menu-divider {
+  border-top: 1px solid var(--moat-border);
+}
+
 .float-project-menu-item span {
   font-size: 13px;
   font-weight: 500;
