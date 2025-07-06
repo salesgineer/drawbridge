@@ -2756,4 +2756,27 @@ Remember: Moat transforms visual feedback into structured development workflow. 
     
     console.log('🔧 Moat: Content script connection state reset complete');
   });
+
+  // Listen for comment mode trigger from New button
+  window.addEventListener('moat:trigger-comment-mode', (e) => {
+    console.log('🔧 Moat: Received trigger comment mode event from New button');
+    
+    if (!commentMode) {
+      // Dispatch event to remove persistent notification (same as C key)
+      window.dispatchEvent(new CustomEvent('moat:c-key-pressed'));
+      
+      // Mark that C has been pressed (for notification system)
+      if (!hasPressedC) {
+        hasPressedC = true;
+        // Show the click instruction notification
+        showNotification('Click anywhere to comment', 'info', 'click-instruction');
+      }
+      
+      // Enter comment mode
+      enterCommentMode();
+      console.log('🔧 Moat: Comment mode activated via New button');
+    } else {
+      console.log('🔧 Moat: Already in comment mode');
+    }
+  });
 })(); 
