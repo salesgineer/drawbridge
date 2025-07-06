@@ -124,13 +124,13 @@
       
       if (legacyFiles.hasLegacyFiles) {
         console.log('🔍 Moat: Legacy files detected, starting migration...');
-        showNotification('🔄 Migrating legacy files to new format...', 'info');
+        showNotification('Migrating legacy files to new format...', 'info');
         
         const result = await migrator.performMigration();
         
         if (result.success) {
           console.log('✅ Moat: Migration completed successfully');
-          showNotification(`✅ Migration complete! Converted ${result.tasksConverted} tasks, archived ${result.filesArchived} files`);
+          showNotification(`Migration complete! Converted ${result.tasksConverted} tasks, archived ${result.filesArchived} files`);
           
           // Refresh the sidebar to show migrated tasks
           window.dispatchEvent(new CustomEvent('moat:tasks-updated', {
@@ -139,7 +139,7 @@
           
         } else {
           console.error('❌ Moat: Migration failed:', result.errors);
-          showNotification(`❌ Migration failed: ${result.errors[0] || 'Unknown error'}`, 'error');
+          showNotification(`Migration failed: ${result.errors[0] || 'Unknown error'}`, 'error');
         }
         
         // Store migration report for debugging
@@ -151,7 +151,7 @@
       
     } catch (error) {
       console.error('🔍 Moat: Migration check failed:', error);
-      showNotification(`❌ Migration check failed: ${error.message}`, 'error');
+      showNotification(`Migration check failed: ${error.message}`, 'error');
     }
   }
 
@@ -160,25 +160,25 @@
     console.log('🚀 Moat: Manual migration triggered');
     
     if (!migrator) {
-      showNotification('❌ Migration system not available', 'error');
+      showNotification('Migration system not available', 'error');
       return { success: false, error: 'Migration system not available' };
     }
 
     try {
-      showNotification('🔄 Starting manual migration...', 'info');
+      showNotification('Starting manual migration...', 'info');
       const result = await migrator.performMigration();
       
       if (result.success) {
-        showNotification(`✅ Manual migration complete! ${result.tasksConverted} tasks converted`);
+        showNotification(`Manual migration complete! ${result.tasksConverted} tasks converted`);
       } else {
-        showNotification(`❌ Manual migration failed: ${result.errors[0]}`, 'error');
+        showNotification(`Manual migration failed: ${result.errors[0]}`, 'error');
       }
       
       return result;
       
     } catch (error) {
       console.error('🚀 Moat: Manual migration failed:', error);
-      showNotification(`❌ Manual migration error: ${error.message}`, 'error');
+      showNotification(`Manual migration error: ${error.message}`, 'error');
       return { success: false, error: error.message };
     }
   }
@@ -188,16 +188,16 @@
     console.log('🔙 Moat: Migration rollback triggered');
     
     if (!migrator) {
-      showNotification('❌ Migration system not available', 'error');
+      showNotification('Migration system not available', 'error');
       return { success: false, error: 'Migration system not available' };
     }
 
     try {
-      showNotification('🔄 Rolling back migration...', 'info');
+      showNotification('Rolling back migration...', 'info');
       const result = await migrator.rollbackMigration();
       
       if (result.success) {
-        showNotification(`✅ Rollback complete! Restored ${result.restoredCount} files`);
+        showNotification(`Rollback complete! Restored ${result.restoredCount} files`);
         
         // Refresh sidebar to show restored state
         window.dispatchEvent(new CustomEvent('moat:tasks-updated', {
@@ -205,14 +205,14 @@
         }));
         
       } else {
-        showNotification(`❌ Rollback failed: ${result.error}`, 'error');
+        showNotification(`Rollback failed: ${result.error}`, 'error');
       }
       
       return result;
       
     } catch (error) {
       console.error('🔙 Moat: Rollback failed:', error);
-      showNotification(`❌ Rollback error: ${error.message}`, 'error');
+      showNotification(`Rollback error: ${error.message}`, 'error');
       return { success: false, error: error.message };
     }
   }
@@ -378,7 +378,7 @@
       // Step 8: Update status and notify
       updateAnnotationStatus(annotation.id, 'pending');
       
-      showNotification(`📝 Task saved: "${task.comment.substring(0, 30)}${task.comment.length > 30 ? '...' : ''}" - awaiting processing`);
+      showNotification(`Task saved: "${task.comment.substring(0, 30)}${task.comment.length > 30 ? '...' : ''}" - awaiting processing`);
       console.log('🎉 Moat: New system save pipeline completed successfully');
       return true;
 
@@ -395,7 +395,7 @@
       console.log('  - markdownGenerator:', !!markdownGenerator, markdownGenerator);
       console.log('  - directoryHandle:', !!window.directoryHandle, window.directoryHandle);
       
-      showNotification(`❌ Failed to save task: ${error.message}`, 'error');
+      showNotification(`Failed to save task: ${error.message}`, 'error');
       updateAnnotationStatus(annotation.id, 'failed');
       return false;
     }
@@ -423,9 +423,9 @@
 
     if (!markdownSuccess) {
       updateAnnotationStatus(annotation.id, 'queued');
-      showNotification('📝 Annotation saved locally. Connect to project to enable file logging.', 'warning');
+      showNotification('Annotation saved locally. Connect to project to enable file logging.', 'warning');
     } else {
-      showNotification(`📝 Annotation saved: "${annotation.content.substring(0, 30)}${annotation.content.length > 30 ? '...' : ''}"`);
+      showNotification(`Annotation saved: "${annotation.content.substring(0, 30)}${annotation.content.length > 30 ? '...' : ''}"`);
     }
 
     return markdownSuccess;
@@ -656,7 +656,7 @@
       
       // If stored handle doesn't work, request new permission with notification
       console.log('🔧 Moat: Requesting directory access for', connectionData.path);
-      showNotification(`🔗 Reconnecting to project: ${connectionData.path}...`);
+      showNotification(`Reconnecting to project: ${connectionData.path}...`);
       
       const dirHandle = await window.showDirectoryPicker({
         mode: 'readwrite',
@@ -666,7 +666,7 @@
       // Verify this is the same directory
       if (dirHandle.name !== connectionData.path) {
         console.log('⚠️ Moat: Selected directory does not match saved path');
-        showNotification('⚠️ Directory mismatch - please select the correct project folder');
+        showNotification('Directory mismatch - please select the correct project folder');
         return false;
       }
       
@@ -728,10 +728,10 @@
     } catch (error) {
       if (error.name === 'AbortError') {
         console.log('🔧 Moat: User cancelled restoration');
-        showNotification('📁 Project connection cancelled - click Connect to retry');
+        showNotification('Project connection cancelled - click Connect to retry');
       } else {
         console.log('⚠️ Moat: Failed to restore connection:', error.message);
-        showNotification('❌ Failed to restore project connection');
+        showNotification('Failed to restore project connection');
       }
       return false;
     }
@@ -1172,7 +1172,7 @@ Generated by Moat Chrome Extension
       }));
       
       updateAnnotationStatus(annotation.id, 'pending');
-      showNotification(`📝 Task saved: "${newTask.comment.substring(0, 30)}${newTask.comment.length > 30 ? '...' : ''}" - awaiting processing`);
+              showNotification(`Task saved: "${newTask.comment.substring(0, 30)}${newTask.comment.length > 30 ? '...' : ''}" - awaiting processing`);
       console.log('🎉 Moat: Direct file writing completed successfully');
       
       return true;
@@ -1182,7 +1182,7 @@ Generated by Moat Chrome Extension
       console.error('❌ Moat: Direct file writing failed:', error);
       console.log(`⏱️ Moat: Failed operation took ${duration.toFixed(1)}ms`);
       
-      showNotification(`❌ Failed to save task: ${error.message}`, 'error');
+      showNotification(`Failed to save task: ${error.message}`, 'error');
       updateAnnotationStatus(annotation.id, 'failed');
       return false;
     }
@@ -1245,7 +1245,7 @@ Generated by Moat Chrome Extension
   // Process all pending tasks (triggered by "bridge" command)
   async function processPendingTasks() {
     if (!window.directoryHandle) {
-      showNotification('❌ No project connected - cannot process tasks', 'error');
+      showNotification('No project connected - cannot process tasks', 'error');
       return;
     }
     
@@ -1259,11 +1259,11 @@ Generated by Moat Chrome Extension
       const pendingTasks = tasks.filter(task => task.status === 'pending');
       
       if (pendingTasks.length === 0) {
-        showNotification('📝 No pending tasks to process', 'info');
+        showNotification('No pending tasks to process', 'info');
         return;
       }
       
-      showNotification(`🌉 Bridge activated! Signaling AI agent to process ${pendingTasks.length} task(s)...`, 'info');
+              showNotification(`Bridge activated! Signaling AI agent to process ${pendingTasks.length} task(s)...`, 'info');
       console.log(`🌉 Bridge: Found ${pendingTasks.length} pending tasks to process`);
       
       // Create processing signal for AI agent
@@ -1306,7 +1306,7 @@ Generated by Moat Chrome Extension
       
     } catch (error) {
       console.error('🌉 Bridge: Error creating process signal:', error);
-      showNotification(`❌ Error creating process signal: ${error.message}`, 'error');
+      showNotification(`Error creating process signal: ${error.message}`, 'error');
     }
   }
 
@@ -1347,7 +1347,7 @@ Generated by Moat Chrome Extension
       }
       
       console.log('✅ Task marked as completed:', taskId);
-      showNotification(`✅ Task completed: "${task.comment.substring(0, 30)}${task.comment.length > 30 ? '...' : ''}"`);
+      showNotification(`Task completed: "${task.comment.substring(0, 30)}${task.comment.length > 30 ? '...' : ''}"`);
       
       // Dispatch event
       window.dispatchEvent(new CustomEvent('moat:task-completed', { 
@@ -2814,13 +2814,13 @@ You can edit the \`.mdc\` files in this directory to customize how Moat processe
       
       // Delay workflow notification to ensure it appears after connection notification
       setTimeout(() => {
-        showNotification('📁 Moat workflow files created in your project', 'info', 'workflow-files-created');
+        showNotification('Moat workflow files created in your project', 'info', 'workflow-files-created');
       }, 500); // Half second delay to sequence properly
       
       return true;
     } catch (error) {
       console.error('❌ Moat: Failed to deploy rule templates:', error);
-      showNotification('⚠️ Warning: Could not create workflow files', 'error');
+      showNotification('Warning: Could not create workflow files', 'error');
       return false;
     }
   }
