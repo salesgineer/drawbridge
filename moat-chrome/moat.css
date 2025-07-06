@@ -436,42 +436,43 @@ body.float-comment-mode * {
 }
 
 .float-comment-cancel {
-  background: #F3F4F6;
-  color: #4B5563;
+  background: var(--moat-bg-tertiary);
+  color: var(--moat-text-secondary);
   box-shadow: 
-    -2px 0 0 0 #D1D5DB,
-    2px 0 0 0 #D1D5DB,
-    0 -2px 0 0 #D1D5DB,
-    0 2px 0 0 #D1D5DB;
+    -2px 0 0 0 var(--moat-border-light),
+    2px 0 0 0 var(--moat-border-light),
+    0 -2px 0 0 var(--moat-border-light),
+    0 2px 0 0 var(--moat-border-light);
 }
 
 .float-comment-cancel:hover {
-  background: #E5E7EB;
+  background: var(--moat-border);
   box-shadow: 
-    -2px 0 0 0 #9CA3AF,
-    2px 0 0 0 #9CA3AF,
-    0 -2px 0 0 #9CA3AF,
-    0 2px 0 0 #9CA3AF;
+    -2px 0 0 0 var(--moat-text-muted),
+    2px 0 0 0 var(--moat-text-muted),
+    0 -2px 0 0 var(--moat-text-muted),
+    0 2px 0 0 var(--moat-text-muted);
 }
 
 .float-comment-submit {
-  background: #3B82F6;
+  background: var(--moat-accent);
   color: white;
   font-weight: 500;
   box-shadow: 
-    -2px 0 0 0 #1D4ED8,
-    2px 0 0 0 #1D4ED8,
-    0 -2px 0 0 #1D4ED8,
-    0 2px 0 0 #1D4ED8;
+    -2px 0 0 0 var(--moat-accent),
+    2px 0 0 0 var(--moat-accent),
+    0 -2px 0 0 var(--moat-accent),
+    0 2px 0 0 var(--moat-accent);
 }
 
 .float-comment-submit:hover {
-  background: #2563EB;
+  background: var(--moat-accent);
+  opacity: 0.9;
   box-shadow: 
-    -2px 0 0 0 #1E40AF,
-    2px 0 0 0 #1E40AF,
-    0 -2px 0 0 #1E40AF,
-    0 2px 0 0 #1E40AF;
+    -2px 0 0 0 var(--moat-accent),
+    2px 0 0 0 var(--moat-accent),
+    0 -2px 0 0 var(--moat-accent),
+    0 2px 0 0 var(--moat-accent);
 }
 
 /* Moat Sidebar */
