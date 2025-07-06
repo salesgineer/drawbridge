@@ -901,7 +901,7 @@ body.float-comment-mode * {
 
 .float-moat-loading {
   text-align: center;
-  color: #9ca3af;
+  color: var(--moat-text-muted);
   padding: 40px 20px;
   font-size: 14px;
 }
@@ -930,7 +930,7 @@ body.float-comment-mode * {
 
 .float-empty-content {
   text-align: center;
-  color: #9CA3AF;
+  color: var(--moat-text-muted);
   font-size: 14px;
   display: flex;
   flex-direction: column;
@@ -944,7 +944,7 @@ body.float-comment-mode * {
 
 .float-empty-icon {
   margin-bottom: 8px;
-  color: #9CA3AF;
+  color: var(--moat-text-muted);
   opacity: 0.6;
   transition: all 0.3s ease;
 }
@@ -1202,7 +1202,7 @@ body.float-comment-mode * {
 
 .float-project-label {
   font-size: 12px;
-  color: #6B7280;
+  color: var(--moat-text-tertiary);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -1305,19 +1305,19 @@ body.float-comment-mode * {
 .float-project-folder-icon {
   width: 12px;
   height: 12px;
-  fill: #6B7280;
+  fill: var(--moat-text-tertiary);
   transition: fill 0.2s;
   flex-shrink: 0;
 }
 
 .float-moat-project-dropdown:hover .float-project-folder-icon {
-  fill: #374151;
+  fill: var(--moat-text-secondary);
 }
 
 .float-project-divider {
   width: 1px;
   height: 16px;
-  background: #E5E7EB;
+  background: var(--moat-border);
   flex-shrink: 0;
   margin: 0 2px;
 }
@@ -1328,12 +1328,12 @@ body.float-comment-mode * {
   margin-left: auto;
   opacity: 0.6;
   transition: transform 0.2s;
-  fill: #6B7280;
+  fill: var(--moat-text-tertiary);
 }
 
 .float-moat-project-dropdown:hover .float-project-chevron {
   opacity: 1;
-  fill: #374151;
+  fill: var(--moat-text-secondary);
 }
 
 .float-moat-more-btn {
