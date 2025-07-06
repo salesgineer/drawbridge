@@ -611,8 +611,8 @@ body.float-comment-mode * {
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
-  background: #F9FAFB;
-  border-bottom: 1px solid #E5E7EB;
+  background: var(--moat-bg-secondary);
+  border-bottom: 1px solid var(--moat-border);
   flex-shrink: 0;
 }
 
