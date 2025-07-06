@@ -998,6 +998,14 @@
                 <!-- Current notification content will be displayed here -->
               </div>
             </div>
+            <div class="float-moat-new-comment-container">
+              <button class="float-moat-new-comment-btn" id="float-new-comment-btn" title="Create new comment">
+                <svg class="float-comment-icon" viewBox="0 0 24 24">
+                  <polygon points="23 8 23 14 22 14 22 16 21 16 21 17 20 17 20 18 18 18 18 19 15 19 15 20 9 20 9 19 7 19 7 20 6 20 6 21 1 21 1 19 2 19 2 18 3 18 3 16 2 16 2 14 1 14 1 8 2 8 2 6 3 6 3 5 4 5 4 4 6 4 6 3 9 3 9 2 15 2 15 3 18 3 18 4 20 4 20 5 21 5 21 6 22 6 22 8 23 8"/>
+                </svg>
+                <span class="float-comment-text">New</span>
+              </button>
+            </div>
             <div class="float-moat-project-status-container">
               <button class="float-moat-project-dropdown" id="float-project-dropdown" title="${getInitialTooltipText()}">
                 <span class="float-project-indicator ${getInitialStatusClass()}"></span>
@@ -1054,7 +1062,7 @@
         </div>
         <div class="float-moat-empty" id="moat-empty-state" style="display: none;">
           <p>No annotations yet</p>
-          <p class="float-moat-hint">Press 'C' to enter comment mode</p>
+          <p class="float-moat-hint">Press C to make a comment</p>
         </div>
       </div>
     `;
@@ -1064,6 +1072,17 @@
     
     // Event listeners
     moat.querySelector('.float-moat-close').addEventListener('click', hideMoat);
+    
+    // New comment button functionality
+    const newCommentBtn = moat.querySelector('.float-moat-new-comment-btn');
+    if (newCommentBtn) {
+      newCommentBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        // Trigger comment mode
+        window.dispatchEvent(new CustomEvent('moat:trigger-comment-mode'));
+        showNotification('Press C to enter comment mode', 'info', 'new-comment-btn');
+      });
+    }
     
     // Project dropdown button functionality
     const projectDropdown = moat.querySelector('.float-moat-project-dropdown');
@@ -1936,21 +1955,33 @@
     
     console.log('Moat: Rendering empty sidebar');
     const queueContainer = moat.querySelector('.float-moat-queue');
+    const connectionState = connectionManager.getState();
+    const isConnected = connectionState.status === 'connected';
+    
+    // Different content based on connection status
+    const emptyContent = isConnected ? {
+      icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="23 8 23 14 22 14 22 16 21 16 21 17 20 17 20 18 18 18 18 19 15 19 15 20 9 20 9 19 7 19 7 20 6 20 6 21 1 21 1 19 2 19 2 18 3 18 3 16 2 16 2 14 1 14 1 8 2 8 2 6 3 6 3 5 4 5 4 4 6 4 6 3 9 3 9 2 15 2 15 3 18 3 18 4 20 4 20 5 21 5 21 6 22 6 22 8 23 8"/>
+      </svg>`,
+      text: "Press C to make a comment",
+      showButton: false
+    } : {
+      icon: `<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="2 16 1 16 1 3 2 3 2 2 9 2 9 3 10 3 10 4 19 4 19 5 20 5 20 9 5 9 5 10 4 10 4 12 3 12 3 14 2 14 2 16"/>
+        <polygon points="23 10 23 12 22 12 22 14 21 14 21 16 20 16 20 18 19 18 19 21 18 21 18 22 3 22 3 21 2 21 2 18 3 18 3 16 4 16 4 14 5 14 5 12 6 12 6 10 23 10"/>
+      </svg>`,
+      text: "Connect to a local folder",
+      showButton: true
+    };
     
     queueContainer.innerHTML = `
       <div class="float-moat-empty">
         <div class="float-empty-content">
           <div class="float-empty-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="2 16 1 16 1 3 2 3 2 2 9 2 9 3 10 3 10 4 19 4 19 5 20 5 20 9 5 9 5 10 4 10 4 12 3 12 3 14 2 14 2 16"/>
-              <polygon points="23 10 23 12 22 12 22 14 21 14 21 16 20 16 20 18 19 18 19 21 18 21 18 22 3 22 3 21 2 21 2 18 3 18 3 16 4 16 4 14 5 14 5 12 6 12 6 10 23 10"/>
-            </svg>
+            ${emptyContent.icon}
           </div>
-          <p class="float-moat-hint">Connect to a local folder</p>
-          ${connectionManager.getState().status !== 'connected' ? 
-            '<button class="float-empty-connect-btn">Connect</button>' : 
-            ''
-          }
+          <p class="float-moat-hint">${emptyContent.text}</p>
+          ${emptyContent.showButton ? '<button class="float-empty-connect-btn">Connect</button>' : ''}
         </div>
       </div>
     `;

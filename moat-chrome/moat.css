@@ -1134,6 +1134,71 @@ body.float-comment-mode * {
   flex-shrink: 0;
 }
 
+/* New Comment Button */
+.float-moat-new-comment-container {
+  margin-right: 8px;
+}
+
+.float-moat-new-comment-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 6px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 32px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.float-moat-new-comment-btn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.float-comment-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.float-comment-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: inherit;
+  white-space: nowrap;
+}
+
+/* Compact styling for right position */
+.float-moat.float-moat-right .float-moat-new-comment-container {
+  margin-right: 6px;
+}
+
+.float-moat.float-moat-right .float-moat-new-comment-btn {
+  padding: 4px 8px;
+  height: 28px;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.float-moat.float-moat-right .float-comment-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.float-moat.float-moat-right .float-comment-text {
+  font-size: 11px;
+}
+
 /* New Project Dropdown Styling */
 .float-moat-project-status-container {
   position: relative;

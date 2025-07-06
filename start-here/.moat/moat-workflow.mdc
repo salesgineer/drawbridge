@@ -77,11 +77,26 @@ Process all [type] tasks from .moat/moat-tasks.md using @.moat/moat-workflow.mdc
   [queued]    [AI working]   [human approved]
 ```
 
-## Quality Assurance
+## Automation Features
+
+### Batch Processing
+For related tasks affecting the same component:
+```
+🔍 **Related Tasks Detected**
+Tasks 1-3 all affect Hero section. 
+Process individually or as batch?
+```
+
+### Smart Grouping
+- **Component-based**: Group tasks by DOM element or component
+- **Type-based**: Group styling vs layout vs content changes
+- **Priority-based**: Handle critical issues first
+
+### Quality Assurance
 Before marking any task complete:
 - ✅ Change matches user request exactly
 - ✅ Existing functionality preserved  
 - ✅ Code follows project patterns
-- ✅ Human has approved the change
+- ✅ Change is visually appealing
 
 Remember: Moat transforms visual feedback into structured development workflow. Focus on accuracy, quality, and human collaboration.
