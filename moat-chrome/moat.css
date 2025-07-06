@@ -56,7 +56,20 @@ body.float-comment-mode * {
   margin-right: 12px;
 }
 
-
+/* For vertical sidebar (right position) - position notifications at bottom */
+.float-moat.float-moat-right .float-header-notifications {
+  position: absolute;
+  bottom: 0; /* At the bottom of the sidebar */
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 8px 16px; /* Match the header padding exactly */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  min-height: 40px; /* Ensure consistent height: 8px + 24px + 8px */
+  box-sizing: border-box;
+}
 
 .float-notification-container {
   position: relative;
@@ -65,6 +78,13 @@ body.float-comment-mode * {
   min-height: 24px;
   max-width: 280px;
   overflow: hidden;
+}
+
+/* For vertical sidebar - adjust container to full width but maintain height */
+.float-moat.float-moat-right .float-notification-container {
+  max-width: 100%;
+  width: 100%;
+  min-height: 24px; /* Keep the exact same min-height as bottom dock */
 }
 
 .float-header-notification {
@@ -140,8 +160,6 @@ body.float-comment-mode * {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-
 
 .float-header-notification.removing {
   animation: slideOutHeader 0.3s ease forwards;
@@ -496,8 +514,6 @@ body.float-comment-mode * {
   height: 12px;
 }
 
-
-
 /* Bottom position */
 .float-moat.float-moat-bottom {
   bottom: 0;
@@ -796,15 +812,18 @@ body.float-comment-mode * {
   gap: 12px;
 }
 
-
-
 .float-moat-queue {
   flex: 1;
-  width: 100%;
   overflow-y: auto;
   padding: 16px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+/* For vertical sidebar - add bottom padding for notification space */
+.float-moat.float-moat-right .float-moat-queue {
+  padding-bottom: 56px; /* Space for potential notifications at bottom */
 }
 
 .float-moat-loading {
@@ -1176,8 +1195,6 @@ body.float-comment-mode * {
   opacity: 1;
   fill: #374151;
 }
-
-
 
 .float-moat-position-btn {
   background: white;

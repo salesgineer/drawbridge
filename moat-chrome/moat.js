@@ -609,7 +609,8 @@
   function categorizeNotification(message, type = 'info') {
     // Check for disconnection notifications
     if (message.includes('disconnected') || message.includes('Project disconnected') ||
-        message.includes('Connection lost') || message.includes('Disconnect')) {
+        message.includes('Connection lost') || message.includes('Disconnect') ||
+        message.includes('cancelled') || message.includes('Project connection cancelled')) {
       return 'disconnected';
     }
     
@@ -695,6 +696,9 @@
       setTimeout(() => showNotification('Project disconnected', 'info', 'disconnect-test'), 4500);
       setTimeout(() => showNotification('Task saved successfully', 'info', 'task-test'), 9000);
       setTimeout(() => showNotification('Moat workflow files created in your project', 'info', 'workflow-files-created'), 13500);
+    },
+    testCancelled: () => {
+      showNotification('Project connection cancelled', 'info', 'cancellation-test');
     }
   };
 
@@ -714,8 +718,25 @@
   let headerNotificationQueue = [];
   let isShowingHeaderNotification = false;
 
+  // Global variables for persistent notifications
+  let persistentNotifications = new Set(); // Track which notifications should persist
+
   function showHeaderNotification(message, type = 'info', source = 'moat', duration = 3000) {
     console.log('🔔 Header Notification:', message, type, source);
+    
+    // Special handling for instructional notifications
+    let isPersistent = false;
+    if (source === 'press-c-instruction') {
+      isPersistent = true;
+      duration = Infinity; // Never auto-remove
+    } else if (source === 'click-instruction') {
+      // Remove the persistent Press C notification if it exists
+      persistentNotifications.delete('press-c-instruction');
+      const existingNotification = document.querySelector('.float-header-notification');
+      if (existingNotification) {
+        removeHeaderNotification();
+      }
+    }
     
     // Add to queue with priority and special handling
     const priority = NOTIFICATION_PRIORITIES[categorizeNotification(message, type)] || 0;
@@ -726,8 +747,14 @@
       priority,
       source,
       timestamp: Date.now(),
-      isUrgent: type === 'error' || priority >= 2 // Errors and high priority are urgent
+      isUrgent: type === 'error' || priority >= 2, // Errors and high priority are urgent
+      isPersistent: isPersistent
     };
+    
+    // Track persistent notifications
+    if (isPersistent) {
+      persistentNotifications.add(source);
+    }
     
     // Insert by priority (higher priority first)
     let insertIndex = headerNotificationQueue.length;
@@ -753,9 +780,9 @@
     }
 
     isShowingHeaderNotification = true;
-    const { message, type, duration, source } = headerNotificationQueue.shift();
+    const { message, type, duration, source, isPersistent } = headerNotificationQueue.shift();
     
-    console.log('🔔 Processing header notification:', message, type, source);
+    console.log('🔔 Processing header notification:', message, type, source, isPersistent ? '(persistent)' : '');
     
     // Clear any existing notification
     const existingNotification = document.querySelector('.float-header-notification');
@@ -778,6 +805,7 @@
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `float-header-notification ${category}`;
+    notification.dataset.source = source; // Store source for removal
     
     // Add icon based on category and source
     const iconSvg = getNotificationIcon(category, source);
@@ -790,20 +818,27 @@
     // Add to container
     notificationContainer.appendChild(notification);
     
-    // Auto-remove after duration
-    headerNotificationTimeout = setTimeout(() => {
-      removeHeaderNotification();
-    }, duration);
+    // Auto-remove after duration (unless persistent)
+    if (!isPersistent && duration !== Infinity) {
+      headerNotificationTimeout = setTimeout(() => {
+        removeHeaderNotification();
+      }, duration);
+    }
   }
 
   function removeHeaderNotification() {
     const notification = document.querySelector('.float-header-notification');
     if (notification) {
+      const source = notification.dataset.source;
+      
+      // Remove from persistent set if applicable
+      if (source) {
+        persistentNotifications.delete(source);
+      }
+      
       notification.classList.add('removing');
       setTimeout(() => {
         notification.remove();
-        
-        // No need to hide indicator since we removed it
         
         // Process next notification in queue after a brief delay
         setTimeout(() => {
@@ -818,6 +853,21 @@
     }
   }
 
+  // Function to remove specific persistent notification by source
+  function removePersistentNotification(source) {
+    const notification = document.querySelector('.float-header-notification');
+    if (notification && notification.dataset.source === source) {
+      persistentNotifications.delete(source);
+      removeHeaderNotification();
+    }
+  }
+
+  // Listen for C key press from content script to remove persistent notification
+  window.addEventListener('moat:c-key-pressed', () => {
+    console.log('🔔 C key pressed - removing persistent instruction notification');
+    removePersistentNotification('press-c-instruction');
+  });
+
   function getNotificationIcon(category, source = 'moat') {
     // Special case for workflow files created notification
     if (source === 'workflow-files-created') {
@@ -828,10 +878,10 @@
     switch (category) {
       case 'disconnected':
         // Use exclamation-triangle-solid.svg for disconnected (red)
-        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #dc2626;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #dc2626;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
       case 'connected':
         // Use check-box-solid.svg for connected (green)
-        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #059669;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v-1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #059669;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
       case 'error':
         // Use exclamation-triangle-solid.svg for errors (red)
         return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #dc2626;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
@@ -841,7 +891,7 @@
       case 'info':
       default:
         // Use check-box-solid.svg for info and other notifications (blue)
-        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #2563eb;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v-1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #2563eb;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
     }
   }
 
@@ -1004,7 +1054,7 @@
         </div>
         <div class="float-moat-empty" id="moat-empty-state" style="display: none;">
           <p>No annotations yet</p>
-          <p class="float-moat-hint">Press 'f' to enter comment mode</p>
+          <p class="float-moat-hint">Press 'C' to enter comment mode</p>
         </div>
       </div>
     `;
