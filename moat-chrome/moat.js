@@ -1283,7 +1283,7 @@
     
     // Determine current position and mode states
     const currentPosition = moatPosition;
-    const isDarkMode = false; // TODO: Implement dark mode detection
+    const isDarkMode = getCurrentTheme() === 'dark';
     const positionText = currentPosition === 'right' ? 'Dock to bottom' : 'Dock to right';
     const modeText = isDarkMode ? 'Light mode' : 'Dark mode';
     
@@ -1352,8 +1352,7 @@
         if (action === 'toggle-position') {
           toggleMoatPosition();
         } else if (action === 'toggle-theme') {
-          // TODO: Implement theme toggle
-          showNotification('Theme toggle coming soon!', 'info');
+          toggleTheme();
         }
       } else {
         // If clicking outside menu items but within menu, still close it
@@ -1434,6 +1433,30 @@
     console.log('Moat: Current session annotations cleared');
   }
 
+  // Theme management functions
+  function getCurrentTheme() {
+    return localStorage.getItem('moat.theme') || 'light';
+  }
+
+  function setTheme(theme) {
+    localStorage.setItem('moat.theme', theme);
+    document.documentElement.setAttribute('data-moat-theme', theme);
+    console.log('Moat: Theme set to', theme);
+  }
+
+  function toggleTheme() {
+    const currentTheme = getCurrentTheme();
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    showNotification(`Switched to ${newTheme} mode`, 'info');
+  }
+
+  function initializeTheme() {
+    const savedTheme = getCurrentTheme();
+    document.documentElement.setAttribute('data-moat-theme', savedTheme);
+    console.log('Moat: Theme initialized to', savedTheme);
+  }
+
   // Toggle Moat position between right and bottom
   function toggleMoatPosition() {
     const newPosition = moatPosition === 'right' ? 'bottom' : 'right';
@@ -1511,6 +1534,9 @@
   // Initialize moat with persistence
   async function initializeMoat() {
     console.log('Moat: Starting moat initialization...');
+    
+    // Initialize theme before creating UI
+    initializeTheme();
     
     // Create moat if it doesn't exist
     if (!moat) {
