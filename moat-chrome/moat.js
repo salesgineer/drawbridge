@@ -999,7 +999,7 @@
               </div>
             </div>
             <div class="float-moat-new-comment-container">
-              <button class="float-moat-new-comment-btn" id="float-new-comment-btn" title="Create new comment">
+              <button class="float-moat-new-comment-btn" id="float-new-comment-btn" title="Make new comment">
                 <svg class="float-comment-icon" viewBox="0 0 24 24">
                   <polygon points="23 8 23 14 22 14 22 16 21 16 21 17 20 17 20 18 18 18 18 19 15 19 15 20 9 20 9 19 7 19 7 20 6 20 6 21 1 21 1 19 2 19 2 18 3 18 3 16 2 16 2 14 1 14 1 8 2 8 2 6 3 6 3 5 4 5 4 4 6 4 6 3 9 3 9 2 15 2 15 3 18 3 18 4 20 4 20 5 21 5 21 6 22 6 22 8 23 8"/>
                 </svg>
@@ -1286,6 +1286,16 @@
     const isDarkMode = false; // TODO: Implement dark mode detection
     const positionText = currentPosition === 'right' ? 'Dock to bottom' : 'Dock to right';
     const modeText = isDarkMode ? 'Light mode' : 'Dark mode';
+    
+    // Use proper directional icons for docking
+    const positionIcon = currentPosition === 'right' ? 
+      `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+        <polygon points="5 7 7 7 7 8 8 8 8 9 9 9 9 10 10 10 10 11 11 11 11 12 13 12 13 11 14 11 14 10 15 10 15 9 16 9 16 8 17 8 17 7 19 7 19 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7"/>
+      </svg>` :
+      `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+        <polygon points="7 19 7 17 8 17 8 16 9 16 9 15 10 15 10 14 11 14 11 13 12 13 12 11 11 11 11 10 10 10 10 9 9 9 9 8 8 8 8 7 7 7 7 5 8 5 8 4 10 4 10 5 11 5 11 6 12 6 12 7 13 7 13 8 14 8 14 9 15 9 15 10 16 10 16 11 17 11 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 12 17 12 18 11 18 11 19 10 19 10 20 8 20 8 19 7 19"/>
+      </svg>`;
+    
     const modeIcon = isDarkMode ? 
       `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
         <rect x="1" y="11" width="5" height="2"/>
@@ -1307,9 +1317,7 @@
     menu.className = 'float-more-menu';
     menu.innerHTML = `
       <div class="float-more-menu-item" data-action="toggle-position">
-        <svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
-          <polygon points="7 19 7 17 8 17 8 16 9 16 9 15 10 15 10 14 11 14 11 13 12 13 12 11 11 11 11 10 10 10 10 9 9 9 9 8 8 8 8 7 7 7 7 5 8 5 8 4 10 4 10 5 11 5 11 6 12 6 12 7 13 7 13 8 14 8 14 9 15 9 15 10 16 10 16 11 17 11 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7"/>
-        </svg>
+        ${positionIcon}
         <span>${positionText}</span>
       </div>
       <div class="float-more-menu-item" data-action="toggle-theme">
@@ -1337,14 +1345,20 @@
       const item = e.target.closest('.float-more-menu-item');
       if (item) {
         const action = item.dataset.action;
+        
+        // Remove menu immediately before performing action
+        menu.remove();
+        
         if (action === 'toggle-position') {
           toggleMoatPosition();
         } else if (action === 'toggle-theme') {
           // TODO: Implement theme toggle
           showNotification('Theme toggle coming soon!', 'info');
         }
+      } else {
+        // If clicking outside menu items but within menu, still close it
+        menu.remove();
       }
-      menu.remove();
     });
     
     // Close menu on outside click
