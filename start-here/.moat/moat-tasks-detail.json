@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": "b80f95cf-6c73-4d34-8983-79ea77a26ed1",
+    "title": "Colored Container",
+    "comment": "Make this blue",
+    "selector": "div.hero-features > div.feature-card.fade-in:nth-child(1) > div.feature-icon.float-highlight",
+    "boundingRect": {
+      "x": 314,
+      "y": 471,
+      "w": 297,
+      "h": 77
+    },
+    "screenshotPath": "./screenshots/moat-1751815439371-x0nngtpxy.png",
+    "status": "pending",
+    "timestamp": 1751815439509
+  }
+]
