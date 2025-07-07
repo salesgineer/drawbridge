@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Moat - Visual Feedback for React/Next.js",
+  "name": "Drawbridge - Visual editor for Cursor",
   "version": "1.0",
-  "description": "Visual UI feedback and annotation tool for React/Next.js development",
+  "description": "Send comments and screenshots directly to Cursor as prompts.",
   "permissions": [
     "activeTab",
     "storage",
@@ -30,17 +30,17 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Moat",
+    "default_title": "Drawbridge",
     "default_icon": {
-      "16": "icons/moat-16.png",
-      "48": "icons/moat-48.png",
-      "128": "icons/moat-128.png"
+      "16": "icons/drawbride-icon-dark-16.png",
+      "48": "icons/drawbride-icon-dark-48.png",
+      "128": "icons/drawbride-icon-dark-128.png"
     }
   },
   "icons": {
-    "16": "icons/moat-16.png",
-    "48": "icons/moat-48.png",
-    "128": "icons/moat-128.png"
+    "16": "icons/drawbride-icon-dark-16.png",
+    "48": "icons/drawbride-icon-dark-48.png",
+    "128": "icons/drawbride-icon-dark-128.png"
   },
   "web_accessible_resources": [
     {

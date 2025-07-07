@@ -428,51 +428,38 @@ body.float-comment-mode * {
 .float-comment-actions button {
   padding: 6px 14px;
   border: none;
+  border-radius: 6px;
   height: 32px;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
+  box-shadow: 0 1px 2px var(--moat-shadow);
 }
 
 .float-comment-cancel {
-  background: var(--moat-bg-tertiary);
+  background: var(--moat-bg-primary);
   color: var(--moat-text-secondary);
-  box-shadow: 
-    -2px 0 0 0 var(--moat-border-light),
-    2px 0 0 0 var(--moat-border-light),
-    0 -2px 0 0 var(--moat-border-light),
-    0 2px 0 0 var(--moat-border-light);
+  border: 1px solid var(--moat-border);
 }
 
 .float-comment-cancel:hover {
-  background: var(--moat-border);
-  box-shadow: 
-    -2px 0 0 0 var(--moat-text-muted),
-    2px 0 0 0 var(--moat-text-muted),
-    0 -2px 0 0 var(--moat-text-muted),
-    0 2px 0 0 var(--moat-text-muted);
+  background: var(--moat-bg-secondary);
+  color: var(--moat-text-primary);
+  border-color: var(--moat-border-light);
+  box-shadow: 0 1px 3px var(--moat-shadow);
 }
 
 .float-comment-submit {
   background: var(--moat-accent);
   color: white;
   font-weight: 500;
-  box-shadow: 
-    -2px 0 0 0 var(--moat-accent),
-    2px 0 0 0 var(--moat-accent),
-    0 -2px 0 0 var(--moat-accent),
-    0 2px 0 0 var(--moat-accent);
+  border: 1px solid var(--moat-accent);
 }
 
 .float-comment-submit:hover {
-  background: var(--moat-accent);
   opacity: 0.9;
-  box-shadow: 
-    -2px 0 0 0 var(--moat-accent),
-    2px 0 0 0 var(--moat-accent),
-    0 -2px 0 0 var(--moat-accent),
-    0 2px 0 0 var(--moat-accent);
+  box-shadow: 0 1px 3px var(--moat-shadow);
 }
 
 /* Moat Sidebar */
