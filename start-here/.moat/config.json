@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "projectName": "start-here",
-  "createdAt": "2025-07-06T15:56:40.748Z",
+  "createdAt": "2025-07-07T12:49:02.733Z",
   "streaming": {
     "enabled": true,
     "format": "jsonl",
