@@ -1,0 +1,82 @@
+[
+  {
+    "id": "a9a4eaf4-cdb7-4ae6-afa1-91ea3285421a",
+    "title": "h2: Bridge the Gap Between Design ",
+    "comment": "make this red",
+    "selector": "div.container > div.hero-content > h2.float-highlight",
+    "boundingRect": {
+      "x": 180,
+      "y": 198,
+      "w": 1152,
+      "h": 62
+    },
+    "screenshotPath": "./screenshots/moat-1751893702662-sj4pwlo7x.png",
+    "status": "completed",
+    "timestamp": 1751893702788,
+    "lastModified": 1751893900000,
+    "processedBy": "agent",
+    "codeChanges": [
+      "start-here/styles.css"
+    ]
+  },
+  {
+    "id": "08348e3c-8d1d-4df8-8171-1d4b5e8194e7",
+    "title": "Colored Container",
+    "comment": "make this an eye",
+    "selector": "div.hero-features > div.feature-card.fade-in:nth-child(1) > div.feature-icon.float-highlight",
+    "boundingRect": {
+      "x": 314,
+      "y": 473,
+      "w": 297,
+      "h": 77
+    },
+    "screenshotPath": "./screenshots/moat-1751938722731-lvogjsjzx.png",
+    "status": "completed",
+    "timestamp": 1751938722856,
+    "lastModified": 1751939100000,
+    "processedBy": "agent",
+    "codeChanges": [
+      "demo/index.html"
+    ]
+  },
+  {
+    "id": "be2325e7-90d2-47a4-b84d-c01ae07d5dd8",
+    "title": "Colored Container",
+    "comment": "make this a computer",
+    "selector": "div.hero-features > div.feature-card.fade-in:nth-child(2) > div.feature-icon.float-highlight",
+    "boundingRect": {
+      "x": 709,
+      "y": 473,
+      "w": 297,
+      "h": 77
+    },
+    "screenshotPath": "./screenshots/moat-1751938731263-adbguyx98.png",
+    "status": "completed",
+    "timestamp": 1751938731383,
+    "lastModified": 1751939100000,
+    "processedBy": "agent",
+    "codeChanges": [
+      "demo/index.html"
+    ]
+  },
+  {
+    "id": "160f1b5a-8d6b-41c2-8d24-743004d6a49d",
+    "title": "Colored Container",
+    "comment": "make this a lightbulb",
+    "selector": "div.hero-features > div.feature-card.fade-in:nth-child(3) > div.feature-icon.float-highlight",
+    "boundingRect": {
+      "x": 1103,
+      "y": 473,
+      "w": 297,
+      "h": 77
+    },
+    "screenshotPath": "./screenshots/moat-1751938742922-axccym4fj.png",
+    "status": "completed",
+    "timestamp": 1751938743052,
+    "lastModified": 1751939100000,
+    "processedBy": "agent",
+    "codeChanges": [
+      "demo/index.html"
+    ]
+  }
+]
