@@ -36,11 +36,8 @@ To ensure maximum speed and session persistence, the preferred method is to load
 The `.json` file is the primary source of truth for all task information. You must use the rich data within it to guide your implementation:
 
 -   `comment`: The user's exact instruction.
-
 -   `selector`: The precise CSS selector for the target element.
-
 -   `title`, `boundingRect`: Context for locating the element.
-
 -   `screenshotPath`: Path to the screenshot showing the user's annotation context.
 
 ### Task Dependency Detection

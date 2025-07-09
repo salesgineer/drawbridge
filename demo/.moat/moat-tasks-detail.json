@@ -1,17 +1,32 @@
 [
   {
-    "id": "dab23660-c5e7-470c-98b4-8b1408301d3d",
-    "title": "h2: Bridge the Gap Between Design ",
-    "comment": "make this navy blue",
-    "selector": "div.container > div.hero-content > h2.float-highlight",
+    "id": "baad475a-f55b-4747-b32e-ad4589a0bb03",
+    "title": "Colored Container",
+    "comment": "left align this content",
+    "selector": "#about > div.container > div.hero-content.float-highlight",
+    "boundingRect": {
+      "x": 176,
+      "y": 45,
+      "w": 1152,
+      "h": 496
+    },
+    "screenshotPath": "./screenshots/moat-1752056812156-31k644ru1.png",
+    "status": "completed",
+    "timestamp": 1752056812310
+  },
+  {
+    "id": "ab5cecd7-3f59-4729-a7a8-48e614ba39a1",
+    "title": "Colored Container",
+    "comment": "center this content",
+    "selector": "#about > div.container > div.hero-content.float-highlight",
     "boundingRect": {
       "x": 176,
       "y": 198,
       "w": 1152,
-      "h": 62
+      "h": 496
     },
-    "screenshotPath": "./screenshots/moat-1752055641663-vcsgd83bg.png",
+    "screenshotPath": "./screenshots/moat-1752057016194-7p2jogszn.png",
     "status": "completed",
-    "timestamp": 1752055641769
+    "timestamp": 1752057016336
   }
 ]
