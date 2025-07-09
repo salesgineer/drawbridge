@@ -13,19 +13,18 @@ Moat is now connected to your project! This directory contains everything you ne
 ### 2. Process Annotations with AI
 In Cursor, run this command to process your UI feedback:
 ```
-Use @.moat/process-moat-tasks.mdc
+Use @.moat/drawbridge-workflow.mdc
 ```
 
 The AI will:
-- ✅ Process one task at a time
-- ✅ Show you exactly what it changed
-- ✅ Wait for your approval before continuing
-- ✅ Update your code with clean, professional changes
+- ✅ Intelligently choose the best processing mode (Step, Batch, or YOLO)
+- ✅ Show you exactly what it changed with visual context
+- ✅ Handle task dependencies and grouping automatically
+- ✅ Update your code with production-quality changes
 
 ## 📁 Files in This Directory
 
-- **`process-moat-tasks.mdc`** - Main command for processing UI tasks
-- **`moat-workflow.mdc`** - Advanced workflow and batch processing  
+- **`drawbridge-workflow.mdc`** - Unified intelligent workflow for processing UI tasks  
 - **`moat-tasks.md`** - Your current task list (auto-generated)
 - **`moat-tasks-detail.json`** - Technical task data (auto-generated)
 - **`config.json`** - Moat settings for this project
@@ -33,10 +32,11 @@ The AI will:
 ## 🎯 Example Workflow
 
 1. **Annotate**: Click a button → "make this green and bigger"
-2. **Process**: Run `Use @.moat/process-moat-tasks.mdc`
-3. **Review**: AI shows the changes and waits for approval
-4. **Approve**: Type "yes" to apply the changes
-5. **See Results**: Changes appear immediately in your browser!
+2. **Process**: Run `Use @.moat/drawbridge-workflow.mdc` or just `bridge`
+3. **AI Analyzes**: Chooses optimal mode and handles dependencies
+4. **Review**: Shows changes with visual context and waits for approval
+5. **Approve**: Type "yes" to apply the changes
+6. **See Results**: Changes appear immediately in your browser!
 
 ## 🔄 Connection Issues?
 
@@ -77,10 +77,20 @@ window.directoryHandle ? "✅ Connected" : "❌ Need to reconnect"
 
 ## 🛠 Advanced Usage
 
-### Batch Processing
-For multiple related changes:
+### Advanced Processing Modes
+**Step Mode (Incremental):**
 ```
-Process all styling tasks from .moat/moat-tasks.md using @.moat/moat-workflow.mdc
+step bridge
+```
+
+**Batch Mode (Grouped Efficiency):**
+```
+batch bridge
+```
+
+**YOLO Mode (Autonomous All-At-Once):**
+```
+yolo bridge
 ```
 
 ### Manual Task Review
@@ -90,7 +100,7 @@ Review @.moat/moat-tasks.md
 ```
 
 ### Custom Instructions
-You can edit the `.mdc` files in this directory to customize how Moat processes your specific project.
+You can edit `drawbridge-workflow.mdc` to customize how Drawbridge processes your specific project.
 
 ## 🎨 Best Practices
 
@@ -130,9 +140,9 @@ Edit `config.json` to customize Moat for your project:
 
 ### Getting Help
 1. Check your task list: `@.moat/moat-tasks.md`
-2. Try the advanced workflow: `@.moat/moat-workflow.mdc`
+2. Try different processing modes: `step bridge`, `batch bridge`, `yolo bridge`
 3. Review this README for examples
-4. Edit the `.mdc` files for custom behavior
+4. Edit `drawbridge-workflow.mdc` for custom behavior
 
 ## 🌟 Tips for Success
 

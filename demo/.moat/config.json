@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "projectName": "demo",
-  "createdAt": "2025-07-08T01:54:49.161Z",
+  "createdAt": "2025-07-09T10:05:50.444Z",
   "streaming": {
     "enabled": true,
     "format": "jsonl",

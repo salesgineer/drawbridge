@@ -1,32 +1,17 @@
 [
   {
-    "id": "a85c5eb8-7dee-44c0-99b2-2182ee00bf8c",
-    "title": "Colored Container",
-    "comment": "make this more colorful",
-    "selector": "div.hero-features > div.feature-card.fade-in:nth-child(1) > div.feature-icon.float-highlight",
+    "id": "dab23660-c5e7-470c-98b4-8b1408301d3d",
+    "title": "h2: Bridge the Gap Between Design ",
+    "comment": "make this navy blue",
+    "selector": "div.container > div.hero-content > h2.float-highlight",
     "boundingRect": {
-      "x": 314,
-      "y": 469,
-      "w": 297,
-      "h": 77
+      "x": 176,
+      "y": 198,
+      "w": 1152,
+      "h": 62
     },
-    "screenshotPath": "./screenshots/moat-1751940243108-aag80q4av.png",
-    "status": "pending",
-    "timestamp": 1751940243225
-  },
-  {
-    "id": "acbce35e-0889-4a8e-b104-8cfb35f9d194",
-    "title": "Colored Container",
-    "comment": "make this a bolt",
-    "selector": "div.hero-features > div.feature-card.fade-in:nth-child(3) > div.feature-icon.float-highlight",
-    "boundingRect": {
-      "x": 1103,
-      "y": 469,
-      "w": 297,
-      "h": 77
-    },
-    "screenshotPath": "./screenshots/moat-1751940249890-xbbxfdglz.png",
-    "status": "pending",
-    "timestamp": 1751940250009
+    "screenshotPath": "./screenshots/moat-1752055641663-vcsgd83bg.png",
+    "status": "completed",
+    "timestamp": 1752055641769
   }
 ]

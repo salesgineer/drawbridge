@@ -7,7 +7,43 @@ document.addEventListener('DOMContentLoaded', function() {
   initDemoInteractions();
   initProgressTracking();
   initSmoothAnimations();
+  initCarousel();
 });
+
+// Carousel functionality for exercises
+let currentSlide = 0;
+const totalSlides = 3;
+
+function initCarousel() {
+  updateCarousel();
+}
+
+function changeExercise(direction) {
+  currentSlide += direction;
+  
+  if (currentSlide >= totalSlides) currentSlide = 0;
+  if (currentSlide < 0) currentSlide = totalSlides - 1;
+  
+  updateCarousel();
+}
+
+function currentExercise(slide) {
+  currentSlide = slide - 1;
+  updateCarousel();
+}
+
+function updateCarousel() {
+  const track = document.querySelector('.carousel-track');
+  const indicators = document.querySelectorAll('.indicator');
+  
+  if (track) {
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+  }
+  
+  indicators.forEach((indicator, index) => {
+    indicator.classList.toggle('active', index === currentSlide);
+  });
+}
 
 // Navigation functionality
 function initNavigation() {

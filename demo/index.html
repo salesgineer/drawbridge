@@ -165,88 +165,105 @@
         </p>
       </div>
 
-      <!-- Exercise 1: Change Color -->
-      <div class="exercise-card" id="exercise-1">
-        <div class="exercise-header">
-          <span class="exercise-number">01</span>
-          <h3>Change Colors</h3>
-          <span class="exercise-status">Try it</span>
-        </div>
-        <div class="exercise-content">
-          <p class="exercise-description">
-            Click on the button below and describe a color change you'd like to see.
-            Try something like "make this button green" or "change to a purple gradient".
-          </p>
-          <div class="exercise-demo">
-            <button id="color-button" class="demo-button primary">
-              Click to Annotate This Button
-            </button>
-            <div class="hint">
-              <svg class="hint-icon" viewBox="0 0 12 12">
-                <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
-              </svg>
-              <span>Try: "make this a vibrant orange button"</span>
-            </div>
+      <!-- Exercise Carousel Container -->
+      <div class="exercise-carousel">
+        <div class="carousel-navigation">
+          <button class="carousel-btn carousel-prev" onclick="changeExercise(-1)">‹</button>
+          <div class="carousel-indicators">
+            <span class="indicator active" onclick="currentExercise(1)"></span>
+            <span class="indicator" onclick="currentExercise(2)"></span>
+            <span class="indicator" onclick="currentExercise(3)"></span>
           </div>
+          <button class="carousel-btn carousel-next" onclick="changeExercise(1)">›</button>
         </div>
-      </div>
-
-      <!-- Exercise 2: Change Text/Language -->
-      <div class="exercise-card" id="exercise-2">
-        <div class="exercise-header">
-          <span class="exercise-number">02</span>
-          <h3>Update Content</h3>
-          <span class="exercise-status">Try it</span>
-        </div>
-        <div class="exercise-content">
-          <p class="exercise-description">
-            Click on the welcome message below and change the text or translate it to another language.
-            Try "change this to Spanish" or "make this more friendly".
-          </p>
-          <div class="exercise-demo">
-            <div id="welcome-message" class="demo-message">
-              ¡Bienvenido a nuestra plataforma! Estamos emocionados de tenerte aquí.
-            </div>
-            <div class="hint">
-              <svg class="hint-icon" viewBox="0 0 12 12">
-                <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
-              </svg>
-              <span>Try: "translate this to French" or "make it more casual"</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Exercise 3: Move Elements -->
-      <div class="exercise-card" id="exercise-3">
-        <div class="exercise-header">
-          <span class="exercise-number">03</span>
-          <h3>Reposition Elements</h3>
-          <span class="exercise-status">Try it</span>
-        </div>
-        <div class="exercise-content">
-          <p class="exercise-description">
-            Click on the profile card below and describe how you'd like to rearrange its layout.
-            Try "move the avatar to the right" or "center all the content".
-          </p>
-          <div class="exercise-demo">
-            <div id="profile-card" class="demo-profile-card">
-              <div class="profile-avatar">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
+        
+        <div class="carousel-container">
+          <div class="carousel-track">
+            <!-- Exercise 1: Change Color -->
+            <div class="exercise-card active" id="exercise-1">
+              <div class="exercise-header">
+                <span class="exercise-number">01</span>
+                <h3>Change Colors</h3>
+                <span class="exercise-status">Try it</span>
               </div>
-              <div class="profile-info">
-                <h4>Sarah Chen</h4>
-                <p>Product Designer</p>
-                <span class="profile-badge">Team Lead</span>
+              <div class="exercise-content">
+                <p class="exercise-description">
+                  Click on the button below and describe a color change you'd like to see.
+                  Try something like "make this button green" or "change to a purple gradient".
+                </p>
+                <div class="exercise-demo">
+                  <button id="color-button" class="demo-button primary">
+                    Click to Annotate This Button
+                  </button>
+                  <div class="hint">
+                    <svg class="hint-icon" viewBox="0 0 12 12">
+                      <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
+                    </svg>
+                    <span>Try: "make this a vibrant orange button"</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="hint">
-              <svg class="hint-icon" viewBox="0 0 12 12">
-                <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
-              </svg>
-              <span>Try: "stack the avatar above the text" or "align everything to center"</span>
+
+            <!-- Exercise 2: Change Text/Language -->
+            <div class="exercise-card" id="exercise-2">
+              <div class="exercise-header">
+                <span class="exercise-number">02</span>
+                <h3>Update Content</h3>
+                <span class="exercise-status">Try it</span>
+              </div>
+              <div class="exercise-content">
+                <p class="exercise-description">
+                  Click on the welcome message below and change the text or translate it to another language.
+                  Try "change this to Spanish" or "make this more friendly".
+                </p>
+                <div class="exercise-demo">
+                  <div id="welcome-message" class="demo-message">
+                    ¡Bienvenido a nuestra plataforma! Estamos emocionados de tenerte aquí.
+                  </div>
+                  <div class="hint">
+                    <svg class="hint-icon" viewBox="0 0 12 12">
+                      <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
+                    </svg>
+                    <span>Try: "translate this to French" or "make it more casual"</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Exercise 3: Move Elements -->
+            <div class="exercise-card" id="exercise-3">
+              <div class="exercise-header">
+                <span class="exercise-number">03</span>
+                <h3>Reposition Elements</h3>
+                <span class="exercise-status">Try it</span>
+              </div>
+              <div class="exercise-content">
+                <p class="exercise-description">
+                  Click on the profile card below and describe how you'd like to rearrange its layout.
+                  Try "move the avatar to the right" or "center all the content".
+                </p>
+                <div class="exercise-demo">
+                  <div id="profile-card" class="demo-profile-card">
+                    <div class="profile-avatar">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                      </svg>
+                    </div>
+                    <div class="profile-info">
+                      <h4>Sarah Chen</h4>
+                      <p>Product Designer</p>
+                      <span class="profile-badge">Team Lead</span>
+                    </div>
+                  </div>
+                  <div class="hint">
+                    <svg class="hint-icon" viewBox="0 0 12 12">
+                      <path d="M6 0L8 4H12L8.5 7L10 12L6 9L2 12L3.5 7L0 4H4L6 0Z"/>
+                    </svg>
+                    <span>Try: "stack the avatar above the text" or "align everything to center"</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

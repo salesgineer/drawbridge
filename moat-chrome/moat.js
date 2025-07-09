@@ -2394,11 +2394,12 @@
   // Render simple task item without emojis
   function renderSimpleTaskItem(task) {
     const isCompleted = ['completed', 'resolved'].includes(task.status);
+    const statusClass = `float-status-${task.status}`;
     const statusText = getStatusText(task.status);
     const timeAgo = formatTimeAgo(task.timestamp || task.createdAt);
     
     return `
-      <div class="float-moat-item ${isCompleted ? 'float-moat-completed' : ''}" 
+      <div class="float-moat-item ${statusClass} ${isCompleted ? 'float-moat-completed' : ''}" 
            data-id="${task.id}"
            data-type="${task.format || 'current'}">
         <div class="float-moat-item-header">
@@ -2425,11 +2426,14 @@
     switch (status) {
       case 'pending':
       case 'in queue': return 'to do';
+      case 'in-progress':
       case 'sent':
       case 'in progress': return 'in progress';
       case 'completed':
       case 'resolved': return 'done';
-      default: return 'to do';
+      default: 
+        console.warn('Unknown status in getStatusText:', status);
+        return 'to do';
     }
   }
   

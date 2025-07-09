@@ -91,7 +91,7 @@ Moat now generates **two complementary files** for optimal human-AI collaboratio
 4. 📋 **Hero Title** - "Make this blue" *(2 min)* - 📋 pending
 
 ---
-*Use @process-moat-tasks.mdc for implementation*
+*Use @drawbridge-workflow.mdc for implementation*
 ```
 
 #### 2. **`moat-tasks-detail.md`** - AI-Processable Format
@@ -166,7 +166,7 @@ Moat auto-creates `config.json`:
 Use @generate-moat-tasks.mdc to analyze .moat/.moat-stream.jsonl
 
 # Process tasks with human verification (recommended)
-Use @process-moat-tasks.mdc to implement tasks in .moat/moat-tasks.md
+Use @drawbridge-workflow.mdc to implement tasks in .moat/moat-tasks.md
 
 # Legacy auto-processing (no verification)
 Use @moat-auto-fix.mdc for immediate implementation
