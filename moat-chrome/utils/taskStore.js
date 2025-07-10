@@ -17,9 +17,9 @@ function generateUUID() {
  * Valid task status values
  */
 const TASK_STATUS = {
-    PENDING: 'pending',
-    IN_PROGRESS: 'in-progress', 
-    COMPLETED: 'completed'
+    TO_DO: 'to do',
+    DOING: 'doing', 
+    DONE: 'done'
 };
 
 /**
@@ -44,7 +44,7 @@ function createTaskObject(taskData) {
         selector: taskData.selector,
         boundingRect: taskData.boundingRect || { x: 0, y: 0, w: 0, h: 0 },
         screenshotPath: taskData.screenshotPath || '',
-        status: TASK_STATUS.PENDING,
+        status: TASK_STATUS.TO_DO,
         timestamp: Date.now()
     };
 }
@@ -170,7 +170,7 @@ class TaskStore {
         const functionalDuplicate = this.tasks.find(existingTask => 
             existingTask.selector === task.selector && 
             existingTask.comment.trim() === task.comment.trim() &&
-            existingTask.status !== TASK_STATUS.COMPLETED
+            existingTask.status !== TASK_STATUS.DONE
         );
 
         if (functionalDuplicate) {
@@ -230,14 +230,14 @@ class TaskStore {
 
     /**
      * Get task count statistics
-     * @returns {Object} Statistics object with total, pending, in-progress, completed counts
+     * @returns {Object} Statistics object with total, to do, doing, done counts
      */
     getTaskStats() {
         const stats = {
             total: this.tasks.length,
-            pending: 0,
-            'in-progress': 0,
-            completed: 0
+            'to do': 0,
+            'doing': 0,
+            'done': 0
         };
 
         this.tasks.forEach(task => {

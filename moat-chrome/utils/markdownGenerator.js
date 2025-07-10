@@ -4,14 +4,14 @@
 /**
  * Generate task summary statistics from task array
  * @param {Array} tasks - Array of task objects
- * @returns {Object} Statistics object with total, pending, in-progress, completed counts
+ * @returns {Object} Statistics object with total, to do, doing, done counts
  */
 function generateTaskStats(tasks) {
     const stats = {
         total: tasks.length,
-        pending: 0,
-        'in-progress': 0,
-        completed: 0
+        'to do': 0,
+        'doing': 0,
+        'done': 0
     };
 
     tasks.forEach(task => {
@@ -25,16 +25,16 @@ function generateTaskStats(tasks) {
 
 /**
  * Convert task status to checkbox format
- * @param {string} status - Task status ('pending', 'in-progress', 'completed')
+ * @param {string} status - Task status ('to do', 'doing', 'done')
  * @returns {string} Checkbox representation
  */
 function statusToCheckbox(status) {
     switch (status) {
-        case 'completed':
+        case 'done':
             return '[x]';
-        case 'in-progress':
-            return '[~]'; // Alternative representation for in-progress
-        case 'pending':
+        case 'doing':
+            return '[~]'; // Alternative representation for doing
+        case 'to do':
         default:
             return '[ ]';
     }
@@ -87,9 +87,9 @@ function generateMarkdownFromTasks(tasks) {
     
     // Add summary statistics
     markdown += `**Total**: ${stats.total} | `;
-    markdown += `**Pending**: ${stats.pending} | `;
-    markdown += `**In Progress**: ${stats['in-progress']} | `;
-    markdown += `**Completed**: ${stats.completed}\n\n`;
+    markdown += `**To Do**: ${stats['to do']} | `;
+    markdown += `**Doing**: ${stats['doing']} | `;
+    markdown += `**Done**: ${stats['done']}\n\n`;
     
     // Add tasks section
     if (sortedTasks.length === 0) {

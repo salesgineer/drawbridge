@@ -376,7 +376,7 @@
       }));
 
       // Step 8: Update status and notify
-      updateAnnotationStatus(annotation.id, 'pending');
+      updateAnnotationStatus(annotation.id, 'to do');
       
       showNotification(`Task saved: "${task.comment.substring(0, 30)}${task.comment.length > 30 ? '...' : ''}" - awaiting processing`);
       console.log('🎉 Moat: New system save pipeline completed successfully');
@@ -1067,8 +1067,8 @@ CRITICAL: Read both \`moat-tasks-detail.json\` and \`moat-tasks.md\` files first
 
 ### Status File Management
 ALWAYS automatically update these files after implementing changes:
-- \`moat-tasks-detail.json\`: Update task status to "completed"
-- \`moat-tasks.md\`: Add checkmark [x] for completed tasks
+- \`moat-tasks-detail.json\`: Update task status to "done"
+- \`moat-tasks.md\`: Add checkmark [x] for done tasks
 
 ### Communication Style
 - Be terse and focused on results
@@ -1310,7 +1310,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
           h: annotation.boundingRect?.height || 0
         },
         screenshotPath: annotation.screenshot ? `./screenshots/${annotation.id}.png` : '',
-        status: 'pending',
+        status: 'to do',
         timestamp: Date.now()
       };
       console.log('🔧 Moat: New task created:', newTask);
@@ -1334,14 +1334,14 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
       let markdown = '# Moat Tasks\n\n';
       
       // Add summary
-      const pending = sortedTasks.filter(t => t.status === 'pending').length;
-      const inProgress = sortedTasks.filter(t => t.status === 'in-progress').length;
-      const completed = sortedTasks.filter(t => t.status === 'completed').length;
+      const toDo = sortedTasks.filter(t => t.status === 'to do').length;
+      const doing = sortedTasks.filter(t => t.status === 'doing').length;
+      const done = sortedTasks.filter(t => t.status === 'done').length;
       
       markdown += `**Total**: ${sortedTasks.length} | `;
-      markdown += `**Pending**: ${pending} | `;
-      markdown += `**In Progress**: ${inProgress} | `;
-      markdown += `**Completed**: ${completed}\n\n`;
+      markdown += `**To Do**: ${toDo} | `;
+      markdown += `**Doing**: ${doing} | `;
+      markdown += `**Done**: ${done}\n\n`;
       
       // Add tasks
       if (sortedTasks.length === 0) {
@@ -1349,7 +1349,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
       } else {
         markdown += '## Tasks\n\n';
         sortedTasks.forEach((task, index) => {
-          const checkbox = task.status === 'completed' ? '[x]' : '[ ]';
+          const checkbox = task.status === 'done' ? '[x]' : '[ ]';
           const taskNumber = index + 1;
           const title = task.title || 'Untitled Task';
           const comment = task.comment.length > 60 ? task.comment.substring(0, 57) + '...' : task.comment;
@@ -1383,7 +1383,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
         detail: { task: newTask, allTasks: existingTasks, duration } 
       }));
       
-      updateAnnotationStatus(annotation.id, 'pending');
+      updateAnnotationStatus(annotation.id, 'to do');
               showNotification(`Task saved: "${newTask.comment.substring(0, 30)}${newTask.comment.length > 30 ? '...' : ''}" - awaiting processing`);
       console.log('🎉 Moat: Direct file writing completed successfully');
       
@@ -1454,8 +1454,8 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
     setTimeout(() => notification.remove(), 3000);
   }
 
-  // Process all pending tasks (triggered by "bridge" command)
-  async function processPendingTasks() {
+  // Process all "to do" tasks (triggered by "bridge" command)
+  async function processToDoTasks() {
     if (!window.directoryHandle) {
       showNotification('No project connected - cannot process tasks', 'error');
       return;
@@ -1467,23 +1467,23 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
       const jsonFile = await jsonHandle.getFile();
       const tasks = JSON.parse(await jsonFile.text());
       
-      // Find pending tasks
-      const pendingTasks = tasks.filter(task => task.status === 'pending');
+      // Find "to do" tasks
+      const toDoTasks = tasks.filter(task => task.status === 'to do');
       
-      if (pendingTasks.length === 0) {
-        showNotification('No pending tasks to process', 'info');
+      if (toDoTasks.length === 0) {
+        showNotification('No tasks to process', 'info');
         return;
       }
       
-              showNotification(`Bridge activated! Signaling AI agent to process ${pendingTasks.length} task(s)...`, 'info');
-      console.log(`🌉 Bridge: Found ${pendingTasks.length} pending tasks to process`);
+              showNotification(`Bridge activated! Signaling AI agent to process ${toDoTasks.length} task(s)...`, 'info');
+      console.log(`🌉 Bridge: Found ${toDoTasks.length} tasks to process`);
       
       // Create processing signal for AI agent
       const processSignal = {
         command: 'process-tasks',
         timestamp: Date.now(),
-        pendingTasks: pendingTasks,
-        totalCount: pendingTasks.length,
+        toDoTasks: toDoTasks,
+        totalCount: toDoTasks.length,
         status: 'requested'
       };
       
@@ -1496,10 +1496,10 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
       console.log('🌉 Bridge: Signal file created for AI agent');
       showNotification('📡 AI agent signaled! Check Cursor for task processing...', 'info');
       
-      // Update tasks to "in-progress" status to show they're being processed
+      // Update tasks to "doing" status to show they're being processed
       const updatedTasks = tasks.map(task => {
-        if (task.status === 'pending') {
-          return { ...task, status: 'in-progress', lastModified: Date.now() };
+        if (task.status === 'to do') {
+          return { ...task, status: 'doing', lastModified: Date.now() };
         }
         return task;
       });
@@ -1514,7 +1514,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
         await markdownGenerator.rebuildMarkdownFile(updatedTasks);
       }
       
-      console.log('🌉 Bridge: Tasks marked as in-progress, waiting for AI agent...');
+      console.log('🌉 Bridge: Tasks marked as doing, waiting for AI agent...');
       
     } catch (error) {
       console.error('🌉 Bridge: Error creating process signal:', error);
@@ -1522,10 +1522,10 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
     }
   }
 
-  // Mark task as completed after code changes are applied (CRITICAL: Only call after actual code changes)
-  async function markTaskCompleted(taskId, codeChanges = []) {
+  // Mark task as done after code changes are applied (CRITICAL: Only call after actual code changes)
+  async function markTaskDone(taskId, codeChanges = []) {
     if (!window.directoryHandle) {
-      console.warn('Cannot mark task completed - no directory handle');
+      console.warn('Cannot mark task done - no directory handle');
       return false;
     }
     
@@ -1543,7 +1543,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
       }
       
       // Update task with completion data
-      task.status = 'completed';
+      task.status = 'done';
       task.lastModified = Date.now();
       task.processedBy = 'agent';
       task.codeChanges = codeChanges;
@@ -1558,17 +1558,17 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
         await markdownGenerator.rebuildMarkdownFile(tasks);
       }
       
-      console.log('✅ Task marked as completed:', taskId);
-      showNotification(`Task completed: "${task.comment.substring(0, 30)}${task.comment.length > 30 ? '...' : ''}"`);
+      console.log('✅ Task marked as done:', taskId);
+      showNotification(`Task done: "${task.comment.substring(0, 30)}${task.comment.length > 30 ? '...' : ''}"`);
       
       // Dispatch event
-      window.dispatchEvent(new CustomEvent('moat:task-completed', { 
+      window.dispatchEvent(new CustomEvent('moat:task-done', { 
         detail: { taskId, task, codeChanges } 
       }));
       
       return true;
     } catch (error) {
-      console.error('Failed to mark task completed:', error);
+      console.error('Failed to mark task done:', error);
       return false;
     }
   }
@@ -1708,7 +1708,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
   function detectDependencies(annotation, existingTasks = []) {
     // Simple dependency detection - tasks affecting same element
     const sameSelectorTasks = existingTasks.filter(task => 
-      task.target === annotation.target && task.status === 'pending'
+      task.target === annotation.target && task.status === 'to do'
     );
     
     if (sameSelectorTasks.length > 0) {
@@ -1731,7 +1731,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
     
     while ((match = summaryPattern.exec(markdownContent)) !== null) {
       const [, number, checkbox, title, description] = match;
-      const status = checkbox === 'x' ? 'completed' : 'pending';
+              const status = checkbox === 'x' ? 'done' : 'to do';
       tasks.push({
         id: `summary-task-${number}`,
         number: parseInt(number),
@@ -1753,7 +1753,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
           number: parseInt(number),
           title: title.trim(),
           description: description.trim(),
-          status: status.trim() === 'completed' || status.trim() === 'done' ? 'completed' : 'pending',
+          status: status.trim() === 'done' ? 'done' : 'to do',
           format: 'legacy'
         });
       }
@@ -1768,7 +1768,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
           id: `task-${match[1]}`,
           number: parseInt(match[1]),
           title: match[2].trim(),
-          status: 'pending', // Simplified status detection
+          status: 'to do', // Simplified status detection
           format: 'detailed'
         });
       }
@@ -2244,7 +2244,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
         pageUrl: window.location.href,
         timestamp: Date.now(),
         sessionId: sessionId,
-        status: "in queue",
+        status: "to do",
         id: `moat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       };
       
@@ -2448,8 +2448,8 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
       // Check if sequence contains "bridge"
       if (bridgeSequence.includes('bridge')) {
         e.preventDefault();
-        console.log('🌉 Bridge command detected! Processing pending tasks...');
-        processPendingTasks();
+        console.log('🌉 Bridge command detected! Processing tasks...');
+        processToDoTasks();
         bridgeSequence = '';
         window.bridgeSequence = bridgeSequence;
         return;
@@ -2674,9 +2674,9 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
       return window.moatDebug.checkSystemStatus();
     },
     // Task completion helpers
-    markCompleted: markTaskCompleted,
-    processPendingTasks: processPendingTasks,
-    bridge: processPendingTasks, // Alias for easier testing
+    markDone: markTaskDone,
+    processToDoTasks: processToDoTasks,
+    bridge: processToDoTasks, // Alias for easier testing
     watchDirectoryHandle: () => {
       console.log('🔧 Starting directory handle watcher...');
       let lastHandle = window.directoryHandle;

@@ -198,7 +198,7 @@ This is the default, safe mode. It is ideal for complex tasks, applying changes 
 
 3.  **Implement Change**: Apply the requested UI modification.
 
-4.  **Confirm and Await Approval**: Present the change for review. Upon approval, update the status to `completed`. If rejected, revert status to `pending` and await a new prompt.
+4.  **Confirm and Await Approval**: Present the change for review. Upon approval, update the status to `done`. If rejected, revert status to `to do` and await a new prompt.
 
 ### Mode 2: Batch Processing
 
@@ -268,11 +268,11 @@ Tasks 9-10: Both layout changes in sidebar → Group: "Sidebar Layout"
 
 4.  **Process by Dependency Order**: Execute dependency chains in sequence, but process independent tasks within each chain together.
 
-5.  **Confirm Group and Await Approval**: Present changes for each dependency chain. Upon approval, update all tasks in the chain to `completed`.
+5.  **Confirm Group and Await Approval**: Present changes for each dependency chain. Upon approval, update all tasks in the chain to `done`.
 
 ### Mode 3: YOLO (All-In) Processing
 
-The fastest and most autonomous mode. It processes all pending tasks sequentially without stopping for any approvals. Use with caution.
+The fastest and most autonomous mode. It processes all "to do" tasks sequentially without stopping for any approvals. Use with caution.
 
 #### Workflow
 
@@ -285,9 +285,9 @@ The fastest and most autonomous mode. It processes all pending tasks sequentiall
     🔄 Estimated completion: ~2 minutes
     ```
 
-3.  **Process All Tasks Loop**: Iterate through every pending task in dependency order. For each task:
+3.  **Process All Tasks Loop**: Iterate through every "to do" task in dependency order. For each task:
 
-    -   Update status to `in-progress`.
+    -   Update status to `doing`.
 
     -   Announce the task: `- Implementing: "[User's annotation content]"`
 
@@ -295,7 +295,7 @@ The fastest and most autonomous mode. It processes all pending tasks sequentiall
 
     -   If the change fails, log the error, update the task status to `failed`, and continue.
 
-    -   If successful, update status to `completed`.
+    -   If successful, update status to `done`.
 
 4.  **Final Confirmation**: Announce that the entire run is complete and report on any failures.
 
@@ -308,7 +308,7 @@ These rules apply to all modes.
 
 Status file updates are a core function and must be included with every task completion. While Cursor will ask for confirmation (standard edit behavior), always update these files immediately after implementing code changes.
 
--   `**/moat-tasks.md`: Mark tasks as complete (`[x]`) once their status is `completed`.
+-   `**/moat-tasks.md`: Mark tasks as complete (`[x]`) once their status is `done`.
 
 -   `**/moat-tasks-detail.json`: Update the task `status` through its lifecycle with proper validation.
 
@@ -318,36 +318,36 @@ Status file updates are a core function and must be included with every task com
 
 **Valid Status Lifecycle (Moat System Schema):**
 ```
-pending → in-progress → completed
-   ↓          ↓           ↑
-   ↓          ↓        failed
-   ↓       (retry)       ↓
-   ↑←←←←←←←←←←←←←←←←←←←←←←↓
+to do → doing → done
+   ↓      ↓       ↑
+   ↓      ↓    failed
+   ↓   (retry)    ↓
+   ↑←←←←←←←←←←←←←←↓
 ```
 
 **Allowed Transitions:**
-- `pending` → `in-progress` (start processing)
-- `in-progress` → `completed` (successful completion)
-- `in-progress` → `failed` (processing error)
-- `failed` → `pending` (retry/reset)
-- `completed` → `pending` (user requests changes)
+- `to do` → `doing` (start processing)
+- `doing` → `done` (successful completion)
+- `doing` → `failed` (processing error)
+- `failed` → `to do` (retry/reset)
+- `done` → `to do` (user requests changes)
 
 **Forbidden Transitions:**
-- `pending` → `completed` (skip processing)
-- `pending` → `failed` (can't fail without attempting)
-- `completed` → `in-progress` (can't re-process completed tasks)
-- `completed` → `failed` (can't fail after success)
-- `failed` → `completed` (can't succeed without re-processing)
+- `to do` → `done` (skip processing)
+- `to do` → `failed` (can't fail without attempting)
+- `done` → `doing` (can't re-process done tasks)
+- `done` → `failed` (can't fail after success)
+- `failed` → `done` (can't succeed without re-processing)
 
 **Transition Validation Logic:**
 ```javascript
 // Before updating any task status, validate the transition
 function validateStatusTransition(currentStatus, newStatus) {
   const validTransitions = {
-    'pending': ['in-progress'],
-    'in-progress': ['completed', 'failed'],  
-    'completed': ['pending'],
-    'failed': ['pending']
+    'to do': ['doing'],
+    'doing': ['done', 'failed'],  
+    'done': ['to do'],
+    'failed': ['to do']
   };
   
   if (!validTransitions[currentStatus]?.includes(newStatus)) {
@@ -359,9 +359,9 @@ function validateStatusTransition(currentStatus, newStatus) {
 **Error Handling for Invalid Transitions:**
 ```
 ❌ Status Transition Error
-Current: completed → Attempted: in-progress
-→ Invalid: Cannot re-process completed tasks
-→ Suggestion: Reset to 'pending' first if changes needed
+Current: done → Attempted: doing
+→ Invalid: Cannot re-process done tasks
+→ Suggestion: Reset to 'to do' first if changes needed
 ```
 
 ### Communication Style: High Signal, Low Noise

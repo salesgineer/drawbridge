@@ -4,6 +4,7 @@
   let isVisible = false;
   let draggedItem = null;
   let moatPosition = 'bottom'; // 'right' or 'bottom' - default to bottom
+  let currentTabFilter = 'to do'; // Currently selected tab filter
   
   // ===== NOTIFICATION DEDUPLICATION SYSTEM =====
   class NotificationDeduplicator {
@@ -973,6 +974,22 @@
               Drawbridge
             </h3>
           </div>
+          <div class="float-moat-tabs-header float-tabs-in-header">
+            <div class="float-tab-group">
+              <button class="float-tab-btn float-tab-active" data-status="to do" id="float-tab-todo">
+                To Do
+                <span class="float-tab-badge" id="float-badge-todo"></span>
+              </button>
+              <button class="float-tab-btn" data-status="doing" id="float-tab-doing">
+                Doing
+                <span class="float-tab-badge" id="float-badge-doing"></span>
+              </button>
+              <button class="float-tab-btn" data-status="done" id="float-tab-done">
+                Done
+                <span class="float-tab-badge" id="float-badge-done"></span>
+              </button>
+            </div>
+          </div>
           <div class="float-moat-right-controls">
             <div class="float-header-notifications">
               <div class="float-notification-container" id="notification-container">
@@ -1015,6 +1032,22 @@
                 </svg>
               </button>
             </div>
+          </div>
+        </div>
+        <div class="float-moat-tabs-below-header">
+          <div class="float-tab-group">
+            <button class="float-tab-btn float-tab-active" data-status="to do" id="float-tab-todo-below">
+              To Do
+              <span class="float-tab-badge" id="float-badge-todo-below"></span>
+            </button>
+            <button class="float-tab-btn" data-status="doing" id="float-tab-doing-below">
+              Doing
+              <span class="float-tab-badge" id="float-badge-doing-below"></span>
+            </button>
+            <button class="float-tab-btn" data-status="done" id="float-tab-done-below">
+              Done
+              <span class="float-tab-badge" id="float-badge-done-below"></span>
+            </button>
           </div>
         </div>
       <div class="float-moat-queue">
@@ -1098,6 +1131,16 @@
     // Connect project inline buttons
     moat.querySelector('.float-connect-cancel').addEventListener('click', handleConnectCancel);
     moat.querySelector('.float-connect-confirm').addEventListener('click', handleConnectConfirm);
+    
+    // Tab system event listeners for both sets of tabs
+    const tabButtons = moat.querySelectorAll('.float-tab-btn');
+    tabButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const status = button.dataset.status;
+        handleTabClick(status);
+      });
+    });
     
     // Initialize position from saved preference
     initializePosition();
@@ -1415,6 +1458,154 @@
     }
     showNotification('Current session cleared');
     console.log('Moat: Current session annotations cleared');
+  }
+
+  // Tab system functions
+  function handleTabClick(status) {
+    console.log('🔄 Moat: Tab clicked:', status);
+    
+    // Update current filter
+    currentTabFilter = status;
+    
+    // Update tab active states
+    updateTabActiveStates(status);
+    
+    // Re-render tasks with new filter
+    applyTabFilter();
+  }
+
+  function updateTabActiveStates(activeStatus) {
+    if (!moat) return;
+    
+    // Update both sets of tabs (header and below-header)
+    const tabButtons = moat.querySelectorAll('.float-tab-btn');
+    tabButtons.forEach(button => {
+      const buttonStatus = button.dataset.status;
+      if (buttonStatus === activeStatus) {
+        button.classList.add('float-tab-active');
+      } else {
+        button.classList.remove('float-tab-active');
+      }
+    });
+  }
+
+  async function applyTabFilter() {
+    if (!moat) return;
+    
+    console.log('🔄 Moat: Applying tab filter:', currentTabFilter);
+    
+    // Show appropriate tabs when filtering tasks
+    const tabsHeaderContainer = moat.querySelector('.float-moat-tabs-header');
+    const tabsBelowContainer = moat.querySelector('.float-moat-tabs-below-header');
+    
+    if (tabsHeaderContainer) {
+      tabsHeaderContainer.classList.remove('hidden');
+    }
+    if (tabsBelowContainer) {
+      tabsBelowContainer.classList.remove('hidden');
+    }
+    
+    // Get all tasks
+    let allTasks = [];
+    try {
+      if (canUseNewTaskSystem() && window.taskStore) {
+        allTasks = window.taskStore.getAllTasksChronological();
+      } else {
+        const queue = JSON.parse(localStorage.getItem('moat.queue') || '[]');
+        allTasks = queue.map(convertAnnotationToTask);
+      }
+    } catch (error) {
+      console.error('📋 Moat: Error loading tasks for filtering:', error);
+      allTasks = [];
+    }
+
+    // Filter tasks by current tab
+    const filteredTasks = allTasks.filter(task => task.status === currentTabFilter);
+    
+    console.log(`🔄 Moat: Filtered ${allTasks.length} tasks to ${filteredTasks.length} for status '${currentTabFilter}'`);
+    
+    // Render filtered tasks
+    renderFilteredTasks(filteredTasks);
+    
+    // Update badge counts
+    updateTabBadges(allTasks);
+  }
+
+  function renderFilteredTasks(tasks) {
+    if (!moat) return;
+    
+    const queueContainer = moat.querySelector('.float-moat-queue');
+    if (!queueContainer) return;
+
+    if (tasks.length === 0) {
+      // Show empty state for this specific filter
+      queueContainer.innerHTML = `
+        <div class="float-moat-empty">
+          <div class="float-empty-content">
+            <div class="float-empty-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="23 8 23 14 22 14 22 16 21 16 21 17 20 17 20 18 18 18 18 19 15 19 15 20 9 20 9 19 7 19 7 20 6 20 6 21 1 21 1 19 2 19 2 18 3 18 3 16 2 16 2 14 1 14 1 8 2 8 2 6 3 6 3 5 4 5 4 4 6 4 6 3 9 3 9 2 15 2 15 3 18 3 18 4 20 4 20 5 21 5 21 6 22 6 22 8 23 8"/>
+              </svg>
+            </div>
+            <p class="float-moat-hint">No ${currentTabFilter} tasks</p>
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    // Sort tasks (chronological order, oldest first)
+    tasks.sort((a, b) => (a.timestamp || a.createdAt || 0) - (b.timestamp || b.createdAt || 0));
+    
+    // Render task items
+    queueContainer.innerHTML = tasks.map(task => renderSimpleTaskItem(task)).join('');
+    addAllTasksListeners();
+  }
+
+  function updateTabBadges(allTasks) {
+    if (!moat) return;
+    
+    // Count tasks by status
+    const counts = {
+      'to do': 0,
+      'doing': 0,
+      'done': 0
+    };
+    
+    allTasks.forEach(task => {
+      if (counts.hasOwnProperty(task.status)) {
+        counts[task.status]++;
+      }
+    });
+    
+    // Update badge displays for both sets of tabs
+    Object.entries(counts).forEach(([status, count]) => {
+      const statusId = status.replace(' ', '');
+      
+      // Update header badges
+      const headerBadge = moat.querySelector(`#float-badge-${statusId}`);
+      if (headerBadge) {
+        if (count > 0) {
+          headerBadge.textContent = count;
+          headerBadge.style.display = 'inline-block';
+        } else {
+          headerBadge.style.display = 'none';
+        }
+      }
+      
+      // Update below-header badges
+      const belowBadge = moat.querySelector(`#float-badge-${statusId}-below`);
+      if (belowBadge) {
+        if (count > 0) {
+          belowBadge.textContent = count;
+          belowBadge.style.display = 'inline-block';
+        } else {
+          belowBadge.style.display = 'none';
+        }
+      }
+    });
+    
+    console.log('🔄 Moat: Updated tab badges:', counts);
   }
 
   // Theme management functions
@@ -1848,33 +2039,20 @@
     if (!moat) return;
     
     console.log(`🔄 Moat: Rendering ${tasks.length} tasks from new system`);
-    const queueContainer = moat.querySelector('.float-moat-queue');
     
     if (tasks.length === 0) {
       await renderEmptySidebar();
       return;
     }
     
-    // Sort tasks: pending first, then chronologically (oldest first, newest last - matches file order)
-    const sortedTasks = tasks.slice().sort((a, b) => {
-      // Completed tasks go to bottom
-      if (a.status === 'completed' && b.status !== 'completed') return 1;
-      if (b.status === 'completed' && a.status !== 'completed') return -1;
-      
-      // Sort chronologically (oldest first, newest last - matches JSON/markdown file order)
-      const aTime = new Date(a.createdAt || a.timestamp || 0).getTime();
-      const bTime = new Date(b.createdAt || b.timestamp || 0).getTime();
-      return aTime - bTime;
-    });
-    
-    // Render task items
-    queueContainer.innerHTML = sortedTasks.map(task => renderNewTaskItem(task)).join('');
-    addAllTasksListeners();
+    // Use tab filtering system instead of rendering all tasks
+    updateTabBadges(tasks);
+    applyTabFilter();
   }
 
   // Task 3.6: Render individual task item in new format
   function renderNewTaskItem(task) {
-    const statusClass = `float-status-${task.status}`;
+    const statusClass = `float-status-${task.status.replace(/\s+/g, '-')}`;
     const statusText = getStatusText(task.status);
     const timeAgo = formatTimeAgo(task.createdAt || task.timestamp);
     
@@ -2040,15 +2218,9 @@
       return;
     }
     
-    // Sort current tasks chronologically (oldest first, newest last - matches file order)
-    currentTasks.sort((a, b) => {
-      if (a.status === 'completed' && b.status !== 'completed') return 1;
-      if (b.status === 'completed' && a.status !== 'completed') return -1;
-      return (a.timestamp || 0) - (b.timestamp || 0);
-    });
-    
-    queueContainer.innerHTML = currentTasks.map(task => renderSimpleTaskItem(task)).join('');
-    addAllTasksListeners();
+    // Use tab filtering system instead of rendering all tasks
+    updateTabBadges(currentTasks);
+    applyTabFilter();
   }
 
   // Render empty sidebar
@@ -2057,8 +2229,18 @@
     
     console.log('Moat: Rendering empty sidebar');
     const queueContainer = moat.querySelector('.float-moat-queue');
+    const tabsHeaderContainer = moat.querySelector('.float-moat-tabs-header');
+    const tabsBelowContainer = moat.querySelector('.float-moat-tabs-below-header');
     const connectionState = connectionManager.getState();
     const isConnected = connectionState.status === 'connected';
+    
+    // Hide both sets of tabs when showing empty state
+    if (tabsHeaderContainer) {
+      tabsHeaderContainer.classList.add('hidden');
+    }
+    if (tabsBelowContainer) {
+      tabsBelowContainer.classList.add('hidden');
+    }
     
     // Different content based on connection status
     const emptyContent = isConnected ? {
@@ -2261,12 +2443,12 @@
   // Convert emoji to status text
   function getStatusFromEmoji(emoji) {
     switch (emoji) {
-      case '📋': return 'pending';
+      case '📋': return 'to do';
       case '📤': return 'sent';
-      case '⏳': return 'in progress';
-      case '✅': return 'completed';
+      case '⏳': return 'doing';
+      case '✅': return 'done';
       case '❌': return 'cancelled';
-      default: return 'pending';
+      default: return 'to do';
     }
   }
 
@@ -2339,8 +2521,7 @@
   
   // Render all tasks (current + markdown)
   async function renderAllTasks() {
-    const queueContainer = moat.querySelector('.float-moat-queue');
-    if (!queueContainer) return;
+    if (!moat) return;
     
     let allTasks = [];
     
@@ -2365,36 +2546,18 @@
       return;
     }
     
-    // Hide empty state
-    const emptyState = document.getElementById('moat-empty-state');
-    const connectContent = document.getElementById('moat-connect-content');
-    if (emptyState) emptyState.style.display = 'none';
-    if (connectContent) connectContent.style.display = 'none';
-    
-    // Sort tasks (completed last, then chronological)
-    allTasks.sort((a, b) => {
-      // Completed tasks go to the end
-      if (a.status === 'completed' && b.status !== 'completed') return 1;
-      if (b.status === 'completed' && a.status !== 'completed') return -1;
-      
-      // Chronologically (oldest first, newest last - matches JSON/markdown file order)
-      return (a.timestamp || 0) - (b.timestamp || 0);
-    });
-    
-    // Detect new tasks for animation (before rendering)
+    // Detect new tasks for animation
     detectAndAnimateNewTasks(allTasks);
     
-    // Render simple task list
-    queueContainer.innerHTML = allTasks.map(task => renderSimpleTaskItem(task)).join('');
-    
-    // Add event listeners for all tasks
-    addAllTasksListeners();
+    // Use tab filtering system instead of rendering all tasks
+    updateTabBadges(allTasks);
+    applyTabFilter();
   }
   
   // Render simple task item without emojis
   function renderSimpleTaskItem(task) {
-    const isCompleted = ['completed', 'resolved'].includes(task.status);
-    const statusClass = `float-status-${task.status}`;
+    const isCompleted = ['done', 'resolved'].includes(task.status);
+    const statusClass = `float-status-${task.status.replace(/\s+/g, '-')}`;
     const statusText = getStatusText(task.status);
     const timeAgo = formatTimeAgo(task.timestamp || task.createdAt);
     
@@ -2424,11 +2587,14 @@
   // Get status text without emojis
   function getStatusText(status) {
     switch (status) {
+      case 'to do':
       case 'pending':
       case 'in queue': return 'to do';
+      case 'doing':
       case 'in-progress':
       case 'sent':
-      case 'in progress': return 'in progress';
+      case 'in progress': return 'doing';
+      case 'done':
       case 'completed':
       case 'resolved': return 'done';
       default: 

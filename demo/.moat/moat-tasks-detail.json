@@ -1,32 +1,47 @@
 [
   {
-    "id": "baad475a-f55b-4747-b32e-ad4589a0bb03",
-    "title": "Colored Container",
-    "comment": "left align this content",
-    "selector": "#about > div.container > div.hero-content.float-highlight",
-    "boundingRect": {
-      "x": 176,
-      "y": 45,
-      "w": 1152,
-      "h": 496
-    },
-    "screenshotPath": "./screenshots/moat-1752056812156-31k644ru1.png",
-    "status": "completed",
-    "timestamp": 1752056812310
-  },
-  {
-    "id": "ab5cecd7-3f59-4729-a7a8-48e614ba39a1",
-    "title": "Colored Container",
-    "comment": "center this content",
-    "selector": "#about > div.container > div.hero-content.float-highlight",
+    "id": "f6512e39-b054-41d3-9f68-e68912a34383",
+    "title": "h2: Bridge the Gap Between Design ",
+    "comment": "make this red",
+    "selector": "div.container > div.hero-content > h2.float-highlight",
     "boundingRect": {
       "x": 176,
       "y": 198,
       "w": 1152,
-      "h": 496
+      "h": 62
     },
-    "screenshotPath": "./screenshots/moat-1752057016194-7p2jogszn.png",
-    "status": "completed",
-    "timestamp": 1752057016336
+    "screenshotPath": "./screenshots/moat-1752058725250-dfishom7y.png",
+    "status": "done",
+    "timestamp": 1752058725383
+  },
+  {
+    "id": "87620d74-3277-4816-a4c2-8c41d05b8c1a",
+    "title": "h2: Bridge the Gap Between Design ",
+    "comment": "Make this electric blue",
+    "selector": "div.container > div.hero-content > h2.float-highlight",
+    "boundingRect": {
+      "x": 176,
+      "y": 198,
+      "w": 1152,
+      "h": 62
+    },
+    "screenshotPath": "./screenshots/moat-1752059389624-f43xzxeyo.png",
+    "status": "done",
+    "timestamp": 1752059389746
+  },
+  {
+    "id": "5d168be0-b341-4434-8cb8-48b81fc4e682",
+    "title": "h2: Get Started with Drawbridge",
+    "comment": "Test",
+    "selector": "div.container > div.section-header:nth-child(1) > h2.float-highlight",
+    "boundingRect": {
+      "x": 176,
+      "y": 99,
+      "w": 1152,
+      "h": 77
+    },
+    "screenshotPath": "./screenshots/moat-1752061383629-qlykjsak6.png",
+    "status": "to do",
+    "timestamp": 1752061383759
   }
 ]

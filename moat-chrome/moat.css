@@ -659,6 +659,8 @@ body.float-comment-mode * {
   gap: 12px;
   display: flex;
   min-height: 0;
+  height: 152px; /* Fixed height for consistent UI */
+  max-height: 152px; /* Ensure it never exceeds this */
 }
 
 .float-moat.float-moat-bottom .float-moat-item {
@@ -697,11 +699,13 @@ body.float-comment-mode * {
   height: 100%;
 }
 
-/* Bottom position connect project - more compact */
+/* Bottom position connect project - fixed height */
 .float-moat.float-moat-bottom .float-moat-connect-project {
-  padding: 16px 24px;
-  min-height: 200px;
-  height: auto;
+  padding: 16px 16px 20px 16px; /* More bottom padding to prevent button cutoff */
+  height: 152px; /* Fixed height to match queue container */
+  box-sizing: border-box; /* Include padding in height calculation */
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  justify-content: flex-start; /* Align content to top instead of center */
 }
 
 .float-moat-connect-header h3 {
@@ -711,11 +715,24 @@ body.float-comment-mode * {
   color: var(--moat-text-primary);
 }
 
+/* Bottom position: smaller header and reduced margins */
+.float-moat.float-moat-bottom .float-moat-connect-header h3 {
+  margin: 0 0 6px 0; /* Reduced margin */
+  font-size: 16px; /* Smaller font */
+}
+
 .float-moat-connect-header p {
   margin: 0 0 20px 0;
   color: var(--moat-text-secondary);
   line-height: 1.5;
   font-size: 14px;
+}
+
+/* Bottom position: reduced margin and font size */
+.float-moat.float-moat-bottom .float-moat-connect-header p {
+  margin: 0 0 6px 0; /* Even smaller margin to fit in fixed height */
+  font-size: 12px; /* Smaller font */
+  line-height: 1.3; /* Tighter line height */
 }
 
 .float-moat-connect-header code {
@@ -734,6 +751,12 @@ body.float-comment-mode * {
   margin: 0 0 16px 0;
 }
 
+/* Bottom position: more compact features */
+.float-moat.float-moat-bottom .float-moat-connect-features {
+  padding: 6px; /* Even smaller padding */
+  margin: 0 0 4px 0; /* Reduced margin to fit in fixed height */
+}
+
 .float-moat-feature {
   display: flex;
   align-items: center;
@@ -743,9 +766,21 @@ body.float-comment-mode * {
   font-size: 14px;
 }
 
+/* Bottom position: more compact features */
+.float-moat.float-moat-bottom .float-moat-feature {
+  gap: 4px; /* Even smaller gap */
+  margin: 2px 0; /* Even smaller margin to fit in fixed height */
+  font-size: 12px; /* Smaller font */
+}
+
 .float-feature-check {
   font-size: 16px;
   flex-shrink: 0;
+}
+
+/* Bottom position: smaller check icons */
+.float-moat.float-moat-bottom .float-feature-check {
+  font-size: 14px; /* Smaller icon */
 }
 
 .float-moat-connect-note {
@@ -754,10 +789,21 @@ body.float-comment-mode * {
   margin: 0 0 20px 0;
 }
 
+/* Bottom position: more compact note */
+.float-moat.float-moat-bottom .float-moat-connect-note {
+  font-size: 11px; /* Smaller font */
+  margin: 0 0 4px 0; /* Even smaller margin to fit in fixed height */
+}
+
 .float-moat-connect-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+}
+
+/* Bottom position: more compact actions */
+.float-moat.float-moat-bottom .float-moat-connect-actions {
+  gap: 8px; /* Smaller gap */
 }
 
 .float-connect-cancel,
@@ -894,9 +940,14 @@ body.float-comment-mode * {
   font-size: 14px;
 }
 
-/* Bottom position loading - more compact */
+/* Bottom position loading - fixed height */
 .float-moat.float-moat-bottom .float-moat-loading {
-  padding: 20px;
+  padding: 12px 16px; /* Much more compact to match other states */
+  height: 152px; /* Fixed height to match queue container */
+  box-sizing: border-box; /* Include padding in height calculation */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .float-moat-empty {
@@ -910,10 +961,12 @@ body.float-comment-mode * {
   padding: 40px 20px;
 }
 
-/* Bottom position empty state - more compact */
+/* Bottom position empty state - fixed height */
 .float-moat.float-moat-bottom .float-moat-empty {
-  min-height: 120px;
-  padding: 20px;
+  height: 152px; /* Fixed height to match queue container */
+  padding: 24px 16px 24px 16px; /* More padding at top and bottom to prevent cutoff */
+  box-sizing: border-box; /* Include padding in height calculation */
+  justify-content: flex-start; /* Align content to top instead of center */
 }
 
 .float-empty-content {
@@ -924,6 +977,11 @@ body.float-comment-mode * {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+
+/* Bottom position: reduce spacing between elements */
+.float-moat.float-moat-bottom .float-empty-content {
+  gap: 6px; /* Further reduced to fit better in fixed height */
 }
 
 .float-empty-content p {
@@ -937,13 +995,29 @@ body.float-comment-mode * {
   transition: all 0.3s ease;
 }
 
+/* Bottom position: smaller icon and no margin */
+.float-moat.float-moat-bottom .float-empty-icon {
+  margin-bottom: 0; /* Remove margin */
+}
+
 .float-empty-icon svg {
   width: 32px;
   height: 32px;
 }
 
+/* Bottom position: smaller icon */
+.float-moat.float-moat-bottom .float-empty-icon svg {
+  width: 24px; /* Smaller icon */
+  height: 24px;
+}
+
 .float-moat-hint {
   margin: 8px 0 0 0;
+}
+
+/* Bottom position: remove margin from hint */
+.float-moat.float-moat-bottom .float-moat-hint {
+  margin: 0;
 }
 
 .float-empty-connect-btn {
@@ -962,10 +1036,178 @@ body.float-comment-mode * {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+/* Bottom position: remove margin from connect button */
+.float-moat.float-moat-bottom .float-empty-connect-btn {
+  margin-top: 0; /* Remove margin */
+}
+
 .float-empty-connect-btn:hover {
   background: #333333;
   border-color: #1F2937;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab System - Two versions for different positions */
+
+/* Tabs in header (for bottom-docked position) */
+.float-moat-tabs-header {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  margin: 0 12px;
+}
+
+/* Tabs below header (for right-docked position) */
+.float-moat-tabs-below-header {
+  padding: 12px 16px 8px 16px;
+  background: var(--moat-bg-primary);
+  border-bottom: 1px solid var(--moat-border);
+  display: none; /* Hidden by default */
+}
+
+.float-tab-group {
+  display: flex;
+  background: var(--moat-bg-tertiary);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 1px;
+}
+
+.float-tab-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: var(--moat-text-secondary);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.float-tab-btn:hover {
+  color: var(--moat-text-primary);
+  background: var(--moat-bg-primary);
+}
+
+.float-tab-btn.float-tab-active {
+  background: var(--moat-bg-primary);
+  color: var(--moat-text-primary);
+  box-shadow: 0 1px 3px var(--moat-shadow);
+  font-weight: 600;
+}
+
+.float-tab-badge {
+  background: var(--moat-accent);
+  color: white;
+  border-radius: 8px;
+  padding: 1px 4px;
+  font-size: 9px;
+  font-weight: 600;
+  min-width: 14px;
+  text-align: center;
+  line-height: 10px;
+  display: none; /* Hidden by default, shown only when count > 0 */
+}
+
+.float-tab-btn.float-tab-active .float-tab-badge {
+  background: var(--moat-accent);
+}
+
+.float-tab-btn[data-status="to do"] .float-tab-badge {
+  background: #F59E0B; /* Orange for to-do */
+}
+
+.float-tab-btn[data-status="doing"] .float-tab-badge {
+  background: #3B82F6; /* Blue for doing */
+}
+
+.float-tab-btn[data-status="done"] .float-tab-badge {
+  background: #10B981; /* Green for done */
+}
+
+/* Hide tabs when empty state is shown */
+.float-moat-queue .float-moat-empty ~ .float-moat-tabs-header,
+.float-moat-queue .float-moat-connect-project ~ .float-moat-tabs-header,
+.float-moat-queue:has(.float-moat-empty) ~ .float-moat-tabs-header,
+.float-moat-queue:has(.float-moat-connect-project) ~ .float-moat-tabs-header,
+.float-moat-queue .float-moat-empty ~ .float-moat-tabs-below-header,
+.float-moat-queue .float-moat-connect-project ~ .float-moat-tabs-below-header,
+.float-moat-queue:has(.float-moat-empty) ~ .float-moat-tabs-below-header,
+.float-moat-queue:has(.float-moat-connect-project) ~ .float-moat-tabs-below-header {
+  display: none;
+}
+
+/* Hide tabs when showing project connection or empty states */
+.float-moat-tabs-header,
+.float-moat-tabs-below-header {
+  transition: opacity 0.2s ease;
+}
+
+.float-moat-tabs-header.hidden,
+.float-moat-tabs-below-header.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Position-specific visibility rules */
+
+/* Right-docked position: show tabs below header, hide tabs in header */
+.float-moat.float-moat-right .float-moat-tabs-header,
+.float-moat:not(.float-moat-bottom) .float-moat-tabs-header {
+  display: none !important;
+}
+
+.float-moat.float-moat-right .float-moat-tabs-below-header,
+.float-moat:not(.float-moat-bottom) .float-moat-tabs-below-header {
+  display: block;
+}
+
+/* Right-docked position: make tabs fill full width */
+.float-moat.float-moat-right .float-tab-group,
+.float-moat:not(.float-moat-bottom) .float-tab-group {
+  width: 100%;
+}
+
+.float-moat.float-moat-right .float-tab-btn,
+.float-moat:not(.float-moat-bottom) .float-tab-btn {
+  flex: 1; /* Make each tab expand to fill available space */
+}
+
+/* Bottom-docked position: show tabs in header, hide tabs below header */
+.float-moat.float-moat-bottom .float-moat-tabs-header {
+  display: flex;
+  margin: 0 16px; /* Slightly more margin for bottom position */
+}
+
+.float-moat.float-moat-bottom .float-moat-tabs-below-header {
+  display: none !important;
+}
+
+.float-moat.float-moat-bottom .float-tab-group {
+  border-radius: 8px; /* Slightly larger radius for bottom position */
+  padding: 3px; /* Slightly more padding for bottom position */
+}
+
+.float-moat.float-moat-bottom .float-tab-btn {
+  padding: 8px 12px; /* Slightly larger padding for bottom position */
+  font-size: 12px; /* Slightly larger font for bottom position */
+  gap: 6px; /* More gap for bottom position */
+}
+
+.float-moat.float-moat-bottom .float-tab-badge {
+  font-size: 10px; /* Slightly larger badge text for bottom position */
+  padding: 2px 5px; /* More padding for bottom position */
+  min-width: 16px; /* Larger min-width for bottom position */
+  line-height: 12px; /* Better line height for bottom position */
 }
 
 /* Moat Item */
@@ -1099,6 +1341,24 @@ body.float-comment-mode * {
 }
 
 /* Task 3.6: Enhanced status indicators */
+.float-moat-item.float-status-to-do {
+  border-left: 4px solid #F59E0B; /* Orange for to-do */
+}
+
+.float-moat-item.float-status-doing {
+  border-left: 4px solid #3B82F6; /* Blue for doing */
+}
+
+.float-moat-item.float-status-done {
+  border-left: 4px solid #10B981; /* Green for done */
+  opacity: 0.7;
+}
+
+.float-moat-item.float-status-failed {
+  border-left: 4px solid #EF4444; /* Red for failed */
+}
+
+/* Backward compatibility for old status names */
 .float-moat-item.float-status-pending {
   border-left: 4px solid #F59E0B;
 }
@@ -1110,10 +1370,6 @@ body.float-comment-mode * {
 .float-moat-item.float-status-completed {
   border-left: 4px solid #10B981;
   opacity: 0.7;
-}
-
-.float-moat-item.float-status-failed {
-  border-left: 4px solid #EF4444;
 }
 
 .float-moat-completed {

@@ -1,239 +1,140 @@
-# 🎯 Moat - Enhanced UI Feedback with ai-dev-tasks Integration
+🧭 Drawbridge - Visual comments for Cursor
+==========================================
 
-A Chrome extension that transforms UI feedback into **structured, AI-processable task lists** with human verification checkpoints inspired by ai-dev-tasks methodology.
+Welcome to Drawbridge! This plugin + ruleset connects your local development projects Cursor. Make comments like in Figma and send them to Cursor. to cextension, allowing you to turn visual feedback directly into production-ready code.
 
-## ✨ Enhanced Features
+🚀 1. Setup
+-----------
 
-### 🧠 ai-dev-tasks Integration *(NEW)*
-- **Smart Priority Classification**: Auto-detects High (🔥), Medium (⚡), Low (💡) priority
-- **Task Type Detection**: Categorizes as Styling, Layout, Content, Enhancement
-- **Implementation Planning**: Suggests approach and files to modify
-- **Time Estimation**: Predicts 2-20 minute implementation time
-- **Dependency Detection**: Identifies related tasks affecting same elements
-- **Human Verification**: Structured workflow with approval checkpoints
+1.  Clone the Drawbridge repo into your project
 
-### 📝 Enhanced Markdown Task Logging
-- **Rich task format** with metadata and planning sections
-- **Progress tracking** with comprehensive status indicators
-- **Implementation guidance** with suggested approaches
-- **Git-friendly format** for team collaboration
-- **Structured workflow** compatible with Cursor @commands
+2.  Go to chrome extensions, switch to dev mode, and unpack the extension
 
-### 🔄 Cursor Integration
-- **Machine-readable stream** in `.moat/.moat-stream.jsonl`
-- **Pre-formatted prompts** for AI processing
-- **File path suggestions** for component targeting
-- **Automatic .gitignore** setup
+3.  Activate the plugin
 
-### 🎯 Visual Annotation
-- **Click any element** to annotate
-- **Screenshot capture** with html2canvas
-- **Smart CSS selectors** for accurate targeting
-- **Sidebar management** with drag & drop
+4.  Pin it for easy access
 
-## 🚀 Quick Start
 
-### 1. Install Extension
-1. Download `moat-chrome.zip`
-2. Extract and load in Chrome (`chrome://extensions/`)
-3. Enable "Developer mode" and "Load unpacked"
+💬 2. Make Comments
+-------------------
 
-### 2. Demo Setup
-```bash
-# Clone and start demo
-git clone <repo>
-cd moat
-npm run demo
-```
+1.  Press `c` in your browser, to turn your cursor into a cross hair
 
-### 3. Connect to Project
-1. Open http://localhost:8080
-2. Press `Cmd+Shift+P` to connect to project
-3. Select your project folder
-4. Moat creates `.moat/` directory with:
-   - `moat-tasks.md` (human-readable)
-   - `.moat-stream.jsonl` (Cursor-ready)
-   - `config.json` (settings)
+2.  Hover over your page to see selectable DOM elements you can leave comments on
 
-### 4. Create Annotations
-1. Press `f` to enter comment mode
-2. Click any element to annotate
-3. Type your feedback and press Enter
-4. Check both markdown and JSONL files
+3.  Click an element to leave a comment, type your comment, hit `Submit` or press `Enter`
 
-## 📋 Keyboard Shortcuts
+4.  Tasks will be shown in the `Moat` area on the bottom of the page
 
-| Key | Action |
-|-----|--------|
-| `f` | Enter comment mode |
-| `Esc` | Exit comment mode |
-| `Cmd+Shift+F` | Toggle sidebar |
-| `Cmd+Shift+P` | Connect project |
-| `Cmd+Shift+E` | Export annotations |
 
-## 📁 Output Files
+🤖 3. Make Cursor do it
+-----------------------
 
-### Dual-File Task System *(NEW)*
+1.  **Run Drawbridge**: In your editor, simply run the command:
 
-Moat now generates **two complementary files** for optimal human-AI collaboration:
+    ```
+    bridge
+    ```
 
-#### 1. **`moat-tasks.md`** - Human-Readable Summary
-```markdown
-# Moat Tasks - Local Development
+2.  **Drawbridge** will analyze your tasks, understand dependencies, and begin making edits.
 
-**Total**: 5 | **Pending**: 4 | **Completed**: 1
+3.  **Approve**: By default, drawbridge processes tasks in **Step** mode - one at a time. You may be asked for approval:
 
-## Tasks
+    1.  To begin the task
 
-1. ⚡ **Glass Buttons** - "update these to glass buttons" *(5 min)* - ✅ completed
-2. ⚡ **Features Background** - "make this background blue" *(5 min)* - 📋 pending  
-3. 📋 **Hero Section** - "make this red" *(5 min)* - 📋 pending
-4. 📋 **Hero Title** - "Make this blue" *(2 min)* - 📋 pending
+    2.  To finish the task (updates the status in moat-tasks.md and moat-tasks-detail.json)
 
----
-*Use @drawbridge-workflow.mdc for implementation*
-```
+4.  **Wait:** You can watch your tasks get updated in the **moat-tasks.md**
 
-#### 2. **`moat-tasks-detail.md`** - AI-Processable Format
-```markdown
-## ⚡ 📋 Task 001: Glass Buttons
 
-**Priority**: Medium | **Type**: Styling | **Time**: 5 minutes
+👩🏼‍🎨 4. Review your changes
+------------------------------
 
-### Request
-"update these to glass buttons"
+1.  Go back to your browser to see your changes
 
-### Technical Details
-- **Element**: `div.hero-buttons`
-- **Location**: styles.css
-- **Approach**: Add backdrop-filter and rgba backgrounds
+    1.  Should be automatic if you're using react / next.js
 
-### Implementation Plan
-- Apply glass effect with semi-transparent backgrounds
-- Add backdrop-filter: blur(10px) for modern glass look
-- Update hover states with enhanced transparency
+    2.  Refresh the page if you're using html / css / js
 
-### Status: ✅ completed
-**Applied**: Updated buttons with glass effect styling
-**Files Modified**: start-here/styles.css
-```
+2.  Continue making edits to refine your work!
 
-### Cursor Stream (`.moat-stream.jsonl`)
-```json
-{
-  "timestamp": 1718291234567,
-  "annotation": { /* full annotation data */ },
-  "formatting": {
-    "cursorPrompt": "Fix this UI issue:\nElement: Button: Get Started\nIssue: Change to green background\nSelector: button.btn-primary",
-    "targetFile": "src/pages/index.tsx"
-  }
-}
-```
 
-## 🔧 Configuration
+📁 Core Files
+-------------
 
-Moat auto-creates `config.json`:
-```json
-{
-  "version": "1.0.0",
-  "projectName": "my-project",
-  "streaming": {
-    "enabled": true,
-    "format": "jsonl",
-    "cursorIntegration": true
-  },
-  "ui": {
-    "autoShowMoat": true,
-    "confirmBeforeSend": false
-  }
-}
-```
+-   **`drawbridge-workflow.mdc`**: The main ruleset for the AI. This is where Drawbridge's "brain" is defined.
 
-## 📊 Status Flow
+-   **`moat-tasks.md`**: A human-readable list of your pending tasks.
 
-```
-📋 in queue → 📤 sent → ⏳ in progress → ✅ resolved
-```
+-   **`moat-tasks-detail.json`**: The raw, detailed data for each task, including selectors and screenshot paths.
 
-## 🎨 Enhanced Cursor Integration
+-   **`/screenshots`**: Visual context for each annotation, used by the AI to understand your intent.
 
-### ai-dev-tasks Workflow Commands *(NEW)*
-```bash
-# Primary command - Process moat annotations/tasks
-"run moat" - Auto-detects and processes annotations with smart workflow
 
-# Generate structured tasks from raw annotations
-Use @generate-moat-tasks.mdc to analyze .moat/.moat-stream.jsonl
+🎯 Example Workflow
+-------------------
 
-# Process tasks with human verification (recommended)
-Use @drawbridge-workflow.mdc to implement tasks in .moat/moat-tasks.md
+1.  **Annotate**:
 
-# Legacy auto-processing (no verification)
-Use @moat-auto-fix.mdc for immediate implementation
-```
+    -   Click a button → "make this green".
 
-### Structured Processing Workflow
-1. **Generate Tasks** - Transform annotations into structured task plan
-2. **Review Plan** - Human approval of task grouping and priorities
-3. **Incremental Processing** - One task at a time with verification
-4. **Human Approval** - Get "yes" confirmation before each change
-5. **Status Updates** - Track progress in markdown file
+    -   Click the same button → "add more padding".
 
-### Legacy Automated Processing
-When Cursor processes Moat annotations automatically:
+2.  **Process**: In your editor, run `bridge`.
 
-1. **Read** `.moat/.moat-stream.jsonl`
-2. **Parse** `formatting.cursorPrompt`
-3. **Apply** fixes to suggested files
-4. **Update** status via Moat rules
+3.  **AI Analyzes**:
 
-## 🏗 Architecture
+    ```
+    🤖 Dependency detected. Processing "make this green" before "add more padding".
 
-```
-Browser Extension → File System API → Project Files
-    ↓                     ↓              ↓
-  Annotations     →   .moat/        →   moat-tasks.md
-                                   →   .moat-stream.jsonl
-                                   →   config.json
-```
+    ```
 
-## 🔄 Workflow
+4.  **Review**: The AI reviews your **moat-tasks-detail.json** for details of your comment.
 
-1. **Annotate** - Press `f`, click element, describe issue
-2. **Log** - Moat writes to markdown + JSONL
-3. **Process** - Cursor reads stream and applies fixes
-4. **Track** - Status updates in markdown file
-5. **Collaborate** - Share markdown with team
+5.  **Approve**: You reply `yes`.
 
-## 📝 Benefits
+6.  **Repeat**: The AI proceeds to the next dependent task.
 
-- **Human + Machine Readable** - Markdown for humans, JSONL for AI
-- **Team Collaboration** - Share task lists across team
-- **Version Control** - Git-friendly format
-- **Persistent** - Survives browser restarts
-- **Automated** - Zero manual work required
 
-## 🛠 Development
+🛠️ Advanced Usage & Processing Modes
+-------------------------------------
 
-```bash
-# Start demo server
-npm run demo
+You can control how Drawbridge processes tasks by specifying a mode.
 
-# Watch for changes
-npm run watch
-```
+-   **`step bridge`** (Default: Safe & Incremental)
 
-## 📦 File Structure
+    -   Processes tasks one by one, asking for approval at each step. Perfect for complex changes.
 
-```
-moat/
-├── moat-chrome/          # Chrome extension
-│   ├── content_script.js  # Main annotation logic
-│   ├── moat.js           # Sidebar component
-│   ├── popup.html/js     # Extension popup
-│   └── manifest.json     # Extension config
-├── start-here/           # Interactive demo & test environment
-└── docs/                 # Documentation
-```
+-   **`batch bridge`** (Efficient & Grouped)
 
-Moat transforms UI feedback into structured, actionable tasks that both humans and AI can understand! 🚀
+    -   Intelligently groups related tasks (e.g., all button styles) and processes them together, asking for a single approval per batch.
+
+-   **`yolo bridge`** (Autonomous & Fast)
+
+    -   **Use with caution.** Processes *all* pending tasks in the correct dependency order *without stopping for approvals*. A full summary is provided at the end.
+
+
+🎨 Best Practices for Annotations
+---------------------------------
+
+-   **Be Specific**: "change font to sans-serif" is better than "change font".
+
+-   **Chain Your Thoughts**: For multi-step changes, create separate but related annotations. The AI is smart enough to understand the order.
+
+    -   *Good*: 1. "make button blue" → 2. "add shadow to the blue button"
+
+    -   *Bad*: 1. "make button blue and add a shadow"
+
+-   **Focus on One Thing**: One annotation should represent one distinct change.
+
+
+🐛 Troubleshooting
+------------------
+
+-   **"Dependency Error"**: This means tasks might be out of order. Check the AI's analysis to see the required sequence.
+
+-   **Task `failed` Status**: If a task fails (especially in `yolo` mode), check `moat-tasks.md`. You can reset its status to `pending` in the `.json` file to retry.
+
+-   **Connection Issues**: If Drawbridge can't find tasks, press `Cmd/Ctrl+Shift+P` in your browser and re-select your project directory to reconnect.
+
+**Happy building with Drawbridge!** 🎯

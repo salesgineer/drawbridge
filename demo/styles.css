@@ -153,16 +153,13 @@ body {
   text-align: center;
 }
 
-/* Drawbridge Task 1: Made hero title navy blue for sophisticated branding */
+/* Drawbridge Task 3: Made hero title electric blue as requested */
 .hero-content h2 {
   font-size: 56px;
   font-weight: 700;
   margin-bottom: 24px;
   line-height: 1.1;
-  background: linear-gradient(135deg, #1e3a8a, #1e293b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0EA5E9;
 }
 
 .hero-subtitle {
