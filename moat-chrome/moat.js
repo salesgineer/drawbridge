@@ -879,20 +879,20 @@
     switch (category) {
       case 'disconnected':
         // Use exclamation-triangle-solid.svg for disconnected (red)
-        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #dc2626;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #dc2626;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
       case 'connected':
         // Use check-box-solid.svg for connected (green)
-        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #059669;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #059669;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
       case 'error':
         // Use exclamation-triangle-solid.svg for errors (red)
-        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #dc2626;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #dc2626;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
       case 'warning':
         // Use exclamation-triangle-solid.svg for warnings (orange)
-        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #d97706;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #d97706;"><path d="m22,20v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-1h-2v1h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h-1v2h1v1h20v-1h1v-2h-1Zm-12-9h4v3h-1v3h-2v-3h-1v-3Zm1,7h2v2h-2v-2Z"/></svg>';
       case 'info':
       default:
         // Use check-box-solid.svg for info and other notifications (blue)
-        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #2563eb;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
+        return '<svg class="float-header-notification-icon" viewBox="0 0 24 24" style="fill: #2563eb;"><path d="m22,2v-1H2v1h-1v20h1v1h20v-1h1V2h-1ZM5,11h1v-1h1v-1h1v1h1v1h1v1h2v-1h1v-1h1v-1h1v-1h1v1h1v1h-1v1h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1Z"/></svg>';
     }
   }
 
@@ -2575,7 +2575,7 @@
             ''
           }
         </div>
-        <div class="float-moat-content">${task.content}</div>
+        <div class="float-moat-content">${task.content || task.comment || 'No content available'}</div>
         <div class="float-moat-meta">
           <span class="float-moat-target" title="${task.title}">${task.title}</span>
           ${task.selector ? `<span class="float-moat-selector">${task.selector}</span>` : ''}
@@ -2609,6 +2609,7 @@
       id: annotation.id,
       title: annotation.elementLabel || annotation.target || 'Unknown element',
       content: annotation.content,
+      comment: annotation.content, // Add this line to fix "undefined" issue
       status: annotation.status,
       priority: 'Medium', // Default for current annotations
       type: 'Styling', // Default type

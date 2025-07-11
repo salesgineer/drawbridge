@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Moat Runner - Automated task processing workflow
-echo "🚀 Starting Moat..."
+# Moat Runner - Automated task processing workflow (for demo)
+echo "🚀 Starting Moat (Demo Mode)..."
 
 # Check if we're in the right directory
-if [ ! -d "start-here/.moat" ]; then
-    echo "❌ Error: Not in Moat project directory or .moat folder not found"
+if [ ! -d "demo/.moat" ]; then
+    echo "❌ Error: Not in Moat demo project directory or .moat folder not found"
     echo "   Please run this script from the project root"
     exit 1
 fi
@@ -20,7 +20,7 @@ if check_process "python.*http.server 8000"; then
     echo "✅ HTTP Server: Already running on http://localhost:8000"
 else
     echo "🔄 Starting HTTP server..."
-    cd start-here
+    cd demo
     python3 -m http.server 8000 > /dev/null 2>&1 &
     cd ..
     sleep 2
@@ -37,7 +37,7 @@ if check_process "moat-watcher.js"; then
     echo "✅ Moat Watcher: Already running"
 else
     echo "🔄 Starting Moat watcher..."
-    cd start-here
+    cd demo
     node ../moat-watcher.js > /dev/null 2>&1 &
     cd ..
     sleep 2
@@ -50,9 +50,9 @@ else
 fi
 
 # Check for pending tasks
-if [ -f "start-here/.moat/moat-tasks.md" ]; then
-    PENDING_COUNT=$(grep -c "^[0-9]\+\. \[ \]" start-here/.moat/moat-tasks.md 2>/dev/null || echo "0")
-    TOTAL_COUNT=$(grep -c "^[0-9]\+\." start-here/.moat/moat-tasks.md 2>/dev/null || echo "0")
+if [ -f "demo/.moat/moat-tasks.md" ]; then
+    PENDING_COUNT=$(grep -c "^[0-9]\+\. \[ \]" demo/.moat/moat-tasks.md 2>/dev/null || echo "0")
+    TOTAL_COUNT=$(grep -c "^[0-9]\+\." demo/.moat/moat-tasks.md 2>/dev/null || echo "0")
     
     echo ""
     echo "📋 Task Status:"
@@ -71,7 +71,7 @@ else
 fi
 
 echo ""
-echo "🧭 Moat is ready!"
+echo "🧭 Moat is ready! (Demo Mode)"
 echo "   🌐 Demo: http://localhost:8000"
 echo "   🔄 Watcher: Active"
 echo "   📱 Extension: Ready for annotations"

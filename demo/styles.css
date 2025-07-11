@@ -154,12 +154,21 @@ body {
 }
 
 /* Drawbridge Task 3: Made hero title electric blue as requested */
+/* Drawbridge Task: Changed hero title to red as requested */
+/* Drawbridge Task: Changed hero title to navy as requested */
+/* Drawbridge Task 9: Added animated electric blue gradient background */
 .hero-content h2 {
   font-size: 56px;
   font-weight: 700;
   margin-bottom: 24px;
   line-height: 1.1;
-  color: #0EA5E9;
+  color: white;
+  background: linear-gradient(270deg, #0ea5e9, #3b82f6, #6366f1, #8b5cf6);
+  background-size: 800% 800%;
+  animation: electricGradient 4s ease-in-out infinite;
+  padding: 16px 32px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
 }
 
 .hero-subtitle {
@@ -169,6 +178,7 @@ body {
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
+  text-align: center;
 }
 
 .hero-features {
@@ -858,6 +868,19 @@ button:focus,
   }
   50% {
     box-shadow: 0 0 0 10px rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* Drawbridge Task 9: Electric gradient animation for hero h2 */
+@keyframes electricGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
