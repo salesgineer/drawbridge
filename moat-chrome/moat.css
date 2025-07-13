@@ -138,6 +138,8 @@ body.float-comment-mode * {
   z-index: 10;
   min-height: 40px; /* Ensure consistent height: 8px + 24px + 8px */
   box-sizing: border-box;
+  /* Remove from header layout flow while keeping absolute positioning */
+  pointer-events: auto; /* Keep notifications clickable */
 }
 
 .float-notification-container {
