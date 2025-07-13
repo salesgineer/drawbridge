@@ -6,6 +6,7 @@ globs:
   - "**/moat-tasks-detail.json"
 alwaysApply: true
 ---
+
 Drawbridge Workflow: Complete Rules
 ===================================
 
@@ -188,19 +189,16 @@ This is the default, safe mode. It is ideal for complex tasks, applying changes 
 
 1.  **Check Dependencies**: Ensure any dependent tasks are processed in correct order. Skip tasks that depend on incomplete prerequisites.
 
-2.  **MANDATORY: Update Status to `doing`**: Before any implementation, you MUST update the task status from `to do` to `doing` in the JSON file. This step is NON-NEGOTIABLE and tracks active processing.
-
-3.  **Announce Task**: Clearly state the task being processed, including any dependency relationships:
+2.  **Announce Task**: Clearly state the task being processed, including any dependency relationships:
     ```
     🎯 Processing Task 3: "Move that blue button"
-    ⚠️  Status: Updated to 'doing'
     ⚙️  Dependency: Requires Task 1 completion (blue button styling)
     ✅ Prerequisite satisfied - proceeding with implementation
     ```
 
-4.  **Implement Change**: Apply the requested UI modification.
+3.  **Implement Change**: Apply the requested UI modification.
 
-5.  **Confirm and Await Approval**: Present the change for review. Upon approval, update the status to `done`. If rejected, revert status to `to do` and await a new prompt.
+4.  **Confirm and Await Approval**: Present the change for review. Upon approval, update the status to `done`. If rejected, revert status to `to do` and await a new prompt.
 
 ### Mode 2: Batch Processing
 
@@ -268,11 +266,9 @@ Tasks 9-10: Both layout changes in sidebar → Group: "Sidebar Layout"
     Processing Chain 1 first, then Chain 2.
     ```
 
-4.  **MANDATORY: Update Status to `doing`**: For each task in the batch, you MUST update the status from `to do` to `doing` in the JSON file BEFORE implementing changes.
+4.  **Process by Dependency Order**: Execute dependency chains in sequence, but process independent tasks within each chain together.
 
-5.  **Process by Dependency Order**: Execute dependency chains in sequence, but process independent tasks within each chain together.
-
-6.  **Confirm Group and Await Approval**: Present changes for each dependency chain. Upon approval, update all tasks in the chain to `done`.
+5.  **Confirm Group and Await Approval**: Present changes for each dependency chain. Upon approval, update all tasks in the chain to `done`.
 
 ### Mode 3: YOLO (All-In) Processing
 
@@ -291,9 +287,9 @@ The fastest and most autonomous mode. It processes all "to do" tasks sequentiall
 
 3.  **Process All Tasks Loop**: Iterate through every "to do" task in dependency order. For each task:
 
-    -   **MANDATORY FIRST STEP: Update status to `doing`** - This MUST be done before any implementation work begins. Update the JSON file immediately.
+    -   Update status to `doing`.
 
-    -   Announce the task: `- Implementing: "[User's annotation content]" (Status: doing)`
+    -   Announce the task: `- Implementing: "[User's annotation content]"`
 
     -   Apply the change.
 
@@ -317,30 +313,6 @@ Status file updates are a core function and must be included with every task com
 -   `**/moat-tasks-detail.json`: Update the task `status` through its lifecycle with proper validation.
 
 **User Expectation**: You will see edit confirmations for status files - this is normal. Accept these updates as they track your task progress.
-
-### ⚠️ CRITICAL ENFORCEMENT: Status Transition to 'doing'
-
-**THIS STEP IS FREQUENTLY SKIPPED - DO NOT SKIP IT:**
-
-Before implementing ANY task change, you MUST update the task status from `to do` to `doing` in the JSON file. This is not optional.
-
-**Required Process:**
-1. Find the task in `moat-tasks-detail.json`
-2. Change `"status": "to do"` to `"status": "doing"`
-3. Save the file
-4. THEN proceed with implementation
-
-**Validation Check:**
-- If you start implementing before updating status to `doing`, you are violating the workflow
-- Always announce status updates in your task processing messages
-- The `doing` status indicates active work in progress
-
-**Example:**
-```
-🎯 Processing Task 3: "Make button blue"
-⚠️  Status: UPDATED to 'doing' ✓
-→ Now implementing the change...
-```
 
 ### Status Transition Validation
 
@@ -586,5 +558,3 @@ Error Handling and Quality Assurance
     Suggestion: The element may be dynamically rendered. Could you provide a more specific selector or the component file name?
 
     ```
-
-**Note**: This is a fallback template used for the demo only. The full template with advanced features like dependency detection, screenshot validation, and comprehensive workflow logic should be loaded from the extension files. The source of truth is in the /rules-templates/drawbridge-workflow.mdc if you want to edit.
