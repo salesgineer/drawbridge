@@ -1306,6 +1306,17 @@ body.float-comment-mode * {
   color: var(--moat-error);
 }
 
+.float-remove-icon {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+.float-moat-remove:hover .float-remove-icon {
+  fill: var(--moat-error);
+}
+
 /* Row 2: User comment (lighter weight, closer to black) */
 .float-moat-content {
   font-size: 14px;
