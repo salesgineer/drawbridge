@@ -1,30 +1,52 @@
-// Drawbridge Demo Tutorial Script
-// Tracks progress through three essential exercises
+// Drawbridge Tutorial Carousel Script
+// Simplified step-by-step tutorial with carousel navigation
 
 class DrawbridgeTutorial {
   constructor() {
-    this.exercises = {
-      1: { completed: false, comments: 0 },
-      2: { completed: false, comments: 0 },
-      3: { completed: false, comments: 0 }
+    this.currentStep = 1;
+    this.totalSteps = 3;
+    this.steps = {
+      1: { completed: false, comments: 0, required: 1 },
+      2: { completed: false, comments: 0, required: 3 },
+      3: { completed: false, comments: 0, required: 1 }
     };
     
     this.totalComments = 0;
     this.startTime = Date.now();
-    this.currentExercise = 1;
     
     this.init();
   }
   
   init() {
+    this.setupCarousel();
     this.setupEventListeners();
     this.updateProgress();
     this.simulatePluginDetection();
     this.startTimeTracking();
-    this.checkForExistingProgress();
+  }
+  
+  setupCarousel() {
+    // Initialize carousel
+    this.track = document.getElementById('carousel-track');
+    this.prevBtn = document.getElementById('prev-btn');
+    this.nextBtn = document.getElementById('next-btn');
+    this.stepDots = document.querySelectorAll('.step-dot');
+    
+    // Set initial state
+    this.updateCarousel();
+    this.updateNavigation();
   }
   
   setupEventListeners() {
+    // Navigation buttons
+    this.prevBtn.addEventListener('click', () => this.previousStep());
+    this.nextBtn.addEventListener('click', () => this.nextStep());
+    
+    // Step dots
+    this.stepDots.forEach((dot, index) => {
+      dot.addEventListener('click', () => this.goToStep(index + 1));
+    });
+    
     // Keyboard shortcut demonstration
     document.addEventListener('keydown', (e) => {
       if (e.key === 'c' || e.key === 'C') {
@@ -34,198 +56,222 @@ class DrawbridgeTutorial {
     
     // Exercise target click handlers
     document.getElementById('target-1').addEventListener('click', () => {
-      this.handleExerciseInteraction(1);
+      this.handleStepInteraction(1);
     });
     
     document.getElementById('target-2').addEventListener('click', () => {
-      this.handleExerciseInteraction(2);
+      this.handleStepInteraction(2);
     });
     
     document.getElementById('target-3').addEventListener('click', () => {
-      this.handleExerciseInteraction(3);
+      this.handleStepInteraction(3);
     });
     
-    // Demo button interactions
-    document.querySelector('.demo-button').addEventListener('click', () => {
-      this.showMessage('Great! You clicked the demo button. Now try pressing C and clicking on this button to comment on it.');
-    });
-    
-    // Simulate real plugin interactions
-    this.simulatePluginBehavior();
+    // Demo button interaction
+    const demoButton = document.querySelector('.demo-button');
+    if (demoButton) {
+      demoButton.addEventListener('click', () => {
+        // Just visual feedback, no notification
+      });
+    }
   }
   
   demonstrateCommentMode() {
     // Simulate entering comment mode
     document.body.style.cursor = 'crosshair';
-    this.showMessage('Comment mode activated! Click on any element to annotate it.');
     
-    // Add visual feedback
-    document.querySelectorAll('.exercise-target').forEach(target => {
-      target.style.borderColor = '#3b82f6';
-      target.style.borderStyle = 'solid';
-      target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.2)';
-    });
+    // Add visual feedback to current step's demo area
+    const currentDemoArea = document.querySelector(`#target-${this.currentStep}`);
+    if (currentDemoArea) {
+      currentDemoArea.classList.add('comment-mode');
+    }
     
     // Reset after 3 seconds
     setTimeout(() => {
       document.body.style.cursor = 'default';
-      document.querySelectorAll('.exercise-target').forEach(target => {
-        target.style.borderStyle = 'dashed';
-        target.style.borderColor = '#e5e7eb';
-        target.style.boxShadow = 'none';
+      document.querySelectorAll('.demo-area').forEach(area => {
+        area.classList.remove('comment-mode');
       });
     }, 3000);
   }
   
-  handleExerciseInteraction(exerciseNum) {
-    if (!this.exercises[exerciseNum].completed) {
-      this.exercises[exerciseNum].comments++;
-      this.totalComments++;
-      
-      // Show appropriate feedback based on exercise
-      switch (exerciseNum) {
-        case 1:
-          this.handleExercise1();
-          break;
-        case 2:
-          this.handleExercise2();
-          break;
-        case 3:
-          this.handleExercise3();
-          break;
+  handleStepInteraction(stepNum) {
+    if (stepNum !== this.currentStep) return;
+    
+    this.steps[stepNum].comments++;
+    this.totalComments++;
+    
+    // Check if step requirements are met
+    if (this.steps[stepNum].comments >= this.steps[stepNum].required) {
+      this.completeStep(stepNum);
+    }
+    
+    this.updateProgress();
+    this.updateStepStatus(stepNum);
+  }
+  
+  completeStep(stepNum) {
+    if (this.steps[stepNum].completed) return;
+    
+    this.steps[stepNum].completed = true;
+    
+    // Update UI
+    const slide = document.querySelector(`[data-step="${stepNum}"] .slide-content`);
+    const status = document.getElementById(`status-${stepNum}`);
+    const stepDot = document.querySelector(`[data-step="${stepNum}"]`);
+    
+    if (slide) slide.classList.add('completed');
+    if (status) status.innerHTML = '<span class="status-text">Completed!</span>';
+    if (stepDot) stepDot.classList.add('completed');
+    
+    // Add completion animation
+    this.showCompletionAnimation(stepNum);
+    
+    // Auto-advance to next step if not the last one
+    if (stepNum < this.totalSteps) {
+      setTimeout(() => {
+        this.nextStep();
+      }, 1500);
+    } else {
+      // All steps completed
+      this.showFinalCompletion();
+    }
+    
+    this.updateNavigation();
+  }
+  
+  updateStepStatus(stepNum) {
+    const status = document.getElementById(`status-${stepNum}`);
+    if (!status || this.steps[stepNum].completed) return;
+    
+    const comments = this.steps[stepNum].comments;
+    const required = this.steps[stepNum].required;
+    
+    if (stepNum === 1) {
+      if (comments > 0) {
+        status.innerHTML = '<span class="status-text">Great! You made your first comment!</span>';
       }
-      
-      this.updateProgress();
+    } else if (stepNum === 2) {
+      if (comments === 1) {
+        status.innerHTML = '<span class="status-text">Good! Try other elements too</span>';
+      } else if (comments === 2) {
+        status.innerHTML = '<span class="status-text">Nice! One more comment</span>';
+      }
+    } else if (stepNum === 3) {
+      if (comments > 0) {
+        status.innerHTML = '<span class="status-text">Perfect! Check Cursor for your tasks</span>';
+      }
     }
   }
   
-  handleExercise1() {
-    const exercise = document.querySelector('[data-exercise="1"]');
-    const status = document.getElementById('status-1');
-    
-    if (this.exercises[1].comments === 1) {
-      status.innerHTML = '<span class="status-text">Great! You made your first comment!</span>';
-      this.showMessage('Excellent! You created your first annotation. In a real project, this would appear in your .moat/moat-tasks.md file.');
-      
-      // Mark as completed
-      this.exercises[1].completed = true;
-      exercise.classList.add('completed');
-      
-      // Enable exercise 2
-      const exercise2 = document.querySelector('[data-exercise="2"]');
-      const status2 = document.getElementById('status-2');
-      exercise2.classList.add('active');
-      status2.innerHTML = '<span class="status-text">Ready to start</span>';
-      
-      // Show completion animation
-      this.showCompletionAnimation(1);
+  showCompletionAnimation(stepNum) {
+    const stepDot = document.querySelector(`[data-step="${stepNum}"]`);
+    if (stepDot) {
+      stepDot.style.transform = 'scale(1.1)';
+      setTimeout(() => {
+        stepDot.style.transform = 'scale(1)';
+      }, 200);
     }
   }
   
-  handleExercise2() {
-    const exercise = document.querySelector('[data-exercise="2"]');
-    const status = document.getElementById('status-2');
-    
-    if (this.exercises[2].comments === 1) {
-      status.innerHTML = '<span class="status-text">Good! Try commenting on other elements too</span>';
-      this.showMessage('Nice! Try clicking on different parts of the profile card to create multiple comments.');
-    } else if (this.exercises[2].comments >= 3) {
-      status.innerHTML = '<span class="status-text">Perfect! Multiple comments created</span>';
-      this.showMessage('Excellent work! You understand how to create multiple annotations. This simulates a real design review.');
-      
-      // Mark as completed
-      this.exercises[2].completed = true;
-      exercise.classList.add('completed');
-      
-      // Enable exercise 3
-      const exercise3 = document.querySelector('[data-exercise="3"]');
-      const status3 = document.getElementById('status-3');
-      exercise3.classList.add('active');
-      status3.innerHTML = '<span class="status-text">Ready to start</span>';
-      
-      this.showCompletionAnimation(2);
+     showFinalCompletion() {
+     // Completion section removed - just log completion
+     console.log('🎉 All tutorial steps completed!');
+   }
+  
+  nextStep() {
+    if (this.currentStep < this.totalSteps) {
+      // Only allow next if current step is completed or it's the first interaction
+      if (this.steps[this.currentStep].completed || this.steps[this.currentStep].comments === 0) {
+        this.currentStep++;
+        this.updateCarousel();
+        this.updateNavigation();
+      }
     }
   }
   
-  handleExercise3() {
-    const exercise = document.querySelector('[data-exercise="3"]');
-    const status = document.getElementById('status-3');
-    
-    if (this.exercises[3].comments === 1) {
-      status.innerHTML = '<span class="status-text">Great! Now check Cursor for your tasks</span>';
-      this.showMessage('Perfect! Now open Cursor and search for "moat-tasks" to find all your comments organized as actionable tasks.');
-      
-      // Mark as completed
-      this.exercises[3].completed = true;
-      exercise.classList.add('completed');
-      
-      this.showCompletionAnimation(3);
-      this.showFinalMessage();
+  previousStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      this.updateCarousel();
+      this.updateNavigation();
     }
   }
   
-  showCompletionAnimation(exerciseNum) {
-    const exerciseCard = document.querySelector(`[data-exercise="${exerciseNum}"]`);
-    const exerciseNumber = exerciseCard.querySelector('.exercise-number');
-    
-    // Add completion checkmark
-    exerciseNumber.innerHTML = '✓';
-    exerciseNumber.style.background = 'var(--success)';
-    exerciseNumber.style.color = 'white';
-    
-    // Animate the card
-    exerciseCard.style.transform = 'scale(1.02)';
-    setTimeout(() => {
-      exerciseCard.style.transform = 'scale(1)';
-    }, 200);
+  goToStep(stepNum) {
+    // Only allow going to completed steps or the next step
+    if (stepNum <= this.currentStep || this.steps[stepNum - 1]?.completed) {
+      this.currentStep = stepNum;
+      this.updateCarousel();
+      this.updateNavigation();
+    }
   }
   
-  showFinalMessage() {
-    setTimeout(() => {
-      this.showMessage('🎉 Congratulations! You\'ve completed all three exercises. You\'re now ready to use Drawbridge on real projects!', 'success');
-    }, 1000);
-  }
-  
-  updateProgress() {
-    const completedExercises = Object.values(this.exercises).filter(ex => ex.completed).length;
-    const progressPercentage = Math.round((completedExercises / 3) * 100);
+  updateCarousel() {
+    // Update slide visibility
+    document.querySelectorAll('.carousel-slide').forEach((slide, index) => {
+      slide.classList.toggle('active', index + 1 === this.currentStep);
+    });
+    
+    // Update transform (for future animation if needed)
+    if (this.track) {
+      this.track.style.transform = `translateX(-${(this.currentStep - 1) * 100}%)`;
+    }
+    
+    // Update step indicators
+    this.stepDots.forEach((dot, index) => {
+      dot.classList.toggle('active', index + 1 === this.currentStep);
+    });
+    
+    // Update progress text
+    const progressText = document.getElementById('progress-text');
+    if (progressText) {
+      progressText.textContent = `Step ${this.currentStep} of ${this.totalSteps}`;
+    }
     
     // Update progress bar
-    const progressFill = document.getElementById('progress-fill');
-    const progressText = document.getElementById('progress-percentage');
-    
+    const progressFill = document.getElementById('carousel-progress');
     if (progressFill) {
-      progressFill.style.width = `${progressPercentage}%`;
+      const progressPercent = (this.currentStep / this.totalSteps) * 100;
+      progressFill.style.width = `${progressPercent}%`;
     }
-    
-    if (progressText) {
-      progressText.textContent = `${progressPercentage}%`;
-    }
-    
-    // Update stats
-    const commentsCount = document.getElementById('comments-count');
-    const exercisesCompleted = document.getElementById('exercises-completed');
-    
-    if (commentsCount) {
-      commentsCount.textContent = this.totalComments;
-    }
-    
-    if (exercisesCompleted) {
-      exercisesCompleted.textContent = completedExercises;
-    }
-    
-    // Update time spent
-    this.updateTimeSpent();
   }
   
-  updateTimeSpent() {
-    const timeSpent = Math.floor((Date.now() - this.startTime) / 60000); // minutes
-    const timeElement = document.getElementById('time-spent');
+  updateNavigation() {
+    // Update previous button
+    this.prevBtn.disabled = this.currentStep === 1;
     
-    if (timeElement) {
-      timeElement.textContent = `${timeSpent}m`;
+    // Update next button
+    const isLastStep = this.currentStep === this.totalSteps;
+    const currentStepCompleted = this.steps[this.currentStep].completed;
+    
+    if (isLastStep) {
+      this.nextBtn.style.display = currentStepCompleted ? 'none' : 'flex';
+      this.nextBtn.innerHTML = '<span>Complete</span><span>→</span>';
+    } else {
+      this.nextBtn.style.display = 'flex';
+      this.nextBtn.innerHTML = '<span>Next</span><span>→</span>';
     }
+    
+    // Enable/disable next based on current step progress
+    this.nextBtn.disabled = false; // Always allow next for now
   }
+  
+     updateProgress() {
+     const completedSteps = Object.values(this.steps).filter(step => step.completed).length;
+     
+     // Completion stats section removed - just track internally
+     console.log(`Progress: ${completedSteps}/3 steps, ${this.totalComments} comments`);
+     
+     // Update time spent
+     this.updateTimeSpent();
+   }
+  
+     updateTimeSpent() {
+     const timeSpent = Math.floor((Date.now() - this.startTime) / 60000); // minutes
+     // Time element removed - just track internally
+     console.log(`Time spent: ${timeSpent}m`);
+   }
   
   startTimeTracking() {
     // Update time every 30 seconds
@@ -237,6 +283,8 @@ class DrawbridgeTutorial {
   simulatePluginDetection() {
     // Simulate plugin status
     const statusIndicator = document.getElementById('plugin-status');
+    if (!statusIndicator) return;
+    
     const statusDot = statusIndicator.querySelector('.status-dot');
     const statusText = statusIndicator.querySelector('.status-text');
     
@@ -253,190 +301,16 @@ class DrawbridgeTutorial {
     }, 2000);
   }
   
-  simulatePluginBehavior() {
-    // Add hover effects that simulate real plugin behavior
-    document.querySelectorAll('.exercise-target').forEach(target => {
-      target.addEventListener('mouseenter', () => {
-        if (document.body.style.cursor === 'crosshair') {
-          target.style.outline = '2px solid #3b82f6';
-          target.style.outlineOffset = '2px';
-        }
-      });
-      
-      target.addEventListener('mouseleave', () => {
-        target.style.outline = 'none';
-        target.style.outlineOffset = '0';
-      });
-    });
-  }
-  
+  // Disabled notification system
   showMessage(text, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `tutorial-notification ${type}`;
-    notification.innerHTML = `
-      <div class="notification-content">
-        <span class="notification-text">${text}</span>
-        <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
-      </div>
-    `;
-    
-    // Add styles
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: ${type === 'success' ? 'var(--success-light)' : 'var(--accent-light)'};
-      border: 1px solid ${type === 'success' ? 'var(--success-border)' : 'var(--accent-border)'};
-      border-radius: 8px;
-      padding: 16px;
-      max-width: 350px;
-      box-shadow: 0 10px 30px var(--shadow-lg);
-      z-index: 1000;
-      animation: slideInRight 0.3s ease;
-    `;
-    
-    const content = notification.querySelector('.notification-content');
-    content.style.cssText = `
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    `;
-    
-    const textEl = notification.querySelector('.notification-text');
-    textEl.style.cssText = `
-      flex: 1;
-      font-size: 14px;
-      line-height: 1.4;
-      color: var(--text-primary);
-    `;
-    
-    const closeBtn = notification.querySelector('.notification-close');
-    closeBtn.style.cssText = `
-      background: none;
-      border: none;
-      font-size: 18px;
-      cursor: pointer;
-      color: var(--text-secondary);
-      padding: 0;
-      line-height: 1;
-    `;
-    
-    // Add animation styles to head if not exists
-    if (!document.querySelector('#tutorial-animations')) {
-      const style = document.createElement('style');
-      style.id = 'tutorial-animations';
-      style.textContent = `
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(100%);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      if (notification.parentElement) {
-        notification.remove();
-      }
-    }, 5000);
-  }
-  
-  checkForExistingProgress() {
-    // Check localStorage for any existing progress
-    const savedProgress = localStorage.getItem('drawbridge-tutorial-progress');
-    if (savedProgress) {
-      try {
-        const progress = JSON.parse(savedProgress);
-        this.exercises = { ...this.exercises, ...progress.exercises };
-        this.totalComments = progress.totalComments || 0;
-        this.updateProgress();
-        
-        // Restore UI state
-        Object.keys(this.exercises).forEach(num => {
-          if (this.exercises[num].completed) {
-            const exercise = document.querySelector(`[data-exercise="${num}"]`);
-            exercise.classList.add('completed');
-            this.showCompletionAnimation(parseInt(num));
-          }
-        });
-      } catch (e) {
-        console.log('Could not restore tutorial progress');
-      }
-    }
-  }
-  
-  saveProgress() {
-    // Save progress to localStorage
-    const progress = {
-      exercises: this.exercises,
-      totalComments: this.totalComments,
-      startTime: this.startTime
-    };
-    localStorage.setItem('drawbridge-tutorial-progress', JSON.stringify(progress));
+    // Notifications disabled per user request
+    return;
   }
 }
 
-// Additional utility functions for the demo
-
+// Utility functions
 function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    tutorial.showMessage('Copied to clipboard!');
-  });
-}
-
-function openCursorGuide() {
-  const modal = document.createElement('div');
-  modal.className = 'cursor-guide-modal';
-  modal.innerHTML = `
-    <div class="modal-overlay" onclick="this.parentElement.remove()">
-      <div class="modal-content" onclick="event.stopPropagation()">
-        <div class="modal-header">
-          <h3>Finding Your Tasks in Cursor</h3>
-          <button class="modal-close" onclick="this.closest('.cursor-guide-modal').remove()">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="guide-step">
-            <h4>1. Open File Explorer</h4>
-            <p>In Cursor, look at your file explorer on the left side</p>
-          </div>
-          <div class="guide-step">
-            <h4>2. Find .moat Directory</h4>
-            <p>Look for a folder called <code>.moat</code> in your project root</p>
-          </div>
-          <div class="guide-step">
-            <h4>3. Open moat-tasks.md</h4>
-            <p>Inside the .moat folder, you'll find <code>moat-tasks.md</code> with all your comments</p>
-          </div>
-          <div class="guide-step">
-            <h4>4. Search Alternative</h4>
-            <p>Use <kbd>Cmd+Shift+F</kbd> (Mac) or <kbd>Ctrl+Shift+F</kbd> (Windows) and search for "moat-tasks"</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  // Add modal styles
-  modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 2000;
-  `;
-  
-  document.body.appendChild(modal);
+  navigator.clipboard.writeText(text);
 }
 
 // Scroll animations
@@ -454,14 +328,9 @@ function setupScrollAnimations() {
     });
   }, observerOptions);
   
-  // Observe all main sections
+  // Observe main sections
   document.querySelectorAll('section').forEach(section => {
     observer.observe(section);
-  });
-  
-  // Observe exercise cards
-  document.querySelectorAll('.exercise-card').forEach(card => {
-    observer.observe(card);
   });
 }
 
@@ -473,22 +342,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Setup scroll animations
   setupScrollAnimations();
   
-  // Add welcome message
-  setTimeout(() => {
-    tutorial.showMessage('Welcome to the Drawbridge tutorial! Press C to enter comment mode and start with Exercise 1.');
-  }, 1000);
-  
-  // Save progress periodically
+  // Save progress periodically (simplified)
   setInterval(() => {
-    tutorial.saveProgress();
-  }, 10000); // Save every 10 seconds
-  
-  // Add keyboard shortcuts help
-  document.addEventListener('keydown', (e) => {
-    if (e.key === '?' && e.shiftKey) {
-      tutorial.showMessage('Keyboard shortcuts: Press C for comment mode, ? for help, Cmd+Shift+F to search in Cursor');
-    }
-  });
+    // Could implement localStorage saving here if needed
+  }, 30000);
 });
 
 // Handle page visibility changes to pause/resume timer

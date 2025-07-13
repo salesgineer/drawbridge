@@ -103,5 +103,50 @@
     "screenshotPath": "./screenshots/moat-1752236948738-zespgt8dr.png",
     "status": "done",
     "timestamp": 1752236948875
+  },
+  {
+    "id": "79d114c9-58e6-4886-8fc5-59db7aa9292f",
+    "title": "h1: Drawbridge",
+    "comment": "Change this to space grotesque.",
+    "selector": "div.brand:nth-child(1) > div.brand-text > h1.brand-title.float-highlight",
+    "boundingRect": {
+      "x": 538,
+      "y": 20,
+      "w": 168,
+      "h": 24
+    },
+    "screenshotPath": "./screenshots/moat-1752417914570-ocrhtgw7t.png",
+    "status": "to do",
+    "timestamp": 1752417914682
+  },
+  {
+    "id": "608e1980-e8b5-4bc3-9d13-31e4a804fe86",
+    "title": "p: Master the Drawbridge Chrome e",
+    "comment": "Remove this text.",
+    "selector": "div.container > section.hero.fade-in:nth-child(1) > p.hero-description.float-highlight",
+    "boundingRect": {
+      "x": 557,
+      "y": 183,
+      "w": 600,
+      "h": 86
+    },
+    "screenshotPath": "./screenshots/moat-1752417923796-ljbb5km07.png",
+    "status": "to do",
+    "timestamp": 1752417923898
+  },
+  {
+    "id": "8b615ad7-d65a-436c-8d42-a1bc11258ce8",
+    "title": "Colored Container",
+    "comment": "Remove this.",
+    "selector": "div.container > section.completion-section.fade-in:nth-child(3) > div.completion-card.float-highlight",
+    "boundingRect": {
+      "x": 481,
+      "y": 938,
+      "w": 752,
+      "h": 160
+    },
+    "screenshotPath": "./screenshots/moat-1752417939009-fa5btl99z.png",
+    "status": "to do",
+    "timestamp": 1752417939102
   }
 ]
