@@ -205,7 +205,7 @@ h1, h2, h3, h4, h5, h6 {
 .carousel-section {
   background: var(--bg-secondary);
   border-radius: var(--border-radius-lg);
-  padding: 32px;
+  padding: 16px;
   margin-bottom: 32px;
 }
 
@@ -213,7 +213,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 .step-indicator {
@@ -298,7 +298,7 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: var(--border-radius);
-  padding: 32px;
+  padding: 24px;
 }
 
 .slide-header {

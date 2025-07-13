@@ -161,7 +161,67 @@
       "h": 889
     },
     "screenshotPath": "./screenshots/moat-1752418166222-rgj2wxj4d.png",
-    "status": "to do",
+    "status": "done",
     "timestamp": 1752418166346
+  },
+  {
+    "id": "2acfef30-ab8e-4e1a-97e5-5ab94a27df06",
+    "title": "Colored Container",
+    "comment": "remove this",
+    "selector": "div.container > section.hero.fade-in:nth-child(1) > div.hero-checklist.float-highlight",
+    "boundingRect": {
+      "x": 481,
+      "y": 183,
+      "w": 752,
+      "h": 22
+    },
+    "screenshotPath": "./screenshots/moat-1752418470941-71l7p08fq.png",
+    "status": "done",
+    "timestamp": 1752418471063
+  },
+  {
+    "id": "fc5bab34-3017-466c-bc4c-f3f53cad59cc",
+    "title": "h2: Learn to Bridge Design and Cod",
+    "comment": "remove this",
+    "selector": "div.container > section.hero.fade-in:nth-child(1) > h2.hero-title.float-highlight",
+    "boundingRect": {
+      "x": 481,
+      "y": 124,
+      "w": 752,
+      "h": 43
+    },
+    "screenshotPath": "./screenshots/moat-1752418476880-aw1vwdwf3.png",
+    "status": "done",
+    "timestamp": 1752418476991
+  },
+  {
+    "id": "0b84ef8d-f068-466a-aebf-4b8cfdc837d1",
+    "title": "Colored Container",
+    "comment": "remove these",
+    "selector": "section.carousel-section.fade-in:nth-child(2) > div.carousel-header:nth-child(1) > div.step-indicator.float-highlight:nth-child(1)",
+    "boundingRect": {
+      "x": 497,
+      "y": 270,
+      "w": 120,
+      "h": 32
+    },
+    "screenshotPath": "./screenshots/moat-1752418493966-wc8jzisvr.png",
+    "status": "done",
+    "timestamp": 1752418494060
+  },
+  {
+    "id": "8a39e906-cee7-4509-b1f9-bf4331b6fbdd",
+    "title": "Colored Container",
+    "comment": "make these buttons simple arrows on either side of the carousel (left and right) respectively",
+    "selector": "div.container > section.carousel-section.fade-in:nth-child(2) > div.carousel-nav.float-highlight:nth-child(3)",
+    "boundingRect": {
+      "x": 497,
+      "y": 1020,
+      "w": 720,
+      "h": 42
+    },
+    "screenshotPath": "./screenshots/moat-1752418517177-r20rczu7r.png",
+    "status": "done",
+    "timestamp": 1752418517308
   }
 ]

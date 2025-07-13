@@ -304,7 +304,7 @@ Shared Infrastructure & Standards
 
 These rules apply to all modes.
 
-### CRITICAL: Status File Management
+**ABSOLOUTELY CRITICAL!!!!!  NON NEGOTIABLE** : Status File Management
 
 Status file updates are a core function and must be included with every task completion. While Cursor will ask for confirmation (standard edit behavior), always update these files immediately after implementing code changes.
 
