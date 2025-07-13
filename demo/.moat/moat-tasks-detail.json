@@ -45,21 +45,6 @@
     "timestamp": 1752061383759
   },
   {
-    "id": "09265f29-82ad-4376-a80b-861fed1c02f9",
-    "title": "h2: Bridge the Gap Between Design ",
-    "comment": "make this red",
-    "selector": "div.container > div.hero-content > h2.float-highlight",
-    "boundingRect": {
-      "x": 176,
-      "y": 198,
-      "w": 1152,
-      "h": 62
-    },
-    "screenshotPath": "./screenshots/moat-1752234611241-4nb6f7pgj.png",
-    "status": "done",
-    "timestamp": 1752234611369
-  },
-  {
     "id": "4eb95cbd-1f25-427e-aa49-d16582eecbaf",
     "title": "p: Drawbridge transforms visual f",
     "comment": "left-align this",
@@ -73,21 +58,6 @@
     "screenshotPath": "./screenshots/moat-1752235199458-1e8podoov.png",
     "status": "done",
     "timestamp": 1752235199585
-  },
-  {
-    "id": "da14f3e0-9bd4-4f39-8212-e26326307c80",
-    "title": "p: Drawbridge transforms visual f",
-    "comment": "right align this",
-    "selector": "div.container > div.hero-content > p.hero-subtitle.float-highlight",
-    "boundingRect": {
-      "x": 402,
-      "y": 284,
-      "w": 700,
-      "h": 96
-    },
-    "screenshotPath": "./screenshots/moat-1752235481706-r8lzk9y4f.png",
-    "status": "done",
-    "timestamp": 1752235481831
   },
   {
     "id": "b0bc7707-05aa-4832-b376-6971ec8e216d",

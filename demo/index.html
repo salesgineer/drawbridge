@@ -3,199 +3,404 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drawbridge Setup & Usage Guide</title>
+  <title>Drawbridge Plugin Tutorial | Learn Visual Annotation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Header -->
   <header class="header">
     <div class="container">
-      <h1>🧭 Drawbridge Setup & Usage Guide</h1>
-      <p>Learn how to set up and use Drawbridge to turn visual feedback into code changes</p>
+      <div class="header-content">
+        <div class="brand">
+          <img src="db-logo-dark.png" alt="Drawbridge Logo" class="logo">
+          <div class="brand-text">
+            <h1 class="brand-title">Drawbridge</h1>
+            <p class="brand-subtitle">Visual Annotation Tutorial</p>
+          </div>
+        </div>
+        
+        <div class="plugin-status">
+          <div class="status-indicator" id="plugin-status">
+            <div class="status-dot"></div>
+            <span class="status-text">Plugin Ready</span>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="main">
+  <!-- Hero Section -->
+  <section class="hero">
     <div class="container">
-      
-      <!-- Setup Section -->
-      <section class="setup-section">
-        <h2>🚀 1. Setup</h2>
-        <div class="setup-steps">
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h3>Clone the Drawbridge repo</h3>
-              <p>Clone this repository into your project directory</p>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h3>Load the Chrome extension</h3>
-              <p>Go to chrome://extensions/, enable Developer mode, and click "Load unpacked". Select the <code>moat-chrome/</code> folder</p>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h3>Activate and pin the extension</h3>
-              <p>Click the extension icon and pin it to your Chrome toolbar for easy access</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Usage Section -->
-      <section class="usage-section">
-        <h2>💬 2. Making Comments</h2>
-        <div class="usage-steps">
-          <div class="step">
-            <div class="step-number">C</div>
-            <div class="step-content">
-              <h3>Press 'C' to start commenting</h3>
-              <p>Your cursor will turn into a crosshair for element selection</p>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-number">🎯</div>
-            <div class="step-content">
-              <h3>Hover over elements</h3>
-              <p>DOM elements will be highlighted as you move your cursor</p>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-number">✏️</div>
-            <div class="step-content">
-              <h3>Click to comment</h3>
-              <p>Click an element, type your comment, and press Enter or Submit</p>
-            </div>
-          </div>
-          
-          <div class="step">
-            <div class="step-number">📋</div>
-            <div class="step-content">
-              <h3>View tasks in the Moat</h3>
-              <p>Your tasks appear in the bottom area of the page</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Processing Section -->
-      <section class="processing-section">
-        <h2>🤖 3. Processing with Cursor</h2>
-        <div class="processing-content">
-          <div class="command-box">
-            <h3>Run the bridge command</h3>
-            <code>bridge</code>
-          </div>
-          
-          <div class="modes">
-            <h3>Processing modes:</h3>
-            <div class="mode">
-              <strong>step bridge</strong> (Default) - Process tasks one by one with approval
-            </div>
-            <div class="mode">
-              <strong>batch bridge</strong> - Group related tasks and process in batches
-            </div>
-            <div class="mode">
-              <strong>yolo bridge</strong> - Process all tasks without stopping (use carefully)
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Best Practices -->
-      <section class="best-practices-section">
-        <h2>🎯 Best Practices</h2>
-        <div class="practices-grid">
-          <div class="practice">
-            <h3>Be Specific</h3>
-            <div class="example-good">✅ "change font to sans-serif"</div>
-            <div class="example-bad">❌ "change font"</div>
-          </div>
-          
-          <div class="practice">
-            <h3>Chain Related Changes</h3>
-            <div class="example-good">✅ 1. "make button blue" → 2. "add shadow to the blue button"</div>
-            <div class="example-bad">❌ "make button blue and add a shadow"</div>
-          </div>
-          
-          <div class="practice">
-            <h3>One Change Per Comment</h3>
-            <div class="example-good">✅ Focus on one distinct change</div>
-            <div class="example-bad">❌ Multiple unrelated changes in one comment</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Interactive Demo -->
-      <section class="demo-section">
-        <h2>🎮 Try It Out</h2>
-        <p>Practice commenting on these elements (requires the Chrome extension to be active):</p>
+      <div class="hero-content">
+        <h2 class="hero-title">Learn to Bridge Design and Code</h2>
+        <p class="hero-description">
+          Master the Drawbridge Chrome extension with three hands-on exercises. 
+          Press <kbd>C</kbd> to comment on any UI element and watch your feedback 
+          transform into actionable tasks in Cursor.
+        </p>
         
-        <div class="demo-elements">
-          <button class="demo-button primary">Primary Button</button>
-          <button class="demo-button secondary">Secondary Button</button>
-          
-          <div class="demo-card">
-            <h3>Sample Card</h3>
-            <p>This is a sample card component you can practice commenting on.</p>
-            <span class="demo-tag">Tag</span>
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-number">3</span>
+            <span class="stat-label">Exercises</span>
           </div>
-          
-          <div class="demo-form">
-            <label for="demo-input">Sample Input:</label>
-            <input type="text" id="demo-input" placeholder="Type something here">
-            <button type="submit">Submit</button>
+          <div class="stat">
+            <span class="stat-number">5</span>
+            <span class="stat-label">Minutes</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">∞</span>
+            <span class="stat-label">Possibilities</span>
           </div>
         </div>
-        
-        <div class="demo-tips">
-          <h3>Try these comments:</h3>
-          <ul>
-            <li>"make this button green"</li>
-            <li>"add more padding to this card"</li>
-            <li>"change the input border to blue"</li>
-            <li>"make this text larger"</li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- Troubleshooting -->
-      <section class="troubleshooting-section">
-        <h2>🐛 Troubleshooting</h2>
-        <div class="troubleshooting-items">
-          <div class="issue">
-            <h3>"Dependency Error"</h3>
-            <p>Tasks might be out of order. Check the AI's analysis for the required sequence.</p>
-          </div>
-          
-          <div class="issue">
-            <h3>Task failed status</h3>
-            <p>Check moat-tasks.md. Reset status to "pending" in the .json file to retry.</p>
-          </div>
-          
-          <div class="issue">
-            <h3>Connection Issues</h3>
-            <p>Press Cmd/Ctrl+Shift+P in browser and re-select your project directory.</p>
-          </div>
-        </div>
-      </section>
-
+      </div>
     </div>
-  </main>
+  </section>
 
+  <!-- Getting Started -->
+  <section class="getting-started">
+    <div class="container">
+      <div class="section-header">
+        <h2>Before You Begin</h2>
+        <p>Make sure you have everything set up to get the most out of this tutorial</p>
+      </div>
+      
+      <div class="setup-checklist">
+        <div class="checklist-item">
+          <div class="check-icon">✓</div>
+          <div class="check-content">
+            <h3>Drawbridge Extension Installed</h3>
+            <p>The Chrome extension should be active in your browser</p>
+          </div>
+        </div>
+        
+        <div class="checklist-item">
+          <div class="check-icon">✓</div>
+          <div class="check-content">
+            <h3>Cursor Editor Open</h3>
+            <p>Have Cursor open in a separate window to see your tasks appear</p>
+          </div>
+        </div>
+        
+        <div class="checklist-item">
+          <div class="check-icon">✓</div>
+          <div class="check-content">
+            <h3>Ready to Learn</h3>
+            <p>Take your time with each exercise - there's no rush!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Exercises -->
+  <section class="exercises">
+    <div class="container">
+      <div class="section-header">
+        <h2>Three Essential Exercises</h2>
+        <p>Master the core workflow: Comment → Capture → Code</p>
+      </div>
+      
+      <div class="exercise-grid">
+        <!-- Exercise 1 -->
+        <div class="exercise-card" data-exercise="1">
+          <div class="exercise-header">
+            <div class="exercise-number">01</div>
+            <div class="exercise-meta">
+              <h3>Your First Comment</h3>
+              <span class="exercise-difficulty">Beginner</span>
+            </div>
+          </div>
+          
+          <div class="exercise-content">
+            <p class="exercise-description">
+              Learn the basic workflow by commenting on this card. Press <kbd>C</kbd> 
+              and click anywhere on this exercise card to create your first annotation.
+            </p>
+            
+            <div class="exercise-target" id="target-1">
+              <div class="target-demo">
+                <h4>Sample UI Component</h4>
+                <p>This is a practice target. Try commenting: "Change the background color to blue"</p>
+                <button class="demo-button">Click Me</button>
+              </div>
+            </div>
+            
+            <div class="exercise-steps">
+              <div class="step">
+                <span class="step-number">1</span>
+                <span class="step-text">Press <kbd>C</kbd> to enter comment mode</span>
+              </div>
+              <div class="step">
+                <span class="step-number">2</span>
+                <span class="step-text">Click on the demo component above</span>
+              </div>
+              <div class="step">
+                <span class="step-number">3</span>
+                <span class="step-text">Type your feedback in the comment box</span>
+              </div>
+              <div class="step">
+                <span class="step-number">4</span>
+                <span class="step-text">Press Enter to save your comment</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="exercise-status" id="status-1">
+            <span class="status-text">Ready to start</span>
+          </div>
+        </div>
+
+        <!-- Exercise 2 -->
+        <div class="exercise-card" data-exercise="2">
+          <div class="exercise-header">
+            <div class="exercise-number">02</div>
+            <div class="exercise-meta">
+              <h3>Multiple Comments</h3>
+              <span class="exercise-difficulty">Intermediate</span>
+            </div>
+          </div>
+          
+          <div class="exercise-content">
+            <p class="exercise-description">
+              Practice creating multiple comments on different elements. 
+              This simulates a real design review workflow.
+            </p>
+            
+            <div class="exercise-target" id="target-2">
+              <div class="multi-target-demo">
+                <div class="demo-header">
+                  <h4>User Profile Card</h4>
+                  <button class="edit-button">Edit</button>
+                </div>
+                <div class="demo-avatar">
+                  <div class="avatar-placeholder">👤</div>
+                </div>
+                <div class="demo-info">
+                  <p class="demo-name">John Doe</p>
+                  <p class="demo-role">Product Designer</p>
+                </div>
+                <div class="demo-actions">
+                  <button class="action-button primary">Follow</button>
+                  <button class="action-button secondary">Message</button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="exercise-goals">
+              <h4>Try commenting on:</h4>
+              <ul>
+                <li>The avatar placeholder</li>
+                <li>The user name styling</li>
+                <li>The button colors</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="exercise-status" id="status-2">
+            <span class="status-text">Complete Exercise 1 first</span>
+          </div>
+        </div>
+
+        <!-- Exercise 3 -->
+        <div class="exercise-card" data-exercise="3">
+          <div class="exercise-header">
+            <div class="exercise-number">03</div>
+            <div class="exercise-meta">
+              <h3>Finding Your Tasks</h3>
+              <span class="exercise-difficulty">Advanced</span>
+            </div>
+          </div>
+          
+          <div class="exercise-content">
+            <p class="exercise-description">
+              Learn how to track your comments and find the generated tasks in Cursor editor.
+            </p>
+            
+            <div class="cursor-instructions">
+              <div class="instruction-card">
+                <div class="instruction-icon">📁</div>
+                <div class="instruction-content">
+                  <h4>Check Your File Explorer</h4>
+                  <p>Look for <code>moat-tasks.md</code> in your project's <code>.moat/</code> directory</p>
+                </div>
+              </div>
+              
+              <div class="instruction-card">
+                <div class="instruction-icon">🔍</div>
+                <div class="instruction-content">
+                  <h4>Search in Cursor</h4>
+                  <p>Use <kbd>Cmd+Shift+F</kbd> to search for "moat-tasks" across your project</p>
+                </div>
+              </div>
+              
+              <div class="instruction-card">
+                <div class="instruction-icon">📝</div>
+                <div class="instruction-content">
+                  <h4>Review Your Tasks</h4>
+                  <p>Open the markdown file to see all your comments organized as actionable tasks</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="exercise-target" id="target-3">
+              <div class="task-demo">
+                <h4>Practice Navigation</h4>
+                <p>Comment on this section, then follow the instructions above to find your task in Cursor</p>
+                <div class="demo-path">
+                  <code>.moat/moat-tasks.md</code>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="exercise-status" id="status-3">
+            <span class="status-text">Complete Exercise 2 first</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Progress Tracking -->
+  <section class="progress">
+    <div class="container">
+      <div class="progress-card">
+        <div class="progress-header">
+          <h3>Your Progress</h3>
+          <div class="progress-percentage" id="progress-percentage">0%</div>
+        </div>
+        
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        
+        <div class="progress-stats">
+          <div class="stat">
+            <span class="stat-value" id="comments-count">0</span>
+            <span class="stat-label">Comments Made</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="exercises-completed">0</span>
+            <span class="stat-label">Exercises Done</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="time-spent">0m</span>
+            <span class="stat-label">Time Spent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Keyboard Shortcuts -->
+  <section class="shortcuts">
+    <div class="container">
+      <div class="section-header">
+        <h2>Keyboard Shortcuts</h2>
+        <p>Master these shortcuts to speed up your workflow</p>
+      </div>
+      
+      <div class="shortcuts-grid">
+        <div class="shortcut-card">
+          <div class="shortcut-key">
+            <kbd>C</kbd>
+          </div>
+          <div class="shortcut-description">
+            <h4>Enter Comment Mode</h4>
+            <p>Start annotating any UI element</p>
+          </div>
+        </div>
+        
+        <div class="shortcut-card">
+          <div class="shortcut-key">
+            <kbd>Enter</kbd>
+          </div>
+          <div class="shortcut-description">
+            <h4>Save Comment</h4>
+            <p>Confirm and save your annotation</p>
+          </div>
+        </div>
+        
+        <div class="shortcut-card">
+          <div class="shortcut-key">
+            <kbd>Esc</kbd>
+          </div>
+          <div class="shortcut-description">
+            <h4>Cancel</h4>
+            <p>Exit comment mode without saving</p>
+          </div>
+        </div>
+        
+        <div class="shortcut-card">
+          <div class="shortcut-key">
+            <kbd>Cmd+Shift+F</kbd>
+          </div>
+          <div class="shortcut-description">
+            <h4>Find Tasks in Cursor</h4>
+            <p>Search for "moat-tasks" in your editor</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Next Steps -->
+  <section class="next-steps">
+    <div class="container">
+      <div class="next-steps-card">
+        <h2>What's Next?</h2>
+        <p>Ready to use Drawbridge on real projects? Here's how to get started:</p>
+        
+        <div class="next-steps-list">
+          <div class="next-step">
+            <div class="step-icon">🚀</div>
+            <div class="step-content">
+              <h3>Use on Live Sites</h3>
+              <p>Navigate to any website and start commenting on UI elements you'd like to improve</p>
+            </div>
+          </div>
+          
+          <div class="next-step">
+            <div class="step-icon">👥</div>
+            <div class="step-content">
+              <h3>Team Collaboration</h3>
+              <p>Share your moat-tasks.md file with teammates to collaborate on UI improvements</p>
+            </div>
+          </div>
+          
+          <div class="next-step">
+            <div class="step-icon">🔄</div>
+            <div class="step-content">
+              <h3>Iterate and Improve</h3>
+              <p>Use the comments to guide your development process and track design decisions</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p>Ready to start? Follow the setup steps above and begin commenting on your UI elements!</p>
+      <div class="footer-content">
+        <div class="footer-brand">
+          <img src="db-logo-dark.png" alt="Drawbridge Logo" class="footer-logo">
+          <div>
+            <h3>Drawbridge</h3>
+            <p>Bridging design feedback and code implementation</p>
+          </div>
+        </div>
+        
+        <div class="footer-links">
+          <p>Built for designers and developers who care about user experience</p>
+        </div>
+      </div>
     </div>
   </footer>
 
