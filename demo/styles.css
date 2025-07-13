@@ -350,7 +350,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .demo-button {
-  background: var(--accent);
+  background: #dc2626;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -362,7 +362,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .demo-button:hover {
-  background: var(--accent);
+  background: #b91c1c;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px var(--shadow);
 }

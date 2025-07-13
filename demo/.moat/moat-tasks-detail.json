@@ -223,5 +223,35 @@
     "screenshotPath": "./screenshots/moat-1752418517177-r20rczu7r.png",
     "status": "done",
     "timestamp": 1752418517308
+  },
+  {
+    "id": "8cf1c7aa-dfff-4aa0-9018-bfc25dddc6d9",
+    "title": "h2: Learn to Bridge Design and Cod",
+    "comment": "Remove this",
+    "selector": "div.container > section.hero.fade-in:nth-child(1) > h2.hero-title.float-highlight",
+    "boundingRect": {
+      "x": 481,
+      "y": 124,
+      "w": 752,
+      "h": 43
+    },
+    "screenshotPath": "./screenshots/moat-1752418852909-ifgoqsz2m.png",
+    "status": "done",
+    "timestamp": 1752418853012
+  },
+  {
+    "id": "cb0412f8-0fc7-4ea9-bc6e-b480678e73d6",
+    "title": "Button: Click Me",
+    "comment": "make this red",
+    "selector": "#target-1 > div.demo-component > button:nth-of-type(1)",
+    "boundingRect": {
+      "x": 805,
+      "y": 520,
+      "w": 105,
+      "h": 40
+    },
+    "screenshotPath": "./screenshots/moat-1752418864424-w4nrg7p2f.png",
+    "status": "done",
+    "timestamp": 1752418864538
   }
 ]
