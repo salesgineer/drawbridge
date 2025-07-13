@@ -1307,8 +1307,8 @@ body.float-comment-mode * {
 }
 
 .float-close-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   fill: currentColor;
   transition: all 0.2s;
 }
