@@ -138,8 +138,6 @@ body.float-comment-mode * {
   z-index: 10;
   min-height: 40px; /* Ensure consistent height: 8px + 24px + 8px */
   box-sizing: border-box;
-  /* Remove from header layout flow while keeping absolute positioning */
-  pointer-events: auto; /* Keep notifications clickable */
 }
 
 .float-notification-container {
@@ -490,7 +488,6 @@ body.float-comment-mode * {
 
 /* Right position - Compact top bar layout */
 .float-moat.float-moat-right .float-moat-top-bar {
-  position: relative; /* Needed for absolute positioning of tabs */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -597,7 +594,6 @@ body.float-comment-mode * {
 
 /* Bottom position - Top control bar */
 .float-moat.float-moat-bottom .float-moat-top-bar {
-  position: relative; /* Needed for absolute positioning of tabs */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -605,6 +601,7 @@ body.float-comment-mode * {
   background: var(--moat-bg-secondary);
   border-bottom: 1px solid var(--moat-border);
   flex-shrink: 0;
+  position: relative;
 }
 
 .float-moat.float-moat-bottom .float-moat-header {
@@ -612,6 +609,8 @@ body.float-comment-mode * {
   border-bottom: none;
   background: transparent;
   flex: none;
+  min-width: 0;
+  max-width: calc(50% - 120px); /* Ensure space for centered tabs */
 }
 
 .float-moat.float-moat-bottom .float-moat-header h3 {
@@ -630,6 +629,9 @@ body.float-comment-mode * {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  max-width: calc(50% - 120px); /* Ensure space for centered tabs */
+  overflow: hidden;
 }
 
 .float-moat.float-moat-bottom .float-moat-project-status {
@@ -1055,19 +1057,17 @@ body.float-comment-mode * {
 
 /* Tabs in header (for bottom-docked position) */
 .float-moat-tabs-header {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
+  flex: 1;
   justify-content: center;
   align-items: center;
-  z-index: 10; /* Ensure tabs are above other content */
-  pointer-events: none; /* Allow clicks to pass through container */
+  margin: 0 12px;
 }
 
-.float-moat-tabs-header .float-tab-group {
-  pointer-events: auto; /* Re-enable clicks on the actual tabs */
+/* Override flex behavior for bottom-docked moat - tabs are absolutely positioned */
+.float-moat.float-moat-bottom .float-moat-top-bar .float-moat-tabs-header {
+  flex: none;
+  margin: 0;
 }
 
 /* Tabs below header (for right-docked position) */
@@ -1197,7 +1197,12 @@ body.float-comment-mode * {
 /* Bottom-docked position: show tabs in header, hide tabs below header */
 .float-moat.float-moat-bottom .float-moat-tabs-header {
   display: flex;
-  /* No margin needed since tabs are absolutely positioned and centered */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .float-moat.float-moat-bottom .float-moat-tabs-below-header {
