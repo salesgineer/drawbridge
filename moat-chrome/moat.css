@@ -1306,15 +1306,11 @@ body.float-comment-mode * {
   color: var(--moat-error);
 }
 
-.float-remove-icon {
-  width: 14px;
-  height: 14px;
+.float-close-icon {
+  width: 16px;
+  height: 16px;
   fill: currentColor;
-  pointer-events: none;
-}
-
-.float-moat-remove:hover .float-remove-icon {
-  fill: var(--moat-error);
+  transition: all 0.2s;
 }
 
 /* Row 2: User comment (lighter weight, closer to black) */
