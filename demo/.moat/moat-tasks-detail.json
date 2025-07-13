@@ -116,7 +116,7 @@
       "h": 24
     },
     "screenshotPath": "./screenshots/moat-1752417914570-ocrhtgw7t.png",
-    "status": "to do",
+    "status": "done",
     "timestamp": 1752417914682
   },
   {
@@ -131,7 +131,7 @@
       "h": 86
     },
     "screenshotPath": "./screenshots/moat-1752417923796-ljbb5km07.png",
-    "status": "to do",
+    "status": "done",
     "timestamp": 1752417923898
   },
   {
@@ -146,7 +146,22 @@
       "h": 160
     },
     "screenshotPath": "./screenshots/moat-1752417939009-fa5btl99z.png",
-    "status": "to do",
+    "status": "done",
     "timestamp": 1752417939102
+  },
+  {
+    "id": "37ea4d24-9419-4b90-be91-0cad421b349a",
+    "title": "Colored Container",
+    "comment": "make sure this containter hugs the content",
+    "selector": "main.tutorial-main > div.container > section.carousel-section.fade-in:nth-child(2)",
+    "boundingRect": {
+      "x": 481,
+      "y": 177,
+      "w": 752,
+      "h": 889
+    },
+    "screenshotPath": "./screenshots/moat-1752418166222-rgj2wxj4d.png",
+    "status": "to do",
+    "timestamp": 1752418166346
   }
 ]
