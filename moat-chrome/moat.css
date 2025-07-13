@@ -488,6 +488,7 @@ body.float-comment-mode * {
 
 /* Right position - Compact top bar layout */
 .float-moat.float-moat-right .float-moat-top-bar {
+  position: relative; /* Needed for absolute positioning of tabs */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -594,6 +595,7 @@ body.float-comment-mode * {
 
 /* Bottom position - Top control bar */
 .float-moat.float-moat-bottom .float-moat-top-bar {
+  position: relative; /* Needed for absolute positioning of tabs */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1051,11 +1053,19 @@ body.float-comment-mode * {
 
 /* Tabs in header (for bottom-docked position) */
 .float-moat-tabs-header {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
-  flex: 1;
   justify-content: center;
   align-items: center;
-  margin: 0 12px;
+  z-index: 10; /* Ensure tabs are above other content */
+  pointer-events: none; /* Allow clicks to pass through container */
+}
+
+.float-moat-tabs-header .float-tab-group {
+  pointer-events: auto; /* Re-enable clicks on the actual tabs */
 }
 
 /* Tabs below header (for right-docked position) */
@@ -1185,7 +1195,7 @@ body.float-comment-mode * {
 /* Bottom-docked position: show tabs in header, hide tabs below header */
 .float-moat.float-moat-bottom .float-moat-tabs-header {
   display: flex;
-  margin: 0 16px; /* Slightly more margin for bottom position */
+  /* No margin needed since tabs are absolutely positioned and centered */
 }
 
 .float-moat.float-moat-bottom .float-moat-tabs-below-header {
