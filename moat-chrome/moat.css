@@ -1241,10 +1241,7 @@ body.float-comment-mode * {
   flex-direction: column;
 }
 
-.float-moat-item:hover {
-  box-shadow: 0 2px 8px var(--moat-shadow);
-  transform: translateY(-1px);
-}
+/* Hover effect removed per user request */
 
 .float-moat-item.float-moat-dragging {
   opacity: 0.5;
