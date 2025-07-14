@@ -129,7 +129,7 @@ class DrawbridgeTutorial {
     
     // Auto-advance to next step if not the last one
     if (stepNum < this.totalSteps) {
-      setTimeout(() => {
+  setTimeout(() => {
         this.nextStep();
       }, 1500);
     } else {
