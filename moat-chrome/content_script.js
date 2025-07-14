@@ -2195,15 +2195,47 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
     
     document.body.appendChild(commentBox);
     
-    // Position near clicked element
-    const rect = element.getBoundingClientRect();
-    commentBox.style.left = `${Math.min(rect.left, window.innerWidth - 320)}px`;
-    commentBox.style.top = `${rect.bottom + 10}px`;
+    // Position near cursor (using actual click coordinates)
+    const boxWidth = 320;
+    const boxHeight = 120; // Approximate height
+    const padding = 10;
     
-    // Make sure it's visible in viewport
+    // Calculate optimal position near cursor
+    let left = x + padding;
+    let top = y + padding;
+    
+    // Ensure comment box stays within viewport boundaries
+    // Check right edge
+    if (left + boxWidth > window.innerWidth) {
+      left = x - boxWidth - padding; // Position to the left of cursor
+    }
+    
+    // Check bottom edge
+    if (top + boxHeight > window.innerHeight) {
+      top = y - boxHeight - padding; // Position above cursor
+    }
+    
+    // Check left edge (in case cursor is very close to left)
+    if (left < padding) {
+      left = padding;
+    }
+    
+    // Check top edge (in case cursor is very close to top)
+    if (top < padding) {
+      top = padding;
+    }
+    
+    // Apply position
+    commentBox.style.left = `${left}px`;
+    commentBox.style.top = `${top}px`;
+    
+    // Final adjustment after measuring actual box dimensions
     const boxRect = commentBox.getBoundingClientRect();
+    if (boxRect.right > window.innerWidth) {
+      commentBox.style.left = `${window.innerWidth - boxRect.width - padding}px`;
+    }
     if (boxRect.bottom > window.innerHeight) {
-      commentBox.style.top = `${rect.top - boxRect.height - 10}px`;
+      commentBox.style.top = `${window.innerHeight - boxRect.height - padding}px`;
     }
     
     const textarea = commentBox.querySelector('textarea');
