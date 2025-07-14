@@ -16,13 +16,13 @@
     {
       "matches": ["http://localhost:*/*", "https://localhost:*/*"],
       "js": [
+        "html2canvas.min.js",
         "utils/persistence.js",
         "utils/taskStore.js",
         "utils/markdownGenerator.js",
         "utils/migrateLegacyFiles.js",
         "content_script.js",
-        "moat.js",
-        "html2canvas.min.js"
+        "moat.js"
       ],
       "css": ["moat.css"],
       "run_at": "document_end"

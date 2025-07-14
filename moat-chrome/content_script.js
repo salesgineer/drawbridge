@@ -790,6 +790,14 @@
       // Create .moat directory
       const moatDir = await dirHandle.getDirectoryHandle('.moat', { create: true });
       
+      // CRITICAL: Create screenshots directory proactively
+      try {
+        const screenshotsDir = await moatDir.getDirectoryHandle('screenshots', { create: true });
+        console.log('✅ Moat: Screenshots directory created/verified');
+      } catch (error) {
+        console.warn('⚠️ Moat: Failed to create screenshots directory:', error);
+      }
+      
       // Store .moat directory handle for moat.js to access
       window.directoryHandle = moatDir;
       console.log('🔧 Moat: ✅ DIRECTORY HANDLE SET:', moatDir);
@@ -2280,9 +2288,10 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
         id: `moat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       };
       
-      // Try to capture screenshot
+      // Try to capture screenshot with improved error handling
       if (window.html2canvas) {
         try {
+          console.log('📸 Moat: Capturing screenshot...');
           const canvas = await html2canvas(element, {
             backgroundColor: null,
             scale: 1,
@@ -2291,9 +2300,14 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
             height: rect.height
           });
           annotation.screenshot = canvas.toDataURL('image/png');
+          console.log('✅ Moat: Screenshot captured successfully');
         } catch (e) {
-          console.warn('Moat: Screenshot capture failed', e);
+          console.error('❌ Moat: Screenshot capture failed:', e);
+          showNotification('Screenshot capture failed - task saved without image', 'warning');
         }
+      } else {
+        console.error('❌ Moat: html2canvas not available - no screenshot captured');
+        showNotification('Screenshot library not loaded - task saved without image', 'warning');
       }
       
       addToQueue(annotation);
@@ -2622,6 +2636,50 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
         windowTaskStore: !!window.MoatTaskStore,
         windowMarkdownGenerator: !!window.MoatMarkdownGenerator
       };
+    },
+    // Screenshot system diagnostics
+    checkScreenshotSystem: async () => {
+      console.log('📸 === SCREENSHOT SYSTEM DIAGNOSIS ===');
+      
+      const diagnosis = {
+        html2canvasAvailable: !!window.html2canvas,
+        html2canvasVersion: window.html2canvas?.version || 'unknown',
+        screenshotsDirectoryExists: false,
+        canCaptureScreenshots: false,
+        recommendations: []
+      };
+      
+      // Check html2canvas availability
+      if (!diagnosis.html2canvasAvailable) {
+        diagnosis.recommendations.push('❌ html2canvas library not loaded - check manifest.json script order');
+      } else {
+        diagnosis.recommendations.push('✅ html2canvas library loaded successfully');
+      }
+      
+      // Check screenshots directory
+      if (window.directoryHandle) {
+        try {
+          await window.directoryHandle.getDirectoryHandle('screenshots', { create: false });
+          diagnosis.screenshotsDirectoryExists = true;
+          diagnosis.recommendations.push('✅ Screenshots directory exists');
+        } catch (error) {
+          diagnosis.recommendations.push('⚠️ Screenshots directory missing - will be created on first screenshot');
+        }
+      } else {
+        diagnosis.recommendations.push('❌ No project connected - screenshots require project connection');
+      }
+      
+      // Overall capability
+      diagnosis.canCaptureScreenshots = diagnosis.html2canvasAvailable && !!window.directoryHandle;
+      
+      if (diagnosis.canCaptureScreenshots) {
+        diagnosis.recommendations.push('🎉 Screenshot system is ready!');
+      }
+      
+      console.log('📸 Diagnosis results:', diagnosis);
+      diagnosis.recommendations.forEach(rec => console.log(`   ${rec}`));
+      
+      return diagnosis;
     },
     // Connection diagnostic tool
     diagnoseConnection: async () => {

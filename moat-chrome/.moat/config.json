@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "projectName": "moat-chrome",
-  "createdAt": "2025-07-14T18:45:33.354Z",
+  "createdAt": "2025-07-14T21:25:12.867Z",
   "streaming": {
     "enabled": true,
     "format": "jsonl",
