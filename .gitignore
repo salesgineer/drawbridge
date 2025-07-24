@@ -65,3 +65,5 @@ coverage/
 
 # Yarn Integrity file
 .yarn-integrity 
+# Drawbridge project-specific files
+.moat/
