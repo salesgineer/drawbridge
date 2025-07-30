@@ -140,6 +140,21 @@ body.float-comment-mode * {
   box-sizing: border-box;
 }
 
+/* For vertical sidebar (left position) - position notifications at bottom (same as right) */
+.float-moat.float-moat-left .float-header-notifications {
+  position: absolute;
+  bottom: 0; /* At the bottom of the sidebar */
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 8px 16px; /* Match the header padding exactly */
+  background: var(--moat-bg-primary);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  min-height: 40px; /* Ensure consistent height: 8px + 24px + 8px */
+  box-sizing: border-box;
+}
+
 .float-notification-container {
   position: relative;
   display: flex;
@@ -151,6 +166,13 @@ body.float-comment-mode * {
 
 /* For vertical sidebar - adjust container to full width but maintain height */
 .float-moat.float-moat-right .float-notification-container {
+  max-width: 100%;
+  width: 100%;
+  min-height: 24px; /* Keep the exact same min-height as bottom dock */
+}
+
+/* For vertical sidebar (left position) - adjust container to full width but maintain height (same as right) */
+.float-moat.float-moat-left .float-notification-container {
   max-width: 100%;
   width: 100%;
   min-height: 24px; /* Keep the exact same min-height as bottom dock */
@@ -486,6 +508,20 @@ body.float-comment-mode * {
   right: 0;
 }
 
+/* Left position */
+.float-moat.float-moat-left {
+  top: 0;
+  left: -320px;
+  width: 320px;
+  height: 100vh;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+  transition: left 0.3s ease;
+}
+
+.float-moat.float-moat-left.float-moat-visible {
+  left: 0;
+}
+
 /* Right position - Compact top bar layout */
 .float-moat.float-moat-right .float-moat-top-bar {
   display: flex;
@@ -571,6 +607,94 @@ body.float-comment-mode * {
 }
 
 .float-moat.float-moat-right .float-project-divider {
+  height: 12px;
+}
+
+/* Left position - Compact top bar layout (mirrors right position) */
+.float-moat.float-moat-left .float-moat-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--moat-bg-secondary);
+  border-bottom: 1px solid var(--moat-border);
+  gap: 12px;
+}
+
+.float-moat.float-moat-left .float-moat-header {
+  padding: 0;
+  border-bottom: none;
+  background: transparent;
+  flex: none;
+}
+
+/* Hide Drawbridge text in left position, keep only logo */
+.float-moat.float-moat-left .float-moat-header h3 {
+  margin: 0;
+  font-size: 0;
+  color: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.float-moat.float-moat-left .float-drawbridge-icon {
+  width: 20px;
+  height: 20px;
+  fill: var(--moat-text-primary);
+  flex-shrink: 0;
+}
+
+.float-moat.float-moat-left .float-moat-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Compact project status for left position */
+.float-moat.float-moat-left .float-moat-project-status-container {
+  max-width: 120px;
+}
+
+.float-moat.float-moat-left .float-moat-project-dropdown {
+  max-width: 120px;
+  padding: 4px 8px;
+  height: 28px;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.float-moat.float-moat-left .float-project-label {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+}
+
+/* Compact action buttons for left position */  
+.float-moat.float-moat-left .float-moat-actions {
+  gap: 8px;
+}
+
+.float-moat.float-moat-left .float-moat-actions button {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+}
+
+.float-moat.float-moat-left .float-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.float-moat.float-moat-left .float-project-folder-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.float-moat.float-moat-left .float-project-divider {
   height: 12px;
 }
 
@@ -682,7 +806,7 @@ body.float-comment-mode * {
 }
 
 /* Legacy compatibility - treat no position class as right */
-.float-moat:not(.float-moat-right):not(.float-moat-bottom) {
+.float-moat:not(.float-moat-right):not(.float-moat-bottom):not(.float-moat-left) {
   top: 0;
   right: -320px;
   width: 320px;
@@ -691,7 +815,7 @@ body.float-comment-mode * {
   transition: right 0.3s ease;
 }
 
-.float-moat:not(.float-moat-right):not(.float-moat-bottom).float-moat-visible {
+.float-moat:not(.float-moat-right):not(.float-moat-bottom):not(.float-moat-left).float-moat-visible {
   right: 0;
 }
 
@@ -939,6 +1063,11 @@ body.float-comment-mode * {
   padding-bottom: 56px; /* Space for potential notifications at bottom */
 }
 
+/* Left position queue - same as right position */
+.float-moat.float-moat-left .float-moat-queue {
+  padding-bottom: 56px; /* Space for potential notifications at bottom */
+}
+
 .float-moat-loading {
   text-align: center;
   color: var(--moat-text-muted);
@@ -1174,24 +1303,42 @@ body.float-comment-mode * {
 
 /* Right-docked position: show tabs below header, hide tabs in header */
 .float-moat.float-moat-right .float-moat-tabs-header,
-.float-moat:not(.float-moat-bottom) .float-moat-tabs-header {
+.float-moat:not(.float-moat-bottom):not(.float-moat-left) .float-moat-tabs-header {
   display: none !important;
 }
 
 .float-moat.float-moat-right .float-moat-tabs-below-header,
-.float-moat:not(.float-moat-bottom) .float-moat-tabs-below-header {
+.float-moat:not(.float-moat-bottom):not(.float-moat-left) .float-moat-tabs-below-header {
   display: block;
 }
 
 /* Right-docked position: make tabs fill full width */
 .float-moat.float-moat-right .float-tab-group,
-.float-moat:not(.float-moat-bottom) .float-tab-group {
+.float-moat:not(.float-moat-bottom):not(.float-moat-left) .float-tab-group {
   width: 100%;
 }
 
 .float-moat.float-moat-right .float-tab-btn,
-.float-moat:not(.float-moat-bottom) .float-tab-btn {
+.float-moat:not(.float-moat-bottom):not(.float-moat-left) .float-tab-btn {
   flex: 1; /* Make each tab expand to fill available space */
+}
+
+/* Left-docked position: make tabs fill full width (same as right) */
+.float-moat.float-moat-left .float-tab-group {
+  width: 100%;
+}
+
+.float-moat.float-moat-left .float-tab-btn {
+  flex: 1; /* Make each tab expand to fill available space */
+}
+
+/* Left-docked position: show tabs below header, hide tabs in header (same as right) */
+.float-moat.float-moat-left .float-moat-tabs-header {
+  display: none !important;
+}
+
+.float-moat.float-moat-left .float-moat-tabs-below-header {
+  display: block;
 }
 
 /* Bottom-docked position: show tabs in header, hide tabs below header */
@@ -1404,23 +1551,41 @@ body.float-comment-mode * {
 
 /* Scrollbar styling for Moat - Right position */
 .float-moat.float-moat-right .float-moat-queue::-webkit-scrollbar,
-.float-moat:not(.float-moat-bottom) .float-moat-queue::-webkit-scrollbar {
+.float-moat:not(.float-moat-bottom):not(.float-moat-left) .float-moat-queue::-webkit-scrollbar {
   width: 6px;
 }
 
 .float-moat.float-moat-right .float-moat-queue::-webkit-scrollbar-track,
-.float-moat:not(.float-moat-bottom) .float-moat-queue::-webkit-scrollbar-track {
+.float-moat:not(.float-moat-bottom):not(.float-moat-left) .float-moat-queue::-webkit-scrollbar-track {
   background: var(--moat-scrollbar-track);
 }
 
 .float-moat.float-moat-right .float-moat-queue::-webkit-scrollbar-thumb,
-.float-moat:not(.float-moat-bottom) .float-moat-queue::-webkit-scrollbar-thumb {
+.float-moat:not(.float-moat-bottom):not(.float-moat-left) .float-moat-queue::-webkit-scrollbar-thumb {
   background: var(--moat-scrollbar-thumb);
   border-radius: 3px;
 }
 
 .float-moat.float-moat-right .float-moat-queue::-webkit-scrollbar-thumb:hover,
-.float-moat:not(.float-moat-bottom) .float-moat-queue::-webkit-scrollbar-thumb:hover {
+.float-moat:not(.float-moat-bottom):not(.float-moat-left) .float-moat-queue::-webkit-scrollbar-thumb:hover {
+  background: var(--moat-scrollbar-thumb-hover);
+}
+
+/* Scrollbar styling for Moat - Left position (same as right) */
+.float-moat.float-moat-left .float-moat-queue::-webkit-scrollbar {
+  width: 6px;
+}
+
+.float-moat.float-moat-left .float-moat-queue::-webkit-scrollbar-track {
+  background: var(--moat-scrollbar-track);
+}
+
+.float-moat.float-moat-left .float-moat-queue::-webkit-scrollbar-thumb {
+  background: var(--moat-scrollbar-thumb);
+  border-radius: 3px;
+}
+
+.float-moat.float-moat-left .float-moat-queue::-webkit-scrollbar-thumb:hover {
   background: var(--moat-scrollbar-thumb-hover);
 }
 
@@ -1530,6 +1695,28 @@ body.float-comment-mode * {
 }
 
 .float-moat.float-moat-right .float-comment-text {
+  display: none;
+}
+
+/* Compact styling for left position (same as right) */
+.float-moat.float-moat-left .float-moat-new-comment-container {
+  /* Spacing handled by parent gap */
+}
+
+.float-moat.float-moat-left .float-moat-new-comment-btn {
+  padding: 6px;
+  height: 28px;
+  width: 28px;
+  font-size: 11px;
+  gap: 4px;
+}
+
+.float-moat.float-moat-left .float-comment-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.float-moat.float-moat-left .float-comment-text {
   display: none;
 }
 

@@ -3,7 +3,7 @@
   let moat = null;
   let isVisible = false;
   let draggedItem = null;
-  let moatPosition = 'bottom'; // 'right' or 'bottom' - default to bottom
+  let moatPosition = 'bottom'; // 'right', 'bottom', or 'left' - default to bottom
   let currentTabFilter = 'to do'; // Currently selected tab filter
   
   // ===== NOTIFICATION DEDUPLICATION SYSTEM =====
@@ -1311,17 +1311,64 @@
     // Determine current position and mode states
     const currentPosition = moatPosition;
     const isDarkMode = getCurrentTheme() === 'dark';
-    const positionText = currentPosition === 'right' ? 'Dock to bottom' : 'Dock to right';
-    const modeText = isDarkMode ? 'Light mode' : 'Dark mode';
     
-    // Use proper directional icons for docking
-    const positionIcon = currentPosition === 'right' ? 
-      `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
-        <polygon points="5 7 7 7 7 8 8 8 8 9 9 9 9 10 10 10 10 11 11 11 11 12 13 12 13 11 14 11 14 10 15 10 15 9 16 9 16 8 17 8 17 7 19 7 19 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7"/>
-      </svg>` :
-      `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
-        <polygon points="7 19 7 17 8 17 8 16 9 16 9 15 10 15 10 14 11 14 11 13 12 13 12 11 11 11 11 10 10 10 10 9 9 9 9 8 8 8 8 7 7 7 7 5 8 5 8 4 10 4 10 5 11 5 11 6 12 6 12 7 13 7 13 8 14 8 14 9 15 9 15 10 16 10 16 11 17 11 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 12 17 12 18 11 18 11 19 10 19 10 20 8 20 8 19 7 19"/>
-      </svg>`;
+    // Create position options based on current position
+    let positionOptions = [];
+    
+    if (currentPosition === 'right') {
+      positionOptions = [
+        {
+          text: 'Dock to bottom',
+          action: 'set-position-bottom',
+          icon: `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+            <polygon points="5 7 7 7 7 8 8 8 8 9 9 9 9 10 10 10 10 11 11 11 11 12 13 12 13 11 14 11 14 10 15 10 15 9 16 9 16 8 17 8 17 7 19 7 19 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7"/>
+          </svg>`
+        },
+        {
+          text: 'Dock to left',
+          action: 'set-position-left',
+          icon: `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+            <polygon points="17 5 17 7 16 7 16 8 15 8 15 9 14 9 14 10 13 10 13 11 12 11 12 13 13 13 13 14 14 14 14 15 15 15 15 16 16 16 16 17 17 17 17 19 16 19 16 20 14 20 14 19 13 19 13 18 12 18 12 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 11 8 11 8 10 9 10 9 9 10 9 10 8 11 8 11 7 12 7 12 6 13 6 13 5 14 5 14 4 16 4 16 5 17 5"/>
+          </svg>`
+        }
+      ];
+    } else if (currentPosition === 'bottom') {
+      positionOptions = [
+        {
+          text: 'Dock to right',
+          action: 'set-position-right',
+          icon: `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+            <polygon points="7 19 7 17 8 17 8 16 9 16 9 15 10 15 10 14 11 14 11 13 12 13 12 11 11 11 11 10 10 10 10 9 9 9 9 8 8 8 8 7 7 7 7 5 8 5 8 4 10 4 10 5 11 5 11 6 12 6 12 7 13 7 13 8 14 8 14 9 15 9 15 10 16 10 16 11 17 11 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 12 17 12 18 11 18 11 19 10 19 10 20 8 20 8 19 7 19"/>
+          </svg>`
+        },
+        {
+          text: 'Dock to left',
+          action: 'set-position-left',
+          icon: `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+            <polygon points="17 5 17 7 16 7 16 8 15 8 15 9 14 9 14 10 13 10 13 11 12 11 12 13 13 13 13 14 14 14 14 15 15 15 15 16 16 16 16 17 17 17 17 19 16 19 16 20 14 20 14 19 13 19 13 18 12 18 12 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 11 8 11 8 10 9 10 9 9 10 9 10 8 11 8 11 7 12 7 12 6 13 6 13 5 14 5 14 4 16 4 16 5 17 5"/>
+          </svg>`
+        }
+      ];
+    } else {
+      positionOptions = [
+        {
+          text: 'Dock to right',
+          action: 'set-position-right',
+          icon: `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+            <polygon points="7 19 7 17 8 17 8 16 9 16 9 15 10 15 10 14 11 14 11 13 12 13 12 11 11 11 11 10 10 10 10 9 9 9 9 8 8 8 8 7 7 7 7 5 8 5 8 4 10 4 10 5 11 5 11 6 12 6 12 7 13 7 13 8 14 8 14 9 15 9 15 10 16 10 16 11 17 11 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 12 17 12 18 11 18 11 19 10 19 10 20 8 20 8 19 7 19"/>
+          </svg>`
+        },
+        {
+          text: 'Dock to bottom',
+          action: 'set-position-bottom',
+          icon: `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
+            <polygon points="5 7 7 7 7 8 8 8 8 9 9 9 9 10 10 10 10 11 11 11 11 12 13 12 13 11 14 11 14 10 15 10 15 9 16 9 16 8 17 8 17 7 19 7 19 8 20 8 20 10 19 10 19 11 18 11 18 12 17 12 17 13 16 13 16 14 15 14 15 15 14 15 14 16 13 16 13 17 11 17 11 16 10 16 10 15 9 15 9 14 8 14 8 13 7 13 7 12 6 12 6 11 5 11 5 10 4 10 4 8 5 8 5 7"/>
+          </svg>`
+        }
+      ];
+    }
+    
+    const modeText = isDarkMode ? 'Light mode' : 'Dark mode';
     
     const modeIcon = isDarkMode ? 
       `<svg style="width: 12px; height: 12px; fill: #6B7280;" viewBox="0 0 24 24">
@@ -1340,18 +1387,30 @@
         <polygon points="23 10 23 11 22 11 22 12 21 12 21 14 22 14 22 17 21 17 21 16 20 16 20 15 19 15 19 14 18 14 18 15 17 15 17 16 16 16 16 17 15 17 15 14 16 14 16 12 15 12 15 11 14 11 14 10 17 10 17 8 18 8 18 7 19 7 19 8 20 8 20 10 23 10"/>
       </svg>`;
     
-    const menu = document.createElement('div');
-    menu.className = 'float-more-menu';
-    menu.innerHTML = `
-      <div class="float-more-menu-item" data-action="toggle-position">
-        ${positionIcon}
-        <span>${positionText}</span>
-      </div>
+    // Build menu HTML with position options
+    let menuHTML = '';
+    
+    // Add position options
+    positionOptions.forEach(option => {
+      menuHTML += `
+        <div class="float-more-menu-item" data-action="${option.action}">
+          ${option.icon}
+          <span>${option.text}</span>
+        </div>
+      `;
+    });
+    
+    // Add theme toggle
+    menuHTML += `
       <div class="float-more-menu-item" data-action="toggle-theme">
         ${modeIcon}
         <span>${modeText}</span>
       </div>
     `;
+    
+    const menu = document.createElement('div');
+    menu.className = 'float-more-menu';
+    menu.innerHTML = menuHTML;
     
     // Position menu below button
     const button = moat.querySelector('.float-moat-more-btn');
@@ -1376,8 +1435,18 @@
         // Remove menu immediately before performing action
         menu.remove();
         
-        if (action === 'toggle-position') {
-          toggleMoatPosition();
+        if (action === 'set-position-right') {
+          setMoatPosition('right');
+          localStorage.setItem('moat.position', 'right');
+          showNotification('Moat moved to right');
+        } else if (action === 'set-position-bottom') {
+          setMoatPosition('bottom');
+          localStorage.setItem('moat.position', 'bottom');
+          showNotification('Moat moved to bottom');
+        } else if (action === 'set-position-left') {
+          setMoatPosition('left');
+          localStorage.setItem('moat.position', 'left');
+          showNotification('Moat moved to left');
         } else if (action === 'toggle-theme') {
           toggleTheme();
         }
@@ -1652,20 +1721,11 @@
     setTimeout(updateLogo, 0);
   }
 
-  // Toggle Moat position between right and bottom
+  // Toggle Moat position (legacy function - now handled by direct position setting)
   function toggleMoatPosition() {
-    const newPosition = moatPosition === 'right' ? 'bottom' : 'right';
-    setMoatPosition(newPosition);
-    
-    // Save preference
-    localStorage.setItem('moat.position', newPosition);
-    
-    // Update button tooltip
-    const toggleBtn = moat.querySelector('.float-moat-position-toggle');
-    toggleBtn.title = `Toggle position (${newPosition === 'right' ? 'Right/Bottom' : 'Bottom/Right'})`;
-    
-    showNotification(`Moat moved to ${newPosition}`);
-    console.log('Moat: Position toggled to', newPosition);
+    // This function is kept for backward compatibility but the cycling behavior
+    // has been replaced with direct position selection in the more menu
+    console.log('Moat: toggleMoatPosition called (legacy function)');
   }
 
   // Set Moat position
@@ -1678,11 +1738,13 @@
     resetFloatingAnimation();
     
     // Remove existing position classes
-    moat.classList.remove('float-moat-right', 'float-moat-bottom');
+    moat.classList.remove('float-moat-right', 'float-moat-bottom', 'float-moat-left');
     
     // Add new position class
     if (position === 'bottom') {
       moat.classList.add('float-moat-bottom');
+    } else if (position === 'left') {
+      moat.classList.add('float-moat-left');
     } else {
       moat.classList.add('float-moat-right');
     }
