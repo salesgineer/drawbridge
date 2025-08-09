@@ -1,216 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drawbridge Plugin Tutorial | Learn Visual Annotation</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moss&Mint Studio — Design & Web Agency</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div class="container">
-      <div class="header-content">
-        <div class="brand">
-          <img src="db-logo-dark.png" alt="Drawbridge Logo" class="logo">
-          <div class="brand-text">
-            <h1 class="brand-title">Drawbridge</h1>
-            <p class="brand-subtitle">Visual Annotation Tutorial</p>
-          </div>
-        </div>
-        
-        <div class="plugin-status">
-          <div class="status-indicator" id="plugin-status">
-            <div class="status-dot"></div>
-            <span class="status-text">Plugin Ready</span>
-          </div>
-        </div>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-glyph" aria-hidden="true"></span>
+        <span class="brand-name">Moss&Mint</span>
+      </div>
+      <nav class="main-nav">
+        <a href="#work">Work</a>
+        <a href="#services">Servcies</a>
+        <a href="#cases">Case Studys</a>
+      </nav>
+      <div class="header-cta">
+        <a class="btn btn-small" href="#contact">Conact us</a>
       </div>
     </div>
   </header>
 
-  <!-- Main Tutorial -->
-  <main class="tutorial-main">
-    <div class="container">
-      <!-- Hero Section -->
-      <section class="hero">
-      </section>
-
-      <!-- Carousel -->
-      <section class="carousel-section">
-        <div class="carousel-header">
-          <div class="carousel-progress">
-            <div class="progress-track">
-              <div class="progress-fill" id="carousel-progress"></div>
-            </div>
-            <span class="progress-text" id="progress-text">Step 1 of 3</span>
+  <main>
+    <!-- Hero -->
+    <section class="hero" id="work">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <h1>We design & ship deliteful products</h1>
+          <p class="hero-sub">
+            A boutique studio crafting <strong>brand systems</strong>, websites, and front‑end builds. Seamless (mostly), fast, and a bit obsesed with details.
+          </p>
+          <div class="cta-buttons">
+            <a class="btn btn-primary" href="#contact">Get a Proposel</a>
+            <a class="btn btn-secondary" href="#portfolio">See our Workk</a>
           </div>
         </div>
-
-        <div class="carousel-container">
-          <div class="carousel-track" id="carousel-track">
-            
-            <!-- Step 1: Your First Comment -->
-            <div class="carousel-slide active" data-step="1">
-              <div class="slide-content">
-                <div class="slide-header">
-                  <h3>Your First Comment</h3>
-                  <p>Learn the basic workflow by pressing <kbd>C</kbd> and clicking on the demo below</p>
-                </div>
-                
-                <div class="demo-area" id="target-1">
-                  <div class="demo-component">
-                    <h4>Sample Button</h4>
-                    <p>Try commenting: "Change this to blue"</p>
-                    <button class="demo-button">Click Me</button>
+        <div class="hero-visual">
+          <div class="hero-illustration">
+            <img class="hero-photo" src="https://images.pexels.com/photos/4348404/pexels-photo-4348404.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Creative studio working session"/>
+            <div class="mock-window">
+              <div class="mock-toolbar">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="toolbar-title">Project Dashbord — Moss&Mint</span>
+              </div>
+              <div class="mock-body">
+                <div class="mock-card misaligned">
+                  <h3>Brand Palette</h3>
+                  <div class="swatches">
+                    <span class="swatch primary"></span>
+                    <span class="swatch accent off"></span>
+                    <span class="swatch neutral"></span>
                   </div>
                 </div>
-                
-                <div class="instructions">
-                  <div class="instruction-step">
-                    <span class="step-num">1</span>
-                    <span>Press <kbd>C</kbd> to enter comment mode</span>
-                  </div>
-                  <div class="instruction-step">
-                    <span class="step-num">2</span>
-                    <span>Click on the button above</span>
-                  </div>
-                  <div class="instruction-step">
-                    <span class="step-num">3</span>
-                    <span>Type your feedback and press Enter</span>
-                  </div>
-                </div>
-                
-                <div class="slide-status" id="status-1">
-                  <span class="status-text">Ready to start</span>
+                <div class="mock-card">
+                  <h3>Type Styles</h3>
+                  <p>Headings use Space Grotesk; body uses Inter. Kerning may be sligtly off.</p>
                 </div>
               </div>
             </div>
-
-            <!-- Step 2: Multiple Comments -->
-            <div class="carousel-slide" data-step="2">
-              <div class="slide-content">
-                <div class="slide-header">
-                  <h3>Multiple Comments</h3>
-                  <p>Practice creating multiple comments on different parts of this profile card</p>
-                </div>
-                
-                <div class="demo-area" id="target-2">
-                  <div class="profile-card">
-                    <div class="profile-header">
-                      <h4>User Profile</h4>
-                      <button class="edit-btn">Edit</button>
-                    </div>
-                    <div class="profile-avatar">
-                      <div class="avatar">👤</div>
-                    </div>
-                    <div class="profile-info">
-                      <p class="profile-name">John Doe</p>
-                      <p class="profile-role">Product Designer</p>
-                    </div>
-                    <div class="profile-actions">
-                      <button class="action-btn primary">Follow</button>
-                      <button class="action-btn secondary">Message</button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="comment-goals">
-                  <p>Try commenting on:</p>
-                  <div class="goal-list">
-                    <span class="goal-item">Avatar</span>
-                    <span class="goal-item">Name styling</span>
-                    <span class="goal-item">Button colors</span>
-                  </div>
-                </div>
-                
-                <div class="slide-status" id="status-2">
-                  <span class="status-text">Complete Step 1 first</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Step 3: Finding Tasks -->
-            <div class="carousel-slide" data-step="3">
-              <div class="slide-content">
-                <div class="slide-header">
-                  <h3>Find Your Tasks in Cursor</h3>
-                  <p>Learn where to find your comments as organized tasks</p>
-                </div>
-                
-                <div class="demo-area" id="target-3">
-                  <div class="cursor-guide">
-                    <div class="guide-item">
-                      <div class="guide-icon">📁</div>
-                      <div class="guide-text">
-                        <strong>File Explorer</strong>
-                        <span>Look for <code>.moat/moat-tasks.md</code></span>
-                      </div>
-                    </div>
-                    <div class="guide-item">
-                      <div class="guide-icon">🔍</div>
-                      <div class="guide-text">
-                        <strong>Search</strong>
-                        <span>Use <kbd>Cmd+Shift+F</kbd> to search "moat-tasks"</span>
-                      </div>
-                    </div>
-                    <div class="guide-item">
-                      <div class="guide-icon">📝</div>
-                      <div class="guide-text">
-                        <strong>Review Tasks</strong>
-                        <span>All comments become actionable tasks</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="practice-area">
-                    <h4>Practice Here</h4>
-                    <p>Comment on this section, then follow the guide above</p>
-                    <div class="file-path">
-                      <code>.moat/moat-tasks.md</code>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="slide-status" id="status-3">
-                  <span class="status-text">Complete Step 2 first</span>
-                </div>
-              </div>
-            </div>
-
           </div>
-        </div>
-
-        <!-- Navigation -->
-        <div class="carousel-nav">
-          <button class="nav-btn prev-btn" id="prev-btn" disabled>←</button>
-          <button class="nav-btn next-btn" id="next-btn">→</button>
-        </div>
-      </section>
-
-
-    </div>
-  </main>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-brand">
-          <img src="db-logo-dark.png" alt="Drawbridge Logo" class="footer-logo">
-          <div>
-            <h3>Drawbridge</h3>
-            <p>Bridging design feedback and code implementation</p>
-          </div>
-        </div>
-        
-        <div class="footer-links">
-          <p>Built for designers and developers who care about user experience</p>
         </div>
       </div>
+    </section>
+
+    <!-- Capabilities -->
+    <section class="features" id="services">
+      <div class="container">
+        <div class="section-head">
+          <h2>Capabilities</h2>
+          <p>Strategy → design → build. Less back‑and‑fourth, more flow.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="icon">🎨</div>
+            <h3>Branding & Identity</h3>
+            <p>Logos, color, typography, and design systems for scale.</p>
+          </article>
+          <article class="feature-card bumped">
+            <div class="icon">🕸️</div>
+            <h3>Web Design</h3>
+            <p>Marketing sites and product UI with components that actually componet.</p>
+          </article>
+          <article class="feature-card alt-accent">
+            <div class="icon">🧑‍💻</div>
+            <h3>Frontend Devlopment</h3>
+            <p>Accessible, performant, and maintainble builds your team can own.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Example (layout review) -->
+    <section class="example" id="portfolio">
+      <div class="container example-inner">
+        <div class="example-copy">
+          <h2>Layout reviw</h2>
+          <p>Toggle the card state or nudge the layout. Notice the odd paddings and the slightly off alignment (on purpose).</p>
+          <div class="example-controls">
+            <button id="bug-button" class="btn btn-primary">Toggle state</button>
+            <button id="nudge-left" class="btn btn-ghost">Nudge left</button>
+          </div>
+        </div>
+        <div class="example-visual">
+          <div class="example-card">
+            <img class="example-photo" src="https://images.pexels.com/photos/3153199/pexels-photo-3153199.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Team collaborating"/>
+            <h4 class="card-title">Case Study: River Co.</h4>
+            <div class="preview-row">
+              <span class="pill">status: In‑progres</span>
+              <span class="chip chip-green">on‑track</span>
+            </div>
+            <div class="preview-box weird-gap">
+              <div class="box-thing one"></div>
+              <div class="box-thing two"></div>
+              <div class="box-thing three misalign"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Packages -->
+    <section class="pricing" id="contact">
+      <div class="container">
+        <div class="section-head narrow">
+          <h2>Packages</h2>
+          <p>Transparent starting points. Every engagement is bespoke-ish.</p>
+        </div>
+        <div class="pricing-card">
+          <h3>Starter Website</h3>
+          <p class="price">$8,000+ <span>/ proj</span></p>
+          <ul class="list">
+            <li>3–5 pages</li>
+            <li>Basic CMS intergration</li>
+            <li>2 rounds of reviw</li>
+          </ul>
+          <a class="btn btn-primary skewed" href="#contact">Request Proposel</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="foot-brand">© 2025 Moss&Mint Studio</div>
+      <nav class="foot-nav">
+        <a href="#faq">FAQ</a>
+        <a href="#privacy">Privcy</a>
+        <a href="#terms">Terms</a>
+      </nav>
     </div>
   </footer>
 
