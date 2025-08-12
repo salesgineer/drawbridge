@@ -1,7 +1,7 @@
 Drawbridge - Visual context for Cursor
 ==========================================
 
-Welcome to Drawbridge! This plugin + ruleset connects your local development projects Cursor. Make comments like in Figma and send them to Cursor. to cextension, allowing you to turn visual feedback directly into production-ready code.
+Make comments in the browser (like in Figma) and send them to Cursor.  This chrome plugin + cursor ruleset connects your browser to your local development project. Comments made on the front end are batched into a markdown file. Run the command "bridge" to process them in Cursor. Simplify your workflow by adding more context to visual edits with Cursor.
 
 🚀 1. Setup
 -----------
