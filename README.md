@@ -1,4 +1,4 @@
-Drawbridge - Visual comments for Cursor
+<img width="521" height="522" alt="db-logo-1" src="https://github.com/user-attachments/assets/347e4382-ceb5-429c-be1a-dd768d78af3a" /> Drawbridge - Visual comments for Cursor
 ==========================================
 
 Welcome to Drawbridge! This plugin + ruleset connects your local development projects Cursor. Make comments like in Figma and send them to Cursor. to cextension, allowing you to turn visual feedback directly into production-ready code.
