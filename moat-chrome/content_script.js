@@ -218,7 +218,7 @@
   }
 
   // Convert annotation format to TaskStore format (Task 2.1)
-  function convertAnnotationToTask(annotation) {
+  function convertAnnotationToTask(annotation, screenshotPath = '') {
     // Generate a clean title from element label and comment
     const title = annotation.elementLabel || 'UI Element Task';
     
@@ -230,15 +230,12 @@
       h: annotation.boundingRect.height
     };
 
-    // Generate screenshot path
-    const screenshotPath = annotation.screenshot ? `./screenshots/${annotation.id}.png` : '';
-
     return {
       title: title,
       comment: annotation.content,
       selector: annotation.target,
       boundingRect: boundingRect,
-      screenshotPath: screenshotPath
+      screenshotPath: screenshotPath || ''
     };
   }
 
@@ -333,10 +330,7 @@
       
       // Step 3: Convert annotation to TaskStore format
       console.log('🔧 Moat: Converting annotation to task format...');
-      const taskData = convertAnnotationToTask(annotation);
-      if (screenshotPath) {
-        taskData.screenshotPath = screenshotPath;
-      }
+      const taskData = convertAnnotationToTask(annotation, screenshotPath);
       console.log('🔧 Moat: Task data prepared:', taskData);
 
       // Step 4: Add task to TaskStore
@@ -1919,30 +1913,28 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
         console.log('🔧 Moat: No existing JSON file, starting with empty array');
       }
       
-      // Step 2: Create new task object
+      // Step 2: Persist screenshot if available
+      const screenshotPath = await saveScreenshotToFile(annotation);
+      if (!screenshotPath && annotation.screenshot) {
+        console.warn('⚠️ Moat: Screenshot data present but file write failed in direct mode');
+      }
+
+      // Step 3: Create new task object
       console.log('🔧 Moat: Creating new task object...');
+      const baseTaskData = convertAnnotationToTask(annotation, screenshotPath);
       const newTask = {
         id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        title: annotation.elementLabel || 'UI Element Task',
-        comment: annotation.content,
-        selector: annotation.target,
-        boundingRect: {
-          x: annotation.boundingRect?.x || 0,
-          y: annotation.boundingRect?.y || 0,
-          w: annotation.boundingRect?.width || 0,
-          h: annotation.boundingRect?.height || 0
-        },
-        screenshotPath: annotation.screenshot ? `./screenshots/${annotation.id}.png` : '',
+        ...baseTaskData,
         status: 'to do',
         timestamp: Date.now()
       };
       console.log('🔧 Moat: New task created:', newTask);
       
-      // Step 3: Add to tasks array
+      // Step 4: Add to tasks array
       existingTasks.push(newTask);
       console.log('🔧 Moat: Total tasks now:', existingTasks.length);
       
-      // Step 4: Write JSON file
+      // Step 5: Write JSON file
       console.log('🔧 Moat: Writing JSON file...');
       const jsonHandle = await window.directoryHandle.getFileHandle('moat-tasks-detail.json', { create: true });
       const jsonWritable = await jsonHandle.createWritable();
@@ -1950,7 +1942,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
       await jsonWritable.close();
       console.log('✅ Moat: JSON file written successfully');
       
-      // Step 5: Generate and write markdown
+      // Step 6: Generate and write markdown
       console.log('🔧 Moat: Generating markdown...');
       const sortedTasks = existingTasks.sort((a, b) => a.timestamp - b.timestamp);
       
@@ -2909,10 +2901,12 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
           console.log('📸 Moat: Capturing screenshot...');
           const canvas = await html2canvas(element, {
             backgroundColor: null,
-            scale: 1,
+            scale: Math.min(window.devicePixelRatio || 1, 2),
             logging: false,
             width: rect.width,
-            height: rect.height
+            height: rect.height,
+            useCORS: true,
+            allowTaint: false
           });
           annotation.screenshot = canvas.toDataURL('image/png');
           console.log('✅ Moat: Screenshot captured successfully');

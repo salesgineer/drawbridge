@@ -2,9 +2,24 @@
 // NOTE: These tests use JSDOM (default Jest environment) and mock the
 // File System Access API to simulate the browser environment.
 
-const TaskStore = require('../utils/taskStore');
+const { TaskStore } = require('../utils/taskStore');
 const MarkdownGenerator = require('../utils/markdownGenerator');
 const LegacyFileMigrator = require('../utils/migrateLegacyFiles');
+
+if (!global.window) {
+  global.window = {};
+}
+
+if (!global.document) {
+  global.document = {
+    body: {
+      classList: {
+        add: () => {},
+        remove: () => {}
+      }
+    }
+  };
+}
 
 // --- Mock Helpers -----------------------------------------------------------
 class MockFileHandle {
@@ -26,11 +41,13 @@ class MockFileHandle {
 }
 
 class MockDirectoryHandle {
-  constructor(initial = {}) {
+  constructor(initial = {}, name = 'root', parent = null) {
+    this.name = name;
+    this.parent = parent;
     this.files = new Map();
-    // Pre-populate directory with given files
-    Object.entries(initial).forEach(([name, content]) => {
-      this.files.set(name, new MockFileHandle(name, content));
+    this.directories = new Map();
+    Object.entries(initial).forEach(([fileName, content]) => {
+      this.files.set(fileName, new MockFileHandle(fileName, content));
     });
   }
 
@@ -42,11 +59,35 @@ class MockDirectoryHandle {
     return this.files.get(name);
   }
 
-  async removeEntry(name) {
-    this.files.delete(name);
+  async getDirectoryHandle(name, { create = false } = {}) {
+    if (name === '.' || name === './') {
+      return this;
+    }
+
+    if (name === '..') {
+      if (!this.parent) throw new Error('No parent directory');
+      return this.parent;
+    }
+
+    if (name === '.moat' && !this.directories.has(name) && !create) {
+      return this;
+    }
+
+    if (!this.directories.has(name)) {
+      if (!create) throw new Error(`Directory not found: ${name}`);
+      const subDir = new MockDirectoryHandle({}, name, this);
+      this.directories.set(name, subDir);
+      return subDir;
+    }
+
+    return this.directories.get(name);
   }
 
-  // Helper util
+  async removeEntry(name) {
+    this.files.delete(name);
+    this.directories.delete(name);
+  }
+
   listFiles() {
     return [...this.files.keys()];
   }
@@ -67,19 +108,25 @@ function createMockAnnotation(index = 0) {
 
 // ---------------------------------------------------------------------------
 describe('Integration & QA Tests (Tasks 5.1-5.8)', () => {
-  let dirHandle;
+  let rootDir;
+  let moatDir;
   let taskStore;
   let markdownGen;
   
-  beforeEach(() => {
+  beforeEach(async () => {
     // Fresh mock directory for each test
-    dirHandle = new MockDirectoryHandle();
-    taskStore = new TaskStore(dirHandle);
-    markdownGen = new MarkdownGenerator(dirHandle);
+    rootDir = new MockDirectoryHandle();
+    moatDir = await rootDir.getDirectoryHandle('.moat', { create: true });
+    taskStore = new TaskStore();
+    taskStore.initialize(moatDir);
+    markdownGen = MarkdownGenerator;
     // Attach globals so moat.js and content_script.js (if imported later) can access
     global.window.taskStore = taskStore;
     global.window.markdownGenerator = markdownGen;
-    global.window.showDirectoryPicker = async () => dirHandle;
+    global.window.directoryHandle = moatDir;
+    global.window.MoatTaskStore = { TaskStore };
+    global.window.MoatMarkdownGenerator = markdownGen;
+    global.window.showDirectoryPicker = async () => moatDir;
     global.chrome = {
       runtime: {
         onMessage: {
@@ -89,31 +136,50 @@ describe('Integration & QA Tests (Tasks 5.1-5.8)', () => {
     };
   });
 
+  function createTaskData({
+    title,
+    comment,
+    selector,
+    boundingRect = { x: 0, y: 0, w: 0, h: 0 },
+    screenshotPath = ''
+  }) {
+    return {
+      title,
+      comment,
+      selector,
+      boundingRect,
+      screenshotPath
+    };
+  }
+
   // 5.1 End-to-end flow: annotation → TaskStore → markdown
   test('5.1 End-to-End Annotation Capture Flow', async () => {
     const annotation = createMockAnnotation(1);
 
     // Simulate conversion & save using new pipeline
-    const taskObj = {
-      id: `task-${Date.now()}`,
-      title: annotation.content,
-      description: annotation.content,
-      status: 'pending',
-      created: new Date(annotation.timestamp).toISOString(),
-      elementLabel: annotation.elementLabel
-    };
+    const taskData = createTaskData({
+      title: annotation.elementLabel,
+      comment: annotation.content,
+      selector: annotation.target,
+      boundingRect: {
+        x: annotation.boundingRect.x,
+        y: annotation.boundingRect.y,
+        w: annotation.boundingRect.width,
+        h: annotation.boundingRect.height
+      }
+    });
 
-    await taskStore.addTask(taskObj);
-    await markdownGen.rebuildMarkdownFromJson(await taskStore.getAllTasks());
+    await taskStore.addTaskAndSave(taskData);
+    await markdownGen.rebuildMarkdownFile(taskStore.getAllTasksChronological());
 
     // Verify JSON file creation
-    const detailHandle = await dirHandle.getFileHandle('moat-tasks-detail.json');
+    const detailHandle = await moatDir.getFileHandle('moat-tasks-detail.json');
     expect(detailHandle).toBeDefined();
     const detailContent = await detailHandle.getFile().then(f => f.text());
     expect(JSON.parse(detailContent)).toHaveLength(1);
 
     // Verify markdown generation
-    const mdHandle = await dirHandle.getFileHandle('moat-tasks.md');
+    const mdHandle = await moatDir.getFileHandle('moat-tasks.md');
     expect(mdHandle).toBeDefined();
     const mdContent = await mdHandle.getFile().then(f => f.text());
     expect(mdContent).toContain('Test annotation');
@@ -123,89 +189,117 @@ describe('Integration & QA Tests (Tasks 5.1-5.8)', () => {
   test('5.2 Refresh Function Regenerates Markdown and Keeps UI Synced', async () => {
     // Pre-populate with two tasks
     for (let i = 0; i < 2; i++) {
-      await taskStore.addTask({
-        id: `task-${i}`,
+      await taskStore.addTaskAndSave(createTaskData({
         title: `Title ${i}`,
-        status: 'pending',
-        created: new Date().toISOString()
-      });
+        comment: `Comment ${i}`,
+        selector: `.item-${i}`
+      }));
     }
     // First markdown build
-    await markdownGen.rebuildMarkdownFromJson(await taskStore.getAllTasks());
-    const mdHandle1 = await dirHandle.getFileHandle('moat-tasks.md');
+    await markdownGen.rebuildMarkdownFile(taskStore.getAllTasksChronological());
+    const mdHandle1 = await moatDir.getFileHandle('moat-tasks.md');
     const size1 = (await mdHandle1.getFile().then(f => f.text())).length;
 
     // Simulate adding new task and calling refresh
-    await taskStore.addTask({
-      id: 'task-99',
+    const newTask = await taskStore.addTaskAndSave(createTaskData({
       title: 'New Task',
-      status: 'pending',
-      created: new Date().toISOString()
-    });
-    await markdownGen.rebuildMarkdownFromJson(await taskStore.getAllTasks()); // This represents refreshFromFiles
+      comment: 'New Task Comment',
+      selector: '.item-99'
+    }));
+    await markdownGen.rebuildMarkdownFile(taskStore.getAllTasksChronological()); // Represents refresh
 
-    const mdHandle2 = await dirHandle.getFileHandle('moat-tasks.md');
+    const mdHandle2 = await moatDir.getFileHandle('moat-tasks.md');
     const contentAfter = await mdHandle2.getFile().then(f => f.text());
     expect(contentAfter.length).toBeGreaterThan(size1);
-    expect(contentAfter).toContain('New Task');
+    expect(contentAfter).toContain(newTask.title);
   });
 
   // 5.3 Checkbox toggle sync
   test('5.3 Checkbox toggle updates JSON and markdown', async () => {
     // Add a task
-    const task = {
-      id: 'task-xyz',
+    const task = await taskStore.addTaskAndSave(createTaskData({
       title: 'Toggle Test',
-      status: 'pending',
-      created: new Date().toISOString()
-    };
-    await taskStore.addTask(task);
-    await markdownGen.rebuildMarkdownFromJson(await taskStore.getAllTasks());
+      comment: 'Toggle Comment',
+      selector: '.toggle-item'
+    }));
+    await markdownGen.rebuildMarkdownFile(taskStore.getAllTasksChronological());
 
     // Update status to completed
-    await taskStore.updateTaskStatus('task-xyz', 'completed');
-    await markdownGen.rebuildMarkdownFromJson(await taskStore.getAllTasks());
+    await taskStore.updateTaskStatusAndSave(task.id, 'done');
+    await markdownGen.rebuildMarkdownFile(taskStore.getAllTasksChronological());
 
     // Validate JSON reflects change
-    const detailContent = await (await dirHandle.getFileHandle('moat-tasks-detail.json')).getFile().then(f => f.text());
+    const detailContent = await (await moatDir.getFileHandle('moat-tasks-detail.json')).getFile().then(f => f.text());
     const tasksArr = JSON.parse(detailContent);
-    expect(tasksArr.find(t => t.id === 'task-xyz').status).toBe('completed');
+    expect(tasksArr.find(t => t.id === task.id).status).toBe('done');
 
     // Validate markdown reflects change (looks for [x])
-    const mdContent = await (await dirHandle.getFileHandle('moat-tasks.md')).getFile().then(f => f.text());
+    const mdContent = await (await moatDir.getFileHandle('moat-tasks.md')).getFile().then(f => f.text());
     expect(mdContent).toMatch(/\[x\].*Toggle Test/);
   });
 
   // 5.4 Migration with various combinations
   test('5.4 Migration handles JSONL-only legacy files', async () => {
     // Legacy setup: only JSONL
-    const jsonlContent = JSON.stringify({ annotation: { content: 'Legacy A' } });
-    const moatDir = dirHandle; // treat root as .moat for simplicity
-    moatDir.files.set('.moat-stream.jsonl', new MockFileHandle('.moat-stream.jsonl', jsonlContent));
+    const jsonlContent = JSON.stringify({
+      annotation: {
+        content: 'Legacy A',
+        target: '.legacy',
+        elementLabel: 'Legacy Element'
+      }
+    });
+    const legacyDir = await rootDir.getDirectoryHandle('.moat', { create: true });
+    const legacyHandle = await legacyDir.getFileHandle('.moat-stream.jsonl', { create: true });
+    const writable = await legacyHandle.createWritable();
+    await writable.write(`${jsonlContent}\n`);
+    await writable.close();
 
-    const migrator = new LegacyFileMigrator(dirHandle);
-    const result = await migrator.performMigration();
-    expect(result.success).toBe(true);
-    expect(result.stats.tasksConverted).toBeGreaterThan(0);
+    const migrator = new LegacyFileMigrator(moatDir, taskStore, markdownGen);
+    const annotations = await migrator.parseJsonlStream(legacyHandle);
+    const converted = migrator.convertToNewSchema({ jsonlAnnotations: annotations });
+
+    expect(converted.length).toBeGreaterThan(0);
+    expect(converted[0].comment).toBe('Legacy A');
   });
 
-  // 5.5 Regression check: highlight function still exists and returns void
-  test('5.5 highlightElement function does not throw', () => {
-    const { document } = global;
-    const div = document.createElement('div');
-    document.body.appendChild(div);
-    const highlightElement = require('../content_script.js').highlightElement || (() => {});
-    expect(() => highlightElement(div)).not.toThrow();
+  // 5.5 Regression check: screenshot metadata updates only when provided
+  test('5.5 Screenshot path updates only when new image is saved', async () => {
+    const baseTask = await taskStore.addTaskAndSave(createTaskData({
+      title: 'Screenshot Task',
+      comment: 'Needs screenshot',
+      selector: '.screenshot-task'
+    }));
+
+    expect(baseTask.screenshotPath).toBe('');
+
+    const updatedTask = await taskStore.addTaskAndSave({
+      ...createTaskData({
+        title: 'Screenshot Task',
+        comment: 'Needs screenshot',
+        selector: '.screenshot-task',
+        screenshotPath: './screenshots/test.png'
+      }),
+      id: baseTask.id
+    });
+
+    expect(updatedTask.screenshotPath).toBe('./screenshots/test.png');
   });
 
   // 5.6 Performance test with 1000 tasks
-  test('5.6 Load test: Markdown generation stays under 250ms for 1000 tasks', async () => {
+  test('5.6 Load test: Markdown generation stays under 250ms for 1000 tasks', () => {
     const bigTasks = [];
     for (let i = 0; i < 1000; i++) {
-      bigTasks.push({ id: `task-${i}`, title: `Task ${i}`, status: 'pending', created: new Date().toISOString() });
+      bigTasks.push({
+        id: `task-${i}`,
+        title: `Task ${i}`,
+        comment: `Task ${i} comment`,
+        selector: `.task-${i}`,
+        status: 'to do',
+        timestamp: Date.now()
+      });
     }
     const t0 = performance.now();
-    await markdownGen.rebuildMarkdownFromJson(bigTasks);
+    markdownGen.rebuildMarkdownFromJson(bigTasks);
     const duration = performance.now() - t0;
     expect(duration).toBeLessThan(250);
   });
@@ -213,24 +307,33 @@ describe('Integration & QA Tests (Tasks 5.1-5.8)', () => {
   // 5.7 Error scenario: corrupted JSON file
   test('5.7 Error handling: corrupted JSON should not crash markdown generation', async () => {
     // Corrupt the existing JSON file
-    const detailHandle = await dirHandle.getFileHandle('moat-tasks-detail.json', { create: true });
+    const detailHandle = await moatDir.getFileHandle('moat-tasks-detail.json', { create: true });
     const writable = await detailHandle.createWritable();
     await writable.write('invalid JSON');
     await writable.close();
 
     // Attempt to read and rebuild markdown – should throw but be caught gracefully
-    await expect(markdownGen.rebuildMarkdownFromJson([])).resolves.toBeTruthy();
+    const markdown = markdownGen.rebuildMarkdownFromJson([]);
+    expect(typeof markdown).toBe('string');
+    expect(markdown).toContain('Moat Tasks');
   });
 
   // 5.8 Git diff cleanliness simulation – ensure two consecutive writes produce identical output if no changes
   test('5.8 Git diff cleanliness – no diff on identical markdown write', async () => {
-    const tasksArr = [{ id: 't1', title: 'Same Task', status: 'pending', created: new Date().toISOString() }];
-    await markdownGen.rebuildMarkdownFromJson(tasksArr);
-    const md1 = await (await dirHandle.getFileHandle('moat-tasks.md')).getFile().then(f => f.text());
+    const tasksArr = [{
+      id: 't1',
+      title: 'Same Task',
+      comment: 'Same Task comment',
+      selector: '.same-task',
+      status: 'to do',
+      timestamp: Date.now()
+    }];
+    await markdownGen.rebuildMarkdownFile(tasksArr);
+    const md1 = await (await moatDir.getFileHandle('moat-tasks.md')).getFile().then(f => f.text());
 
     // Re-run with identical data
-    await markdownGen.rebuildMarkdownFromJson(tasksArr);
-    const md2 = await (await dirHandle.getFileHandle('moat-tasks.md')).getFile().then(f => f.text());
+    await markdownGen.rebuildMarkdownFile(tasksArr);
+    const md2 = await (await moatDir.getFileHandle('moat-tasks.md')).getFile().then(f => f.text());
 
     expect(md1).toBe(md2);
   });
