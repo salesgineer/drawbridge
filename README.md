@@ -3,6 +3,18 @@ Drawbridge - Visual context for Cursor
 
 Make comments in the browser (like in Figma) and send them to Cursor.  This chrome plugin + cursor ruleset connects your browser to your local development project. Comments made on the front end are batched into a markdown file. Run the command "bridge" to process them in Cursor. Simplify your workflow by adding more context to visual edits with Cursor.
 
+✨ Modern color model support
+----------------------------
+
+Drawbridge now supports screenshots of pages using modern CSS color functions thanks to an upgrade to the underlying capture library. Screenshots work with:
+
+- `lab()`
+- `lch()`
+- `oklab()`
+- `oklch()` (commonly used by Tailwind v4)
+
+If you previously saw errors like "Attempting to parse an unsupported color function \"lab\"", update to the latest version of the extension.
+
 🚀 1. Setup
 -----------
 
@@ -167,3 +179,12 @@ You can control how Drawbridge processes tasks by specifying a mode.
 -   **Connection Issues**: If Drawbridge can't find tasks, press `Cmd/Ctrl+Shift+P` in your browser and re-select your project directory to reconnect.
 
 **Happy building with Drawbridge!** 🎯
+
+🙏 Acknowledgements
+-------------------
+
+Special thanks to the collaborators and community members who helped improve screenshot reliability and modern color support:
+
+- @breschio – for maintaining the project and reviews
+- @jankowtf – for the screenshot persistence reliability fixes and test harness improvements
+- @falkfrentzen – for reporting and validating the modern color model issue and suggesting `html2canvas-pro`
