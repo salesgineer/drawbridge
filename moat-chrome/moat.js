@@ -727,12 +727,12 @@
     
     // Special handling for instructional notifications
     let isPersistent = false;
-    if (source === 'press-c-instruction') {
+    if (source === 'press-x-instruction') {
       isPersistent = true;
       duration = Infinity; // Never auto-remove
     } else if (source === 'click-instruction') {
       // Remove the persistent Press C notification if it exists
-      persistentNotifications.delete('press-c-instruction');
+      persistentNotifications.delete('press-x-instruction');
       const existingNotification = document.querySelector('.float-header-notification');
       if (existingNotification) {
         removeHeaderNotification();
@@ -864,9 +864,9 @@
   }
 
   // Listen for C key press from content script to remove persistent notification
-  window.addEventListener('moat:c-key-pressed', () => {
-    console.log('🔔 C key pressed - removing persistent instruction notification');
-    removePersistentNotification('press-c-instruction');
+  window.addEventListener('moat:x-key-pressed', () => {
+    console.log('🔔 X key pressed - removing persistent instruction notification');
+    removePersistentNotification('press-x-instruction');
   });
 
   function getNotificationIcon(category, source = 'moat') {

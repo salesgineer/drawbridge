@@ -457,19 +457,33 @@ body.float-comment-mode * {
   transition: all 0.2s;
   font-family: inherit;
   box-shadow: 0 1px 2px var(--moat-shadow);
+  white-space: nowrap;
 }
 
 .float-comment-cancel {
   background: var(--moat-bg-primary);
   color: var(--moat-text-secondary);
-  border: 1px solid var(--moat-border);
+  border: 1px solid white !important;
 }
 
 .float-comment-cancel:hover {
   background: var(--moat-bg-secondary);
   color: var(--moat-text-primary);
-  border-color: var(--moat-border-light);
+  border-color: white !important;
   box-shadow: 0 1px 3px var(--moat-shadow);
+}
+
+.float-comment-copy {
+  background: #10b981 !important;
+  color: white !important;
+  font-weight: 500;
+  border: 1px solid #10b981 !important;
+}
+
+.float-comment-copy:hover {
+  background: #059669 !important;
+  border-color: #059669 !important;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3) !important;
 }
 
 .float-comment-submit {

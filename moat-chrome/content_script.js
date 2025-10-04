@@ -2759,6 +2759,112 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
     // Return the path, limited to last 3 elements for brevity
     return path.slice(-3).join(' > ');
   }
+  // Copy selector to clipboard with enhanced selector generation
+  async function copySelectorToClipboard(element) {
+    try {
+      const selector = getSelector(element);
+      const textContent = element.textContent?.trim().substring(0, 40).replace(/\n/g, ' ') || '';
+
+      // Component detection (React/Next.js)
+      let componentName = 'Unknown';
+      let current = element;
+      while (current && current !== document.body) {
+        // Check for data-component attribute
+        if (current.hasAttribute('data-component')) {
+          componentName = current.getAttribute('data-component');
+          break;
+        }
+        // Check for React component class patterns
+        if (current.className && typeof current.className === 'string') {
+          const classes = current.className.split(' ');
+          const componentClass = classes.find(c =>
+            c.match(/^[A-Z][a-zA-Z]+$/) || // PascalCase
+            c.includes('Component') ||
+            c.includes('Card') ||
+            c.includes('Button')
+          );
+          if (componentClass) {
+            componentName = componentClass;
+            break;
+          }
+        }
+        current = current.parentElement;
+      }
+
+      // File path hints based on URL
+      const path = window.location.pathname;
+      const pathSegments = path.split('/').filter(s => s);
+      let filePath = 'Unknown file';
+
+      if (pathSegments.length > 0) {
+        // Check for locale pattern (e.g., /en/members)
+        if (pathSegments[0].match(/^[a-z]{2}$/)) {
+          const subPath = pathSegments.slice(1);
+          filePath = subPath.length > 0
+            ? `src/app/[locale]/${subPath.join('/')}/page.tsx`
+            : `src/app/[locale]/page.tsx`;
+        } else {
+          filePath = `src/app/${pathSegments.join('/')}/page.tsx`;
+        }
+      } else {
+        filePath = 'src/app/[locale]/page.tsx';
+      }
+
+      // Build single-line format (Approach 3 - fastest)
+      const singleLineFormat = `${filePath} | Component: ${componentName} | Text: "${textContent}" | Selector: ${selector}`;
+
+      // Copy to clipboard
+      await navigator.clipboard.writeText(singleLineFormat);
+
+      // Show success notification
+      showNotification('Selector copied to clipboard!', 'success');
+
+      console.log('📋 Moat: Copied selector (single-line format):', singleLineFormat);
+      return true;
+
+    } catch (error) {
+      console.error('❌ Moat: Failed to copy selector:', error);
+      showNotification('Failed to copy selector', 'error');
+      return false;
+    }
+  }
+  
+  // Get file path hints based on element context
+  function getFilePathHints(element) {
+    const hints = [];
+    const tagName = element.tagName.toLowerCase();
+    
+    // Check for common component patterns
+    const dataComponent = element.getAttribute('data-component');
+    if (dataComponent) {
+      hints.push(`src/components/${dataComponent}.tsx`);
+      hints.push(`src/components/${dataComponent}.jsx`);
+    }
+    
+    // Check for route-based components
+    const path = window.location.pathname;
+    if (path !== '/') {
+      const pathSegments = path.split('/').filter(s => s);
+      if (pathSegments.length > 0) {
+        const lastSegment = pathSegments[pathSegments.length - 1];
+        hints.push(`src/pages/${lastSegment}.tsx`);
+        hints.push(`src/app/${pathSegments.join('/')}/page.tsx`);
+      }
+    }
+    
+    // Check for class-based hints
+    if (element.className && typeof element.className === 'string') {
+      const classes = element.className.split(' ').filter(c => c && !c.match(/^(w-|h-|p-|m-|flex|grid)/));
+      classes.forEach(className => {
+        if (className.includes('-')) {
+          const componentHint = className.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+          hints.push(`src/components/${componentHint}.tsx`);
+        }
+      });
+    }
+    
+    return [...new Set(hints)]; // Remove duplicates
+  }
 
   // Validate selector returns exactly one element
   function validateSelector(selector, targetElement) {
@@ -2812,6 +2918,7 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
       ></textarea>
       <div class="float-comment-actions">
         <button class="float-comment-cancel">Cancel</button>
+        <button class="float-comment-copy">Copy Selector</button>
         <button class="float-comment-submit">Submit (Enter)</button>
       </div>
     `;
@@ -2933,6 +3040,16 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
     submitBtn.addEventListener('click', handleSubmit);
     cancelBtn.addEventListener('click', exitCommentMode);
     
+    // COPY button handler
+    const copyBtn = commentBox.querySelector('.float-comment-copy');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        await copySelectorToClipboard(element);
+        // Optionally exit comment mode after copying
+        // exitCommentMode();
+      });
+    }
+    
     textarea.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -3042,25 +3159,33 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
     e.preventDefault();
     e.stopPropagation();
     
+    // Check for Shift+Click to copy selector without opening comment box
+    if (e.shiftKey) {
+      copySelectorToClipboard(element);
+      // Exit comment mode after copying
+      exitCommentMode();
+      return;
+    }
+    
     createCommentBox(element, e.clientX, e.clientY);
   }, true);
 
   // Global variables for new notification system
-  let hasPressedC = false;
+  let hasPressedX = false;
   let initialNotificationShown = false;
 
   // Listen for keyboard events
   document.addEventListener('keydown', (e) => {
-    // Enter comment mode with 'C' key (updated from 'f')
-    if ((e.key === 'C' || e.key === 'c') && !commentMode && !e.target.matches('input, textarea')) {
+    // Enter comment mode with 'X' key (updated from 'f')
+    if ((e.key === 'X' || e.key === 'x') && !commentMode && !e.target.matches('input, textarea')) {
       e.preventDefault();
       
       // Dispatch event to remove persistent notification
-      window.dispatchEvent(new CustomEvent('moat:c-key-pressed'));
+      window.dispatchEvent(new CustomEvent('moat:x-key-pressed'));
       
       // Mark that C has been pressed
-      if (!hasPressedC) {
-        hasPressedC = true;
+      if (!hasPressedX) {
+        hasPressedX = true;
         // Show the click instruction notification
         showNotification('Click anywhere to comment', 'info', 'click-instruction');
       }
@@ -3135,10 +3260,10 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
 
   // Function to show initial notification after plugin loads
   function showInitialNotification() {
-    if (!initialNotificationShown && !hasPressedC) {
+    if (!initialNotificationShown && !hasPressedX) {
       initialNotificationShown = true;
       // Show persistent notification until C is pressed
-      showNotification('Press C to make a comment', 'info', 'press-c-instruction');
+      showNotification('Press X to make a comment', 'info', 'press-x-instruction');
     }
   }
 
@@ -3458,11 +3583,11 @@ Press \`Cmd+Shift+P\` (Mac) or \`Ctrl+Shift+P\` (Windows) to reconnect.
     
     if (!commentMode) {
       // Dispatch event to remove persistent notification (same as C key)
-      window.dispatchEvent(new CustomEvent('moat:c-key-pressed'));
+      window.dispatchEvent(new CustomEvent('moat:x-key-pressed'));
       
       // Mark that C has been pressed (for notification system)
-      if (!hasPressedC) {
-        hasPressedC = true;
+      if (!hasPressedX) {
+        hasPressedX = true;
         // Show the click instruction notification
         showNotification('Click anywhere to comment', 'info', 'click-instruction');
       }
